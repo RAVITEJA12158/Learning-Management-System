@@ -6,16 +6,16 @@ import Badge from '../components/common/Badge'
 function UITest() {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
-      <h1 className="mb-6 text-3xl font-bold">UI Kit Test</h1>
+      <h1 className="mb-6 text-3xl font-bold">UI Test</h1>
 
       <Card>
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold">React Fundamentals</h2>
+          <h2 className="text-xl font-bold">Card Test</h2>
           <Badge>Active</Badge>
         </div>
 
         <p className="mt-2 text-gray-600">
-          Learn React fundamentals.
+          Working.
         </p>
 
         <div className="mt-4">
