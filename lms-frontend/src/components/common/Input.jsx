@@ -1,9 +1,11 @@
-function Input({ placeholder }) {
+function Input({ placeholder, type = 'text', value, onChange }) {
   return (
     <input
-      type="text"
+      type={type}
       placeholder={placeholder}
-      className="rounded-lg border border-gray-300 p-3"
+      value={value}
+      onChange={onChange}
+      className="w-full rounded-lg border border-gray-300 p-3 outline-none focus:border-blue-500"
     />
   )
 }
