@@ -8,6 +8,7 @@ function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState({})
+  const [loading, setLoading] = useState(false)
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -16,18 +17,25 @@ function Login() {
 
     if (!email) {
       newErrors.email = 'Email is required'
-    } else if (!email.includes('@')) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = 'Enter a valid email'
     }
 
     if (!password) {
       newErrors.password = 'Password is required'
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters'
     }
 
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length === 0) {
-      alert('Login form is valid')
+      setLoading(true)
+
+      setTimeout(() => {
+        setLoading(false)
+        alert('Login form is valid')
+      }, 1000)
     }
   }
 
@@ -37,9 +45,7 @@ function Login() {
         <div className="w-full max-w-md">
           <div className="mb-6 text-center">
             <h1 className="text-3xl font-bold">LMS</h1>
-            <p className="mt-2 text-gray-500">
-              Learning Management System
-            </p>
+            <p className="mt-2 text-gray-500">Learning Management System</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -50,9 +56,7 @@ function Login() {
                 onChange={(e) => setEmail(e.target.value)}
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.email}
-                </p>
+                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
               )}
             </div>
 
@@ -64,21 +68,18 @@ function Login() {
                 onChange={(e) => setPassword(e.target.value)}
               />
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.password}
-                </p>
+                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
               )}
             </div>
 
-            <Button>Login</Button>
+            <Button disabled={loading}>
+              {loading ? 'Logging in...' : 'Login'}
+            </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-600">
             Don't have an account?{' '}
-            <Link
-              to="/register"
-              className="font-semibold text-blue-600"
-            >
+            <Link to="/register" className="font-semibold text-blue-600">
               Register
             </Link>
           </p>
