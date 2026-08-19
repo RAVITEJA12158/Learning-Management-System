@@ -1,10 +1,14 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 import { Link } from 'react-router-dom'
 import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'
 import Card from '../../components/common/Card'
 
 function Login() {
+  const navigate = useNavigate()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState({})
@@ -30,11 +34,19 @@ function Login() {
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length === 0) {
-      setLoading(true)
+            setLoading(true)
 
       setTimeout(() => {
+        const user = {
+          id: Date.now(),
+          name: email.split('@')[0],
+          email,
+          role: 'student',
+        }
+
+        login(user)
         setLoading(false)
-        alert('Login form is valid')
+        navigate('/student')
       }, 1000)
     }
   }
