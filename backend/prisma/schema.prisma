@@ -82,10 +82,16 @@ enum NotificationType {
 model User {
   id            String   @id @default(uuid())
   name          String
+  username      String   @unique
   email         String   @unique
   passwordHash  String   @map("password_hash")
   role          Role
   profileImage  String?  @map("profile_image")
+
+  isVerified               Boolean   @default(false) @map("is_verified")
+  verificationToken         String?   @map("verification_token")
+  verificationTokenExpires  DateTime? @map("verification_token_expires")
+
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
@@ -113,6 +119,7 @@ model User {
   discussions          Discussion[]
   discussionReplies    DiscussionReply[]
 
+  @@index([verificationToken])
   @@map("users")
 }
 
