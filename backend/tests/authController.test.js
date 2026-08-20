@@ -6,7 +6,7 @@ jest.mock("../src/config/db", () => ({
   },
 }));
 
-jest.mock("bcrypt", () => ({
+jest.mock("bcryptjs", () => ({
   hash: jest.fn(),
   compare: jest.fn(),
 }));
@@ -16,9 +16,9 @@ jest.mock("jsonwebtoken", () => ({
 }));
 
 const prisma = require("../src/config/db");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { register, login } = require("../src/controllers/authController");
+const { register, login } = require("../src/Controllers/authController");
 
 const mockResponse = () => {
   const res = {};
@@ -89,6 +89,40 @@ describe("authController", () => {
       });
     });
 
+    it("registers a faculty user when role is provided", async () => {
+      prisma.user.findFirst.mockResolvedValue(null);
+      bcrypt.hash.mockResolvedValue("hashed-password");
+      prisma.user.create.mockResolvedValue({
+        id: 2,
+        username: "facultyuser",
+        email: "faculty@example.com",
+        role_id: 2,
+      });
+
+      const req = {
+        body: {
+          ...validBody,
+          username: "facultyuser",
+          email: "faculty@example.com",
+          role: "faculty",
+        },
+      };
+      const res = mockResponse();
+
+      await register(req, res);
+
+      expect(prisma.user.create).toHaveBeenCalledWith({
+        data: {
+          username: "facultyuser",
+          email: "faculty@example.com",
+          password: "hashed-password",
+          mobile_number: "9876543210",
+          role_id: 2,
+        },
+      });
+      expect(res.status).toHaveBeenCalledWith(201);
+    });
+
     it("returns 400 when required fields are missing", async () => {
       const req = { body: { email: "test@example.com" } };
       const res = mockResponse();
@@ -157,6 +191,19 @@ describe("authController", () => {
         error:
           "Password must be at least 6 characters and include uppercase, lowercase, number, and special symbol",
       });
+    });
+
+    it("returns 400 for an invalid role", async () => {
+      const req = { body: { ...validBody, role: "admin" } };
+      const res = mockResponse();
+
+      await register(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Invalid role specified",
+      });
+      expect(prisma.user.findFirst).not.toHaveBeenCalled();
     });
 
     it("returns 409 when email or username already exists", async () => {
@@ -234,6 +281,39 @@ describe("authController", () => {
         userId: 1,
         username: "testuser",
         role_id: 1,
+      });
+    });
+
+    it("logs in an admin when the correct secret code is provided", async () => {
+      process.env.ADMIN_SECRET_CODE = "admin-secret";
+      prisma.user.findUnique.mockResolvedValue({
+        ...activeUser,
+        role_id: 3,
+      });
+      bcrypt.compare.mockResolvedValue(true);
+
+      const req = {
+        body: {
+          ...validBody,
+          secretCode: "admin-secret",
+        },
+      };
+      const res = mockResponse();
+
+      await login(req, res);
+
+      expect(jwt.sign).toHaveBeenCalledWith(
+        { userId: 1, role: 3 },
+        "test-secret",
+        { expiresIn: "1h" },
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Login successful",
+        token: "signed-token",
+        userId: 1,
+        username: "testuser",
+        role_id: 3,
       });
     });
 
@@ -315,6 +395,52 @@ describe("authController", () => {
 
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({ error: "Invalid password" });
+    });
+
+    it("returns 400 when an admin logs in without a secret code", async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        ...activeUser,
+        role_id: 3,
+      });
+      bcrypt.compare.mockResolvedValue(true);
+
+      const req = { body: validBody };
+      const res = mockResponse();
+
+      await login(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Secret code is required for admin login",
+      });
+      expect(jwt.sign).not.toHaveBeenCalled();
+    });
+
+    it("returns 403 when an admin provides an invalid secret code", async () => {
+      process.env.ADMIN_SECRET_CODE = "admin-secret";
+      prisma.user.findUnique.mockResolvedValue({
+        ...activeUser,
+        role_id: 3,
+      });
+      bcrypt.compare.mockResolvedValue(true);
+      jest.spyOn(console, "warn").mockImplementation(() => {});
+
+      const req = {
+        body: {
+          ...validBody,
+          secretCode: "wrong-secret",
+        },
+      };
+      const res = mockResponse();
+
+      await login(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Invalid secret code",
+      });
+      expect(jwt.sign).not.toHaveBeenCalled();
+      console.warn.mockRestore();
     });
 
     it("returns 500 when login fails unexpectedly", async () => {
