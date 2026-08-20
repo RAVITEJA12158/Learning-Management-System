@@ -1,6 +1,6 @@
 const cors = require('cors');
 
-const whitelist = ['http://localhost:5173'];
+const whitelist = ['http://localhost:5174'];
 
 const corsOptions = {
   origin: (origin, callback) => {
