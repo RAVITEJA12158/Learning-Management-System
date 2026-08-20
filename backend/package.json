@@ -2,7 +2,7 @@
   "name": "prisma-scaffold",
   "version": "1.0.0",
   "description": "Node.js/Express server connected to Supabase PostgreSQL via Prisma",
-  "main": "src/index.js",
+  "main": "src/server.js",
   "type": "commonjs",
   "scripts": {
     "test": "jest",
