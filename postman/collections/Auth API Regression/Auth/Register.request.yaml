@@ -1,0 +1,32 @@
+$kind: http-request
+name: Register
+url: "{{baseUrl}}/api/auth/register"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"name\": \"Test User\",\r
+
+    \    \"email\": \"test@example.com\",\r
+
+    \    \"password\": \"Password123\"\r
+
+    }"
+  $type: |-
+    {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "email": {
+                "type": "string",
+                "format": "email"
+            },
+            "password": {
+                "type": "string"
+            }
+        }
+    }
+order: 1787202594089

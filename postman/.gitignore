@@ -1,0 +1,47 @@
+# ==========================================
+# Postman GitIgnore Configuration
+# ==========================================
+
+# ------------------------------------------
+# 1. Sensitive Data & Secrets
+# ------------------------------------------
+# Ignore environment files containing real secret API keys, tokens, or credentials.
+# Keep template/public environments (e.g. dev, staging) tracked, but ignore local/private credentials.
+*.local.json
+*.local.yaml
+*.local.yml
+*.secret.json
+*.secret.yaml
+*.secret.yml
+*.private.json
+*.private.yaml
+*.private.yml
+*.env.json
+*.env.yaml
+secrets.*
+
+# Local developer overrides & private environment variables
+environments/*local*
+environments/*secret*
+environments/*private*
+
+# ------------------------------------------
+# 2. Test Execution & CLI Reports
+# ------------------------------------------
+# Generated test run reports from Newman or Postman CLI
+newman/
+reports/
+postman-reports/
+*.html
+*.xml
+*.log
+
+# ------------------------------------------
+# 3. OS & Temporary Files
+# ------------------------------------------
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*.swp
+*.dump
