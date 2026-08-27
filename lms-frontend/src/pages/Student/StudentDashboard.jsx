@@ -1,10 +1,11 @@
-import { useState } from 'react'
-import DashboardShell from '../../components/layout/DashboardShell'
-
 function StudentDashboard() {
-  const [completed, setCompleted] = useState(false)
-  return <DashboardShell role="Student" title="Your learning space" subtitle="A calm place to make steady progress, one lesson at a time."><section className="grid gap-5 md:grid-cols-3"><Metric label="Learning progress" value="78%" detail="+6% this week" /><Metric label="Lessons completed" value="24" detail="4 left this module" /><Metric label="Upcoming deadlines" value="02" detail="Next: Friday, 5 PM" /></section><section className="mt-6 grid gap-6 xl:grid-cols-[1.55fr_1fr]"><div className="rounded-3xl border border-white/80 bg-white/65 p-6 shadow-xl shadow-violet-200/30 backdrop-blur"><div className="flex items-center justify-between"><div><p className="text-sm font-semibold text-violet-500">Continue learning</p><h2 className="mt-1 text-2xl font-bold">Full Stack Foundations</h2></div><span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-700">78% complete</span></div><div className="mt-7 rounded-2xl bg-gradient-to-r from-violet-600 via-purple-500 to-fuchsia-500 p-6 text-white"><p className="text-sm text-violet-100">Up next · 18 mins</p><h3 className="mt-2 text-xl font-bold">Building accessible React forms</h3><button onClick={() => setCompleted(true)} className="mt-5 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-violet-700 transition hover:scale-[1.03]">{completed ? 'Lesson completed ✓' : 'Mark as complete'}</button></div><div className="mt-5 h-2 overflow-hidden rounded-full bg-violet-100"><div className="h-full w-[78%] rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500" /></div></div><div className="rounded-3xl border border-violet-200/70 bg-[#fffaff]/80 p-6 shadow-lg shadow-violet-200/30"><p className="text-sm font-semibold text-violet-500">This week</p><h2 className="mt-1 text-xl font-bold">Learning rhythm</h2><div className="mt-6 flex h-28 items-end justify-between gap-2">{[38,55,42,76,64,90,48].map((height, i) => <div key={i} className="flex flex-1 flex-col items-center gap-2"><div style={{ height: `${height}%` }} className={`w-full rounded-t-lg ${i === 5 ? 'bg-fuchsia-500' : 'bg-violet-200'}`} /><span className="text-[10px] text-violet-500">{['M','T','W','T','F','S','S'][i]}</span></div>)}</div></div></section></DashboardShell>
+  return (
+    <div className="min-h-screen bg-gray-100 p-8">
+      <h1 className="text-3xl font-bold">
+        Student Dashboard
+      </h1>
+    </div>
+  )
 }
-function Metric({ label, value, detail }) { return <article className="relative overflow-hidden rounded-3xl border border-white/70 bg-white/65 p-5 shadow-lg shadow-violet-200/20"><div className="absolute right-0 top-0 h-20 w-20 rounded-bl-[3rem] bg-gradient-to-br from-violet-500 to-fuchsia-500 opacity-15" /><p className="text-sm font-medium text-violet-600">{label}</p><p className="mt-3 text-3xl font-bold">{value}</p><p className="mt-2 text-xs font-medium text-violet-500">{detail}</p></article> }
 
 export default StudentDashboard
