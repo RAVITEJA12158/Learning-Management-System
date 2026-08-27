@@ -80,14 +80,19 @@ enum NotificationType {
 // ============================================================================
 
 model User {
-  id            String   @id @default(uuid())
-  name          String
-  email         String   @unique
-  passwordHash  String   @map("password_hash")
-  role          Role
-  profileImage  String?  @map("profile_image")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id                      String    @id @default(uuid())
+  name                    String
+  email                   String    @unique
+  passwordHash            String    @map("password_hash")
+  role                    Role
+  profileImage            String?   @map("profile_image")
+
+  isVerified              Boolean   @default(false) @map("is_verified")
+  verificationToken       String?   @unique @map("verification_token")
+  verificationTokenExpires DateTime? @map("verification_token_expires")
+
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
 
   // Courses this user created (typically FACULTY/ADMIN)
   coursesCreated       Course[]              @relation("CourseCreatedBy")
