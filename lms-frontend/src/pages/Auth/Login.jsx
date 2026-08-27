@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Input from '../../components/common/Input'
 import Card from '../../components/common/Card'
-import { supabase } from '../../services/supabase'
+import Button from '../../components/common/Button'
+import { useAuth } from '../../context/AuthContext'
+import { authApi } from '../../services/api'
 
 const roles = [
   { id: 'student', roleId: 1, label: 'Student', detail: 'Access learning space', badge: 'S' },
@@ -12,6 +14,7 @@ const roles = [
 
 function Login() {
   const navigate = useNavigate()
+  const { signIn } = useAuth()
 
   const [loginRole, setLoginRole] = useState('student')
 
@@ -27,7 +30,7 @@ function Login() {
 
   async function handleSubmit(event) {
     event.preventDefault()
-    const nextErrors = {}
+    const newErrors = {}
     setMessage('')
 
     if (!email.trim()) {
@@ -54,44 +57,37 @@ function Login() {
 
     setLoading(true)
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    })
+    try {
+      const data = await authApi.login({
+        email: email.trim(),
+        password,
+        secretCode: loginRole === 'admin' ? secretCode.trim() : undefined,
+      })
+      const actualRole = data.role?.toLowerCase()
 
-    setLoading(false)
-
-    if (error) {
-      const errorText = error.message.toLowerCase()
-
-      if (errorText.includes('email not confirmed')) {
+      if (actualRole !== loginRole) {
         setMessage(
-          'Please verify your email before signing in. Check your inbox for the confirmation link.',
+          `This account is registered as ${actualRole || 'another role'}. Please select the correct login type.`,
         )
-      } else if (errorText.includes('invalid login')) {
-        setMessage('Incorrect email or password. Please try again.')
-      } else {
-        setMessage(error.message)
+        return
       }
 
-      return
+      signIn({
+        token: data.token,
+        user: {
+          id: data.userId,
+          name: data.name,
+          username: data.username,
+          email: email.trim(),
+          role: actualRole,
+        },
+      })
+      navigate(`/${actualRole}`)
+    } catch (error) {
+      setMessage(error.message)
+    } finally {
+      setLoading(false)
     }
-
-    const actualRole = data.user.user_metadata?.role
-
-    if (actualRole !== loginRole) {
-      await supabase.auth.signOut()
-
-      setMessage(
-        `This account is registered as ${
-          actualRole || 'another role'
-        }. Please select the correct login type.`,
-      )
-
-      return
-    }
-
-    navigate(`/${loginRole}`)
   }
 
   return (
