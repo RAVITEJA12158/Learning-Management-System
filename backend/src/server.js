@@ -29,16 +29,20 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  const server = app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  await prisma.$disconnect();
-  server.close(() => process.exit(0));
-});
-process.on('SIGTERM', async () => {
-  await prisma.$disconnect();
-  server.close(() => process.exit(0));
-});
+  // Graceful shutdown
+  process.on('SIGINT', async () => {
+    await prisma.$disconnect();
+    server.close(() => process.exit(0));
+  });
+  process.on('SIGTERM', async () => {
+    await prisma.$disconnect();
+    server.close(() => process.exit(0));
+  });
+}
+
+module.exports = app;

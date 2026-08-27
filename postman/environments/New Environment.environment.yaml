@@ -1,4 +1,4 @@
 name: New Environment
 values:
   - key: baseUrl
-    value: ''
+    value: 'http://localhost:5000'
