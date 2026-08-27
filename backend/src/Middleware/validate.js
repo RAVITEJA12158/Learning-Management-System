@@ -1,7 +1,7 @@
 function validateRegister(req, res, next) {
-  const { username, email, password, confirmPassword, mobile_number, role } = req.body || {}
+  const { name, username, email, password, confirmPassword, mobile_number, role } = req.body || {}
 
-  if (!username || !email || !password || !confirmPassword || !mobile_number) {
+  if (!name || !username || !email || !password || !confirmPassword || !mobile_number) {
     return res.status(400).json({ error: 'All registration fields are required' })
   }
 

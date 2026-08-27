@@ -9,7 +9,7 @@ function Register() {
   const navigate = useNavigate()
 
   const [name, setName] = useState('')
-  const [mobileNumber, setMobileNumber] = useState('')
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [mobile, setMobile] = useState('')
   const [role, setRole] = useState('student')
@@ -38,6 +38,13 @@ function Register() {
       newErrors.name = 'Full name is required'
     } else if (name.trim().length < 2) {
       newErrors.name = 'Name must contain at least 2 characters'
+    }
+
+    if (!username.trim()) {
+      newErrors.username = 'Username is required'
+    } else if (!/^[a-zA-Z0-9_.-]{3,30}$/.test(username.trim())) {
+      newErrors.username =
+        'Use 3–30 letters, numbers, periods, hyphens, or underscores'
     }
 
     if (!email.trim()) {
@@ -82,39 +89,23 @@ function Register() {
 
     setLoading(true)
 
-    const { error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        data: {
-          name: name.trim(),
-          mobile: cleanMobile,
-          role,
-        },
-      },
-    })
+    try {
+      await authApi.register({
+        name: name.trim(),
+        username: username.trim(),
+        email: email.trim(),
+        password,
+        confirmPassword,
+        mobile_number: cleanMobile,
+        role,
+      })
 
-    setLoading(false)
-
-    if (error) {
-      const errorText = error.message.toLowerCase()
-
-      if (errorText.includes('rate limit')) {
-        setMessage(
-          'Too many registration attempts. Please wait a few minutes before trying again.',
-        )
-      } else if (
-        errorText.includes('already registered') ||
-        errorText.includes('already been registered')
-      ) {
-        setMessage(
-          'An account with this email already exists. Please sign in instead.',
-        )
-      } else {
-        setMessage(error.message)
-      }
-
-      return
+      setSuccess(true)
+      setMessage('Account created successfully. You can now sign in.')
+    } catch (error) {
+      setMessage(error.message)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -158,7 +149,7 @@ function Register() {
             </div>
 
             <p className="text-right text-sm text-violet-600">
-              Secure authentication powered by Supabase
+              Secure authentication powered by the LMS API
             </p>
           </div>
         </div>
@@ -216,6 +207,25 @@ function Register() {
                   {errors.name && (
                     <p className="mt-2 text-sm text-red-400">
                       {errors.name}
+                    </p>
+                  )}
+                </div>
+
+                {/* Username */}
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-violet-900">
+                    Username
+                  </label>
+
+                  <Input
+                    placeholder="Choose a username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                  />
+
+                  {errors.username && (
+                    <p className="mt-2 text-sm text-red-400">
+                      {errors.username}
                     </p>
                   )}
                 </div>

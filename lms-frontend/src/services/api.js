@@ -18,8 +18,8 @@ async function apiRequest(endpoint, options = {}) {
 
   if (!response.ok) {
     const message =
-      typeof data === 'object' && data?.message
-        ? data.message
+      typeof data === 'object' && (data?.message || data?.error)
+        ? data.message || data.error
         : 'Something went wrong'
 
     throw new Error(message)
@@ -53,5 +53,11 @@ export const api = {
     return apiRequest(endpoint, {
       method: 'DELETE',
     })
+  },
+}
+
+export const authApi = {
+  register(payload) {
+    return api.post('/auth/register', payload)
   },
 }
