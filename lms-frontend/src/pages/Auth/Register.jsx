@@ -3,12 +3,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'
 import Card from '../../components/common/Card'
-import { supabase } from '../../services/supabase'
+import { authApi } from '../../services/api'
 
 function Register() {
   const navigate = useNavigate()
 
   const [name, setName] = useState('')
+  const [mobileNumber, setMobileNumber] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -41,6 +42,12 @@ function Register() {
       newErrors.email = 'Enter a valid email address'
     }
 
+    if (!mobileNumber.trim()) {
+      newErrors.mobileNumber = 'Mobile number is required'
+    } else if (!/^\+?\d{10}$/.test(mobileNumber.replace(/[\s\-()]/g, ''))) {
+      newErrors.mobileNumber = 'Enter a valid 10-digit mobile number'
+    }
+
     if (!password) {
       newErrors.password = 'Password is required'
     } else if (password.length < 6) {
@@ -65,45 +72,23 @@ function Register() {
 
     setLoading(true)
 
-    const { error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        data: {
-          name: name.trim(),
-        },
-      },
-    })
+    try {
+      await authApi.register({
+        username: name.trim(),
+        email: email.trim(),
+        password,
+        confirmPassword,
+        mobile_number: mobileNumber.trim(),
+      })
 
-    setLoading(false)
-
-    if (error) {
-      const errorText = error.message.toLowerCase()
-
-      if (errorText.includes('rate limit')) {
-        setMessage(
-          'Too many registration attempts. Please wait a few minutes before trying again.',
-        )
-      } else if (errorText.includes('already registered')) {
-        setMessage(
-          'An account with this email may already exist. Try signing in instead.',
-        )
-      } else {
-        setMessage(error.message)
-      }
-
-      return
+      setSuccess(true)
+      setMessage('Account created successfully! You can now sign in.')
+      setTimeout(() => navigate('/login'), 1800)
+    } catch (error) {
+      setMessage(error.message)
+    } finally {
+      setLoading(false)
     }
-
-    setSuccess(true)
-
-    setMessage(
-      'Account created successfully! Check your email to confirm your account before signing in.',
-    )
-
-    setTimeout(() => {
-      navigate('/login')
-    }, 3000)
   }
 
   return (
@@ -216,6 +201,25 @@ function Register() {
                   {errors.email && (
                     <p className="mt-2 text-sm text-red-400">
                       {errors.email}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-300">
+                    Mobile number
+                  </label>
+
+                  <Input
+                    placeholder="9876543210"
+                    type="tel"
+                    value={mobileNumber}
+                    onChange={(e) => setMobileNumber(e.target.value)}
+                  />
+
+                  {errors.mobileNumber && (
+                    <p className="mt-2 text-sm text-red-400">
+                      {errors.mobileNumber}
                     </p>
                   )}
                 </div>

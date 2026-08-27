@@ -3,10 +3,7 @@ import { createContext, useContext, useState } from 'react'
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('lms_user')
-    return savedUser ? JSON.parse(savedUser) : null
-  })
+  const [user, setUser] = useState(getStoredUser)
 
   function login(userData) {
     localStorage.setItem('lms_user', JSON.stringify(userData))
@@ -36,4 +33,15 @@ export function useAuth() {
   }
 
   return context
+}
+
+function getStoredUser() {
+  try {
+    const savedUser = localStorage.getItem('lms_user')
+    return savedUser ? JSON.parse(savedUser) : null
+  } catch {
+    // A stale or malformed browser value must not prevent the public app loading.
+    localStorage.removeItem('lms_user')
+    return null
+  }
 }
