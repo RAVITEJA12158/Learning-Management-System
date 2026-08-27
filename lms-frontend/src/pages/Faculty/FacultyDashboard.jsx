@@ -1,11 +1,11 @@
-import { useState } from 'react'
-import DashboardShell from '../../components/layout/DashboardShell'
-
 function FacultyDashboard() {
-  const [published, setPublished] = useState(false)
-  return <DashboardShell role="Faculty" title="Teaching studio" subtitle="Shape engaging learning moments and keep every learner on track."><section className="grid gap-5 md:grid-cols-3"><Stat label="Active courses" value="06" note="2 publishing this week" /><Stat label="Learners reached" value="248" note="+18 new this month" /><Stat label="To review" value="14" note="Assignments awaiting feedback" /></section><section className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]"><div className="rounded-3xl border border-white/80 bg-white/70 p-6 shadow-xl shadow-violet-200/30"><div className="flex items-center justify-between"><div><p className="text-sm font-semibold text-violet-500">Course pulse</p><h2 className="mt-1 text-2xl font-bold">Full Stack Foundations</h2></div><span className="rounded-full bg-fuchsia-100 px-3 py-1 text-xs font-bold text-fuchsia-700">Live</span></div><div className="mt-6 grid gap-3 sm:grid-cols-3"><Tile value="92%" label="Completion" /><Tile value="4.8" label="Avg. rating" /><Tile value="31" label="New posts" /></div><button onClick={() => setPublished(!published)} className="mt-6 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-violet-200 transition hover:-translate-y-0.5">{published ? 'Announcement published ✓' : 'Publish course update'}</button></div><div className="rounded-3xl border border-violet-200/70 bg-[#fffaff]/85 p-6 shadow-lg shadow-violet-200/20"><p className="text-sm font-semibold text-violet-500">Next to do</p><h2 className="mt-1 text-xl font-bold">Review queue</h2>{['Grade API design submissions','Reply to discussion questions','Prepare Friday’s workshop'].map((task, i) => <div key={task} className="mt-4 flex items-center gap-3 rounded-2xl bg-violet-50 p-3"><span className="grid h-7 w-7 place-items-center rounded-lg bg-violet-200 text-xs font-bold text-violet-700">{i + 1}</span><p className="text-sm font-medium">{task}</p></div>)}</div></section></DashboardShell>
+  return (
+    <div className="min-h-screen bg-gray-100 p-8">
+      <h1 className="text-3xl font-bold">
+        Faculty Dashboard
+      </h1>
+    </div>
+  )
 }
-function Stat({ label, value, note }) { return <div className="rounded-3xl border border-white/80 bg-white/70 p-5 shadow-lg shadow-violet-200/20"><p className="text-sm text-violet-600">{label}</p><p className="mt-3 text-3xl font-bold">{value}</p><p className="mt-2 text-xs text-violet-500">{note}</p></div> }
-function Tile({ value, label }) { return <div className="rounded-2xl bg-violet-50 p-4"><p className="text-xl font-bold text-violet-800">{value}</p><p className="mt-1 text-xs text-violet-500">{label}</p></div> }
 
 export default FacultyDashboard

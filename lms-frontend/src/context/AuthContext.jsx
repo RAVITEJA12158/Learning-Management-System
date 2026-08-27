@@ -1,86 +1,28 @@
-import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '../services/supabase'
+import { createContext, useContext, useState } from 'react'
 
 const AuthContext = createContext(null)
 
-function getUserFromSession(session) {
-  if (!session?.user) {
-    return null
-  }
-
-  return {
-    id: session.user.id,
-    email: session.user.email,
-    name:
-      session.user.user_metadata?.name ||
-      session.user.email?.split('@')[0] ||
-      'User',
-    role: session.user.user_metadata?.role || 'student',
-  }
-}
-
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(null)
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(getStoredUser)
 
-  useEffect(() => {
-    let mounted = true
+  function login(userData) {
+    localStorage.setItem('lms_user', JSON.stringify(userData))
+    setUser(userData)
+  }
 
-    async function loadSession() {
-      const { data, error } = await supabase.auth.getSession()
-
-      if (error) {
-        console.error('Failed to load authentication session:', error)
-      }
-
-      if (!mounted) {
-        return
-      }
-
-      setSession(data.session)
-      setUser(getUserFromSession(data.session))
-      setLoading(false)
-    }
-
-    loadSession()
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession)
-      setUser(getUserFromSession(nextSession))
-      setLoading(false)
-    })
-
-    return () => {
-      mounted = false
-      subscription.unsubscribe()
-    }
-  }, [])
-
-  async function signOut() {
-    const { error } = await supabase.auth.signOut()
-
-    if (error) {
-      throw error
-    }
+  function logout() {
+    localStorage.removeItem('lms_user')
+    setUser(null)
   }
 
   const value = {
-    session,
     user,
-    isAuthenticated: Boolean(session),
-    loading,
-    accessToken: session?.access_token || null,
-    signOut,
+    isAuthenticated: Boolean(user),
+    login,
+    logout,
   }
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
