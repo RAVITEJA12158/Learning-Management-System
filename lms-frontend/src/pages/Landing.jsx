@@ -3,6 +3,19 @@ import { useNavigate } from 'react-router-dom'
 import lavenderLandscape from '../assets/ChatGPT Image Aug 27, 2026, 10_27_36 AM.png'
 import lavenderWaves from '../assets/ChatGPT Image Aug 27, 2026, 10_27_29 AM.png'
 
+const featureCards = [
+  { icon: 'layers', title: 'A calmer course space', text: 'Every lecture, resource, and recording arranged exactly where it belongs.', accent: 'bg-violet-100 text-violet-700' },
+  { icon: 'spark', title: 'Momentum, made visible', text: 'See what is next, what is due, and how far you have come—at a glance.', accent: 'bg-amber-100 text-amber-700' },
+  { icon: 'target', title: 'Feedback that moves you', text: 'Turn grades, comments, and assessment results into your next best step.', accent: 'bg-emerald-100 text-emerald-700' },
+  { icon: 'shield', title: 'Private by default', text: 'Thoughtful role-based access for students, faculty, and administrators.', accent: 'bg-sky-100 text-sky-700' },
+]
+
+const courses = [
+  { code: 'CS 302', name: 'Data Structures', lesson: '12 lessons', progress: 72, color: 'from-[#8068ff] to-[#5046de]', icon: 'code' },
+  { code: 'CS 341', name: 'Web Systems', lesson: '08 lessons', progress: 46, color: 'from-[#1eb99d] to-[#0b8d87]', icon: 'browser' },
+  { code: 'DS 220', name: 'Database Design', lesson: '10 lessons', progress: 89, color: 'from-[#fa9961] to-[#ee6d5d]', icon: 'database' },
+]
+
 function Landing() {
   const navigate = useNavigate()
   const [showAuth, setShowAuth] = useState(false)
@@ -73,10 +86,14 @@ function Landing() {
               Register
             </button>
           </div>
+          {menuOpen && <div className="border-t border-white/10 bg-[#151b36] px-5 py-4 sm:hidden"><div className="grid gap-1">{['Discover', 'Experience', 'For educators', 'Stories'].map((label, i) => <button key={label} onClick={() => scrollTo(['home', 'experience', 'educators', 'stories'][i])} className="rounded-lg px-3 py-3 text-left text-sm font-bold text-white/75 hover:bg-white/10">{label}</button>)}</div><div className="mt-3 grid grid-cols-2 gap-3 border-t border-white/10 pt-4"><button onClick={() => to('/login')} className="rounded-xl border border-white/20 py-2.5 text-sm font-bold">Sign in</button><button onClick={() => to('/register')} className="rounded-xl bg-[#9df5d8] py-2.5 text-sm font-extrabold text-[#112037]">Create account</button></div></div>}
+        </header>
+        <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-14 px-5 pt-16 sm:px-8 lg:grid-cols-[.9fr_1.1fr] lg:pt-24">
+          <div className="max-w-xl"><div className="hub-lift inline-flex items-center gap-2 rounded-full border border-[#9df5d8]/20 bg-[#9df5d8]/10 px-3.5 py-2 text-xs font-bold text-[#9df5d8]"><span className="h-2 w-2 animate-pulse rounded-full bg-[#9df5d8]" />The learning space, reimagined</div><h1 className="mt-6 text-5xl font-extrabold tracking-[-.07em] sm:text-6xl lg:text-[72px] lg:leading-[.98]">Study with<br /><span className="text-[#a99aff]">your flow.</span></h1><p className="mt-7 max-w-lg text-base leading-7 text-white/65 sm:text-lg sm:leading-8">CourseHub brings your coursework, progress, and people into one beautifully focused space—so you can spend less time organizing and more time learning.</p><div className="mt-9 flex flex-wrap gap-3"><button onClick={() => to('/register')} className="hub-lift inline-flex items-center gap-2 rounded-xl bg-[#705cff] px-5 py-3.5 text-sm font-extrabold shadow-[0_12px_30px_rgba(112,92,255,.35)] hover:bg-[#816dff]">Begin your journey <Glyph name="arrow" size={17}/></button><button onClick={() => scrollTo('experience')} className="hub-lift inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-sm font-bold text-white/85 hover:bg-white/10">Take a look <Glyph name="play" size={16}/></button></div><div className="mt-11 flex flex-wrap gap-x-8 gap-y-3"><MiniProof number="10k+" text="active learners" /><MiniProof number="4.9/5" text="student rating" /><MiniProof number="95%" text="completion rate" /></div></div>
+          <HeroProduct />
         </div>
-      </header>
+      </section>
 
-      {/* Hero */}
       <main>
         <section className="mx-auto max-w-6xl px-6 py-20 md:py-28">
           <div className="grid items-center gap-14 md:grid-cols-2">
@@ -205,9 +222,7 @@ function Landing() {
                 Platform Features
               </p>
 
-              <h2 className="mt-3 text-3xl font-bold">
-                Everything in one place
-              </h2>
+        <section className="bg-[#151a33] py-20 text-white lg:py-28"><div className="mx-auto max-w-7xl px-5 sm:px-8"><div className="grid items-end gap-7 lg:grid-cols-[.9fr_1.1fr]"><SectionLead dark label="Made for people" title="Where every role feels at home." copy="One shared system, tailored thoughtfully for the people who use it." /><div className="grid gap-3 sm:grid-cols-3"><RoleTile glyph="student" name="Students" line="Stay in the flow" /><RoleTile glyph="faculty" name="Faculty" line="Teach with clarity" /><RoleTile glyph="building" name="Teams" line="See the big picture" /></div></div></div></section>
 
               <p className="mx-auto mt-4 max-w-2xl text-violet-800/75">
                 A unified platform designed for students, faculty, and

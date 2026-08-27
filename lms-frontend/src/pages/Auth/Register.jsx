@@ -3,12 +3,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'
 import Card from '../../components/common/Card'
-import { supabase } from '../../services/supabase'
+import { authApi } from '../../services/api'
 
 function Register() {
   const navigate = useNavigate()
 
   const [name, setName] = useState('')
+  const [mobileNumber, setMobileNumber] = useState('')
   const [email, setEmail] = useState('')
   const [mobile, setMobile] = useState('')
   const [role, setRole] = useState('student')
@@ -115,16 +116,6 @@ function Register() {
 
       return
     }
-
-    setSuccess(true)
-
-    setMessage(
-      'Account created successfully! Check your email to confirm your account before signing in.',
-    )
-
-    setTimeout(() => {
-      navigate('/login')
-    }, 3000)
   }
 
   return (

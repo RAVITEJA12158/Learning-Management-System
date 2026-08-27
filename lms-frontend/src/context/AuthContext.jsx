@@ -92,3 +92,14 @@ export function useAuth() {
 
   return context
 }
+
+function getStoredUser() {
+  try {
+    const savedUser = localStorage.getItem('lms_user')
+    return savedUser ? JSON.parse(savedUser) : null
+  } catch {
+    // A stale or malformed browser value must not prevent the public app loading.
+    localStorage.removeItem('lms_user')
+    return null
+  }
+}

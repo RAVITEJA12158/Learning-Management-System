@@ -1,9 +1,14 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'
 import Card from '../../components/common/Card'
 import { supabase } from '../../services/supabase'
+
+const roles = [
+  { id: 'student', roleId: 1, label: 'Student', detail: 'Access learning space', badge: 'S' },
+  { id: 'faculty', roleId: 2, label: 'Faculty', detail: 'Teach and guide', badge: 'F' },
+  { id: 'admin', roleId: 3, label: 'Administrator', detail: 'Manage your institution', badge: 'A' },
+]
 
 function Login() {
   const navigate = useNavigate()
@@ -20,10 +25,9 @@ function Login() {
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(e) {
-    e.preventDefault()
-
-    const newErrors = {}
+  async function handleSubmit(event) {
+    event.preventDefault()
+    const nextErrors = {}
     setMessage('')
 
     if (!email.trim()) {

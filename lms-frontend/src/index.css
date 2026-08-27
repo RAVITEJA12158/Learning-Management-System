@@ -108,6 +108,43 @@ a {
   min-height: 100vh;
 }
 
+/* CourseHub's shared interaction language: every clickable or card-like item feels responsive. */
+.hub-lift,
+.hub-nav,
+.hub-footer-link {
+  transition:
+    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+
+.hub-lift:hover,
+.hub-nav:hover,
+.hub-footer-link:hover {
+  transform: translateY(-4px);
+}
+
+.hub-lift:active {
+  transform: translateY(-1px) scale(0.985);
+}
+
+.hub-lift:focus-visible,
+.hub-nav:focus-visible,
+.hub-footer-link:focus-visible {
+  outline: 3px solid rgba(112, 92, 255, 0.45);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hub-lift,
+  .hub-nav,
+  .hub-footer-link {
+    transition: none;
+  }
+}
+
 @media (max-width: 768px) {
   html {
     font-size: 15px;
