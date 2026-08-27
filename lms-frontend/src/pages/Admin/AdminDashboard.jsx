@@ -1,11 +1,8 @@
+import DashboardShell from '../../components/layout/DashboardShell'
+
 function AdminDashboard() {
-  return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <h1 className="text-3xl font-bold">
-        Admin Dashboard
-      </h1>
-    </div>
-  )
+  return <DashboardShell role="Admin" title="Campus command center" subtitle="A clear, welcoming overview of your learning community."><section className="grid gap-5 md:grid-cols-3"><Card label="Total learners" value="1,248" note="↑ 8.2% since last month" /><Card label="Active faculty" value="86" note="6 onboarding this week" /><Card label="Course health" value="94%" note="Content up to date" /></section><section className="mt-6 grid gap-6 lg:grid-cols-[1.35fr_1fr]"><div className="rounded-3xl border border-white/80 bg-white/70 p-6 shadow-xl shadow-violet-200/30"><p className="text-sm font-semibold text-violet-500">Community activity</p><h2 className="mt-1 text-2xl font-bold">A thriving learning week</h2><div className="mt-8 flex h-44 items-end gap-3">{[35,52,44,70,61,90,76,84,64,96,73,88].map((n, i) => <div key={i} style={{ height: `${n}%` }} className={`flex-1 rounded-t-xl ${i === 9 ? 'bg-fuchsia-500' : 'bg-violet-300'}`} />)}</div><div className="mt-4 flex justify-between text-xs text-violet-500"><span>Mon</span><span>Midweek</span><span>Today</span></div></div><div className="rounded-3xl border border-violet-200/70 bg-[#fffaff]/85 p-6 shadow-lg shadow-violet-200/20"><p className="text-sm font-semibold text-violet-500">Needs attention</p><h2 className="mt-1 text-xl font-bold">Quick actions</h2>{['3 course requests to approve','2 flagged discussions','1 instructor verification'].map(action => <button key={action} className="mt-4 flex w-full items-center justify-between rounded-2xl bg-violet-50 p-4 text-left text-sm font-semibold transition hover:bg-violet-100"><span>{action}</span><span className="text-violet-500">→</span></button>)}</div></section></DashboardShell>
 }
+function Card({ label, value, note }) { return <div className="rounded-3xl border border-white/80 bg-white/70 p-5 shadow-lg shadow-violet-200/20"><p className="text-sm text-violet-600">{label}</p><p className="mt-3 text-3xl font-bold">{value}</p><p className="mt-2 text-xs font-medium text-fuchsia-600">{note}</p></div> }
 
 export default AdminDashboard
