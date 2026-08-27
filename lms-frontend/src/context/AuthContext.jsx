@@ -1,31 +1,86 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
+import { supabase } from '../services/supabase'
 
 const AuthContext = createContext(null)
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('lms_user')
-    return savedUser ? JSON.parse(savedUser) : null
-  })
-
-  function login(userData) {
-    localStorage.setItem('lms_user', JSON.stringify(userData))
-    setUser(userData)
+function getUserFromSession(session) {
+  if (!session?.user) {
+    return null
   }
 
-  function logout() {
-    localStorage.removeItem('lms_user')
-    setUser(null)
+  return {
+    id: session.user.id,
+    email: session.user.email,
+    name:
+      session.user.user_metadata?.name ||
+      session.user.email?.split('@')[0] ||
+      'User',
+    role: session.user.user_metadata?.role || 'student',
+  }
+}
+
+export function AuthProvider({ children }) {
+  const [session, setSession] = useState(null)
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let mounted = true
+
+    async function loadSession() {
+      const { data, error } = await supabase.auth.getSession()
+
+      if (error) {
+        console.error('Failed to load authentication session:', error)
+      }
+
+      if (!mounted) {
+        return
+      }
+
+      setSession(data.session)
+      setUser(getUserFromSession(data.session))
+      setLoading(false)
+    }
+
+    loadSession()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession)
+      setUser(getUserFromSession(nextSession))
+      setLoading(false)
+    })
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  async function signOut() {
+    const { error } = await supabase.auth.signOut()
+
+    if (error) {
+      throw error
+    }
   }
 
   const value = {
+    session,
     user,
-    isAuthenticated: Boolean(user),
-    login,
-    logout,
+    isAuthenticated: Boolean(session),
+    loading,
+    accessToken: session?.access_token || null,
+    signOut,
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export function useAuth() {

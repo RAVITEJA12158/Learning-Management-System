@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import lavenderLandscape from '../assets/ChatGPT Image Aug 27, 2026, 10_27_36 AM.png'
+import lavenderWaves from '../assets/ChatGPT Image Aug 27, 2026, 10_27_29 AM.png'
 
 function Landing() {
   const navigate = useNavigate()
   const [showAuth, setShowAuth] = useState(false)
+  const [cursor, setCursor] = useState({ x: '50%', y: '20%' })
 
   function requireAuth() {
     setShowAuth(true)
@@ -20,35 +23,36 @@ function Landing() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="aurora-page min-h-screen bg-[#f8f3ff] text-violet-950" style={{ '--cursor-x': cursor.x, '--cursor-y': cursor.y }} onMouseMove={(event) => setCursor({ x: `${event.clientX}px`, y: `${event.clientY}px` })}>
+      <img src={lavenderLandscape} alt="" className="pointer-events-none fixed inset-0 -z-10 h-full w-full object-cover opacity-80" />
       {/* Navbar */}
-      <header className="border-b border-slate-800">
+      <header className="border-b border-violet-200/70 bg-white/35 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
           <button
             onClick={() => navigate('/')}
             className="text-2xl font-bold"
           >
-            LMS<span className="text-blue-500">.</span>
+            LMS<span className="text-violet-400">.</span>
           </button>
 
           <nav className="hidden items-center gap-8 md:flex">
             <button
               onClick={requireAuth}
-              className="text-sm text-slate-300 hover:text-white"
+              className="text-sm text-violet-700 hover:text-violet-950"
             >
               Courses
             </button>
 
             <button
               onClick={requireAuth}
-              className="text-sm text-slate-300 hover:text-white"
+              className="text-sm text-violet-700 hover:text-violet-950"
             >
               Features
             </button>
 
             <button
               onClick={requireAuth}
-              className="text-sm text-slate-300 hover:text-white"
+              className="text-sm text-violet-700 hover:text-violet-950"
             >
               About
             </button>
@@ -57,14 +61,14 @@ function Landing() {
           <div className="flex items-center gap-3">
             <button
               onClick={goToLogin}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-300 hover:text-white"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-violet-700 hover:bg-violet-100 hover:text-violet-950"
             >
               Login
             </button>
 
             <button
               onClick={goToRegister}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold hover:bg-blue-500"
+              className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-violet-500"
             >
               Register
             </button>
@@ -77,17 +81,17 @@ function Landing() {
         <section className="mx-auto max-w-6xl px-6 py-20 md:py-28">
           <div className="grid items-center gap-14 md:grid-cols-2">
             <div>
-              <span className="inline-block rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-400">
+              <span className="inline-block rounded-full border border-violet-400/40 bg-violet-400/10 px-4 py-2 text-sm text-violet-300">
                 Learning Management System
               </span>
 
               <h1 className="mt-6 text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">
                 Learn.
-                <span className="block text-blue-500">Grow.</span>
+                <span className="block text-violet-400">Grow.</span>
                 Succeed.
               </h1>
 
-              <p className="mt-6 max-w-xl text-base leading-7 text-slate-400 md:text-lg">
+              <p className="mt-6 max-w-xl text-base leading-7 text-violet-800/80 md:text-lg">
                 Manage courses, assignments, learning materials, and
                 academic progress through one centralized platform.
               </p>
@@ -95,7 +99,7 @@ function Landing() {
               <div className="mt-8 flex flex-wrap gap-4">
                 <button
                   onClick={goToRegister}
-                  className="rounded-lg bg-blue-600 px-6 py-3 font-semibold hover:bg-blue-500"
+                  className="button-glow rounded-lg bg-violet-600 px-6 py-3 font-semibold text-white transition hover:-translate-y-1 hover:bg-fuchsia-500"
                 >
                   Get Started
                 </button>
@@ -103,7 +107,7 @@ function Landing() {
                 <button
                  type="button"
                  onClick={() => setShowAuth(true)}
-                 className="rounded-lg border border-slate-700 px-6 py-3 font-semibold text-slate-200 hover:bg-slate-900"
+                 className="rounded-lg border border-violet-300 bg-white/55 px-6 py-3 font-semibold text-violet-800 shadow-sm transition hover:-translate-y-0.5 hover:border-violet-400 hover:bg-white"
                 >
                  Explore Courses
                 </button>
@@ -112,32 +116,35 @@ function Landing() {
               <div className="mt-10 flex gap-8">
                 <div>
                   <p className="text-2xl font-bold">50+</p>
-                  <p className="mt-1 text-sm text-slate-500">Courses</p>
+                  <p className="mt-1 text-sm text-violet-700/70">Courses</p>
                 </div>
 
                 <div>
                   <p className="text-2xl font-bold">1,200+</p>
-                  <p className="mt-1 text-sm text-slate-500">Students</p>
+                  <p className="mt-1 text-sm text-violet-700/70">Students</p>
                 </div>
 
                 <div>
                   <p className="text-2xl font-bold">80+</p>
-                  <p className="mt-1 text-sm text-slate-500">Faculty</p>
+                  <p className="mt-1 text-sm text-violet-700/70">Faculty</p>
                 </div>
               </div>
             </div>
 
             {/* Dashboard Preview */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-2xl">
+            <div className="interactive-surface group relative overflow-hidden rounded-[2rem] border border-violet-200 bg-white/65 p-5 shadow-2xl shadow-violet-200/50 backdrop-blur">
+              <img src={lavenderWaves} alt="Abstract lavender waves" className="absolute inset-0 h-full w-full object-cover opacity-55 transition duration-700 group-hover:scale-110 group-hover:opacity-75" />
+              <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/75 to-violet-100/40" />
+              <div className="relative">
               <div className="mb-5 flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-500">Dashboard</p>
+                  <p className="text-sm font-medium text-violet-700/75">Dashboard</p>
                   <h2 className="text-xl font-semibold">
                     Learning Overview
                   </h2>
                 </div>
 
-                <div className="rounded-lg bg-blue-500/10 px-3 py-2 text-sm text-blue-400">
+                <div className="rounded-lg bg-violet-200/70 px-3 py-2 text-sm font-semibold text-violet-800">
                   Student
                 </div>
               </div>
@@ -164,10 +171,10 @@ function Landing() {
                 />
               </div>
 
-              <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950 p-5">
+              <div className="mt-4 rounded-xl border border-violet-100 bg-violet-50/80 p-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-violet-700/75">
                       Current Course
                     </p>
 
@@ -176,24 +183,25 @@ function Landing() {
                     </p>
                   </div>
 
-                  <span className="text-sm font-semibold text-blue-400">
+                  <span className="text-sm font-semibold text-violet-700">
                     78%
                   </span>
                 </div>
 
-                <div className="mt-4 h-2 rounded-full bg-slate-800">
-                  <div className="h-2 w-[78%] rounded-full bg-blue-600" />
+                <div className="mt-4 h-2 rounded-full bg-violet-100">
+                  <div className="h-2 w-[78%] rounded-full bg-violet-500" />
                 </div>
+              </div>
               </div>
             </div>
           </div>
         </section>
 
         {/* Features */}
-        <section className="border-y border-slate-800 bg-slate-900/40">
+        <section className="border-y border-violet-200/70 bg-white/35">
           <div className="mx-auto max-w-6xl px-6 py-20">
             <div className="text-center">
-              <p className="text-sm font-semibold uppercase tracking-wider text-blue-500">
+              <p className="text-sm font-semibold uppercase tracking-wider text-violet-400">
                 Platform Features
               </p>
 
@@ -201,7 +209,7 @@ function Landing() {
                 Everything in one place
               </h2>
 
-              <p className="mx-auto mt-4 max-w-2xl text-slate-400">
+              <p className="mx-auto mt-4 max-w-2xl text-violet-800/75">
                 A unified platform designed for students, faculty, and
                 administrators.
               </p>
@@ -234,19 +242,19 @@ function Landing() {
 
         {/* CTA */}
         <section className="mx-auto max-w-6xl px-6 py-20">
-          <div className="rounded-2xl border border-blue-500/20 bg-blue-500/10 px-6 py-14 text-center">
+          <div className="rounded-2xl border border-violet-400/30 bg-violet-400/10 px-6 py-14 text-center">
             <h2 className="text-3xl font-bold">
               Start your learning journey
             </h2>
 
-            <p className="mx-auto mt-4 max-w-xl text-slate-400">
+            <p className="mx-auto mt-4 max-w-xl text-violet-800/75">
               Create your account and access your personalized LMS
               dashboard.
             </p>
 
             <button
               onClick={goToRegister}
-              className="mt-7 rounded-lg bg-blue-600 px-7 py-3 font-semibold hover:bg-blue-500"
+              className="button-glow mt-7 rounded-lg bg-violet-600 px-7 py-3 font-semibold text-white transition hover:-translate-y-1 hover:bg-fuchsia-500"
             >
               Create Account
             </button>
@@ -257,16 +265,16 @@ function Landing() {
       {/* Authentication Modal */}
       {showAuth && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-6">
-          <div className="relative w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-900 p-8 shadow-2xl">
+          <div className="relative w-full max-w-sm rounded-2xl border border-violet-200 bg-[#fffaff] p-8 shadow-2xl shadow-violet-300/40">
             <button
               onClick={() => setShowAuth(false)}
-              className="absolute right-5 top-4 text-2xl text-slate-500 hover:text-white"
+              className="absolute right-5 top-4 text-2xl text-violet-600 transition hover:rotate-90 hover:text-violet-950"
             >
               ×
             </button>
 
             <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-500/10 text-2xl">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-violet-400/10 text-2xl">
                 🔐
               </div>
 
@@ -274,7 +282,7 @@ function Landing() {
                 Login Required
               </h2>
 
-              <p className="mt-3 text-sm leading-6 text-slate-400">
+              <p className="mt-3 text-sm leading-6 text-violet-800/75">
                 Please login or create an account to access this
                 feature.
               </p>
@@ -282,14 +290,14 @@ function Landing() {
               <div className="mt-7 flex gap-3">
                 <button
                   onClick={goToLogin}
-                  className="flex-1 rounded-lg bg-blue-600 px-4 py-3 font-semibold hover:bg-blue-500"
+                  className="flex-1 rounded-lg bg-violet-600 px-4 py-3 font-semibold transition hover:bg-violet-500"
                 >
                   Login
                 </button>
 
                 <button
                   onClick={goToRegister}
-                  className="flex-1 rounded-lg border border-slate-700 px-4 py-3 font-semibold hover:bg-slate-800"
+                  className="flex-1 rounded-lg border border-violet-300 bg-white px-4 py-3 font-semibold text-violet-800 transition hover:bg-violet-100"
                 >
                   Register
                 </button>
@@ -297,7 +305,7 @@ function Landing() {
 
               <button
                 onClick={() => setShowAuth(false)}
-                className="mt-5 text-sm text-slate-500 hover:text-slate-300"
+                className="mt-5 text-sm text-violet-600 hover:text-violet-950"
               >
                 Continue browsing
               </button>
@@ -311,8 +319,8 @@ function Landing() {
 
 function DashboardCard({ title, value }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
-      <p className="text-sm text-slate-500">{title}</p>
+    <div className="rounded-xl border border-violet-100 bg-white/80 p-4 shadow-sm">
+      <p className="text-sm text-violet-700/75">{title}</p>
       <p className="mt-2 text-2xl font-bold">{value}</p>
     </div>
   )
@@ -322,19 +330,19 @@ function FeatureCard({ icon, title, description, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left transition hover:-translate-y-1 hover:border-blue-500/40"
+      className="interactive-surface rounded-2xl border border-violet-200 bg-white/55 p-6 text-left"
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-xl">
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-400/10 text-xl">
         {icon}
       </div>
 
       <h3 className="mt-5 text-xl font-semibold">{title}</h3>
 
-      <p className="mt-3 text-sm leading-6 text-slate-400">
+      <p className="mt-3 text-sm leading-6 text-violet-800/75">
         {description}
       </p>
 
-      <p className="mt-5 text-sm font-semibold text-blue-400">
+      <p className="mt-5 text-sm font-semibold text-violet-700">
         Explore →
       </p>
     </button>
