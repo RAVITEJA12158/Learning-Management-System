@@ -11,10 +11,14 @@ function Register() {
   const [name, setName] = useState('')
   const [mobileNumber, setMobileNumber] = useState('')
   const [email, setEmail] = useState('')
+  const [mobile, setMobile] = useState('')
+  const [role, setRole] = useState('student')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
   const [acceptTerms, setAcceptTerms] = useState(false)
   const [errors, setErrors] = useState({})
   const [message, setMessage] = useState('')
@@ -42,10 +46,16 @@ function Register() {
       newErrors.email = 'Enter a valid email address'
     }
 
-    if (!mobileNumber.trim()) {
-      newErrors.mobileNumber = 'Mobile number is required'
-    } else if (!/^\+?\d{10}$/.test(mobileNumber.replace(/[\s\-()]/g, ''))) {
-      newErrors.mobileNumber = 'Enter a valid 10-digit mobile number'
+    const cleanMobile = mobile.replace(/\D/g, '')
+
+    if (!mobile.trim()) {
+      newErrors.mobile = 'Mobile number is required'
+    } else if (cleanMobile.length !== 10) {
+      newErrors.mobile = 'Enter a valid 10-digit mobile number'
+    }
+
+    if (!role) {
+      newErrors.role = 'Please select a role'
     }
 
     if (!password) {
@@ -72,42 +82,60 @@ function Register() {
 
     setLoading(true)
 
-    try {
-      await authApi.register({
-        username: name.trim(),
-        email: email.trim(),
-        password,
-        confirmPassword,
-        mobile_number: mobileNumber.trim(),
-      })
+    const { error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: {
+          name: name.trim(),
+          mobile: cleanMobile,
+          role,
+        },
+      },
+    })
 
-      setSuccess(true)
-      setMessage('Account created successfully! You can now sign in.')
-      setTimeout(() => navigate('/login'), 1800)
-    } catch (error) {
-      setMessage(error.message)
-    } finally {
-      setLoading(false)
+    setLoading(false)
+
+    if (error) {
+      const errorText = error.message.toLowerCase()
+
+      if (errorText.includes('rate limit')) {
+        setMessage(
+          'Too many registration attempts. Please wait a few minutes before trying again.',
+        )
+      } else if (
+        errorText.includes('already registered') ||
+        errorText.includes('already been registered')
+      ) {
+        setMessage(
+          'An account with this email already exists. Please sign in instead.',
+        )
+      } else {
+        setMessage(error.message)
+      }
+
+      return
     }
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="aurora-page min-h-screen bg-[radial-gradient(circle_at_8%_10%,_#f5d0fe_0,_transparent_27%),radial-gradient(circle_at_92%_20%,_#ddd6fe_0,_transparent_28%),linear-gradient(135deg,_#faf5ff,_#ede9fe_55%,_#fdf4ff)] text-violet-950">
       <div className="grid min-h-screen lg:grid-cols-2">
-        {/* Branding panel */}
+
+        {/* Left branding */}
         <div className="relative hidden overflow-hidden lg:flex lg:order-2">
-          <div className="absolute inset-0 bg-blue-600/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-200/35 to-violet-300/35" />
 
           <div className="relative flex w-full flex-col justify-between p-12">
             <button
               onClick={() => navigate('/')}
               className="ml-auto w-fit text-2xl font-bold"
             >
-              LMS<span className="text-blue-500">.</span>
+              LMS<span className="text-violet-400">.</span>
             </button>
 
             <div className="max-w-lg">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-blue-400">
+              <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-violet-300">
                 Start Learning
               </p>
 
@@ -115,9 +143,10 @@ function Register() {
                 Build your future with better learning.
               </h1>
 
-              <p className="mt-6 text-lg leading-8 text-slate-400">
-                Join the LMS platform and manage your courses, assignments,
-                resources, and academic progress from one place.
+              <p className="mt-6 text-lg leading-8 text-violet-800/70">
+                Join the LMS platform and manage your courses,
+                assignments, resources, and academic progress from
+                one place.
               </p>
 
               <div className="mt-8 space-y-4">
@@ -128,29 +157,32 @@ function Register() {
               </div>
             </div>
 
-            <p className="text-right text-sm text-slate-600">
+            <p className="text-right text-sm text-violet-600">
               Secure authentication powered by Supabase
             </p>
           </div>
         </div>
 
-        {/* Register panel */}
+        {/* Registration */}
         <div className="flex items-center justify-center px-6 py-12 lg:order-1">
           <Card>
             <div className="w-full max-w-md">
+
               <div className="mb-7">
                 <div className="mb-6 lg:hidden">
                   <button
                     onClick={() => navigate('/')}
                     className="text-2xl font-bold"
                   >
-                    LMS<span className="text-blue-500">.</span>
+                    LMS<span className="text-violet-400">.</span>
                   </button>
                 </div>
 
-                <h2 className="text-3xl font-bold">Create your account</h2>
+                <h2 className="text-3xl font-bold">
+                  Create your account
+                </h2>
 
-                <p className="mt-2 text-sm text-slate-400">
+                <p className="mt-2 text-sm text-violet-800/75">
                   Join the Learning Management System.
                 </p>
               </div>
@@ -168,13 +200,15 @@ function Register() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
+
+                {/* Name */}
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">
+                  <label className="mb-2 block text-sm font-medium text-violet-900">
                     Full name
                   </label>
 
                   <Input
-                    placeholder="Karthik Madipalli"
+                    placeholder="Your full name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
@@ -186,8 +220,9 @@ function Register() {
                   )}
                 </div>
 
+                {/* Email */}
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">
+                  <label className="mb-2 block text-sm font-medium text-violet-900">
                     Email address
                   </label>
 
@@ -205,27 +240,68 @@ function Register() {
                   )}
                 </div>
 
+                {/* Mobile */}
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">
+                  <label className="mb-2 block text-sm font-medium text-violet-900">
                     Mobile number
                   </label>
 
                   <Input
                     placeholder="9876543210"
                     type="tel"
-                    value={mobileNumber}
-                    onChange={(e) => setMobileNumber(e.target.value)}
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
                   />
 
-                  {errors.mobileNumber && (
+                  {errors.mobile && (
                     <p className="mt-2 text-sm text-red-400">
-                      {errors.mobileNumber}
+                      {errors.mobile}
                     </p>
                   )}
                 </div>
 
+                {/* Role */}
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">
+                  <label className="mb-2 block text-sm font-medium text-violet-900">
+                    Account role
+                  </label>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setRole('student')}
+                      className={`rounded-xl border px-4 py-3 font-semibold transition ${
+                        role === 'student'
+                          ? 'border-violet-400 bg-violet-400/10 text-violet-300'
+                          : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600'
+                      }`}
+                    >
+                      Student
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setRole('faculty')}
+                      className={`rounded-xl border px-4 py-3 font-semibold transition ${
+                        role === 'faculty'
+                          ? 'border-violet-400 bg-violet-400/10 text-violet-300'
+                          : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600'
+                      }`}
+                    >
+                      Faculty
+                    </button>
+                  </div>
+
+                  {errors.role && (
+                    <p className="mt-2 text-sm text-red-400">
+                      {errors.role}
+                    </p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-violet-900">
                     Password
                   </label>
 
@@ -240,7 +316,7 @@ function Register() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-violet-600 hover:text-violet-950"
                     >
                       {showPassword ? 'Hide' : 'Show'}
                     </button>
@@ -249,30 +325,23 @@ function Register() {
                   {password && (
                     <div className="mt-3">
                       <div className="flex gap-1">
-                        <div
-                          className={`h-1.5 flex-1 rounded-full ${
-                            passwordStrength.score >= 1
-                              ? 'bg-red-500'
-                              : 'bg-slate-800'
-                          }`}
-                        />
-                        <div
-                          className={`h-1.5 flex-1 rounded-full ${
-                            passwordStrength.score >= 2
-                              ? 'bg-yellow-500'
-                              : 'bg-slate-800'
-                          }`}
-                        />
-                        <div
-                          className={`h-1.5 flex-1 rounded-full ${
-                            passwordStrength.score >= 3
-                              ? 'bg-green-500'
-                              : 'bg-slate-800'
-                          }`}
-                        />
+                        {[1, 2, 3].map((level) => (
+                          <div
+                            key={level}
+                            className={`h-1.5 flex-1 rounded-full ${
+                              passwordStrength.score >= level
+                                ? level === 1
+                                  ? 'bg-red-500'
+                                  : level === 2
+                                    ? 'bg-yellow-500'
+                                    : 'bg-green-500'
+                                : 'bg-slate-800'
+                            }`}
+                          />
+                        ))}
                       </div>
 
-                      <p className="mt-2 text-xs text-slate-500">
+                      <p className="mt-2 text-xs text-violet-700/75">
                         Password strength: {passwordStrength.label}
                       </p>
                     </div>
@@ -285,8 +354,9 @@ function Register() {
                   )}
                 </div>
 
+                {/* Confirm password */}
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">
+                  <label className="mb-2 block text-sm font-medium text-violet-900">
                     Confirm password
                   </label>
 
@@ -295,7 +365,9 @@ function Register() {
                       placeholder="Repeat your password"
                       type={showConfirmPassword ? 'text' : 'password'}
                       value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      onChange={(e) =>
+                        setConfirmPassword(e.target.value)
+                      }
                     />
 
                     <button
@@ -303,7 +375,7 @@ function Register() {
                       onClick={() =>
                         setShowConfirmPassword(!showConfirmPassword)
                       }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-violet-600 hover:text-violet-950"
                     >
                       {showConfirmPassword ? 'Hide' : 'Show'}
                     </button>
@@ -316,18 +388,22 @@ function Register() {
                   )}
                 </div>
 
+                {/* Terms */}
                 <div>
                   <label className="flex cursor-pointer items-start gap-3">
                     <input
                       type="checkbox"
                       checked={acceptTerms}
-                      onChange={(e) => setAcceptTerms(e.target.checked)}
-                      className="mt-1 h-4 w-4 accent-blue-600"
+                      onChange={(e) =>
+                        setAcceptTerms(e.target.checked)
+                      }
+                      className="mt-1 h-4 w-4 accent-violet-600"
                     />
 
-                    <span className="text-xs leading-5 text-slate-400">
-                      I agree to the LMS terms of service and understand
-                      that my account information will be securely stored.
+                    <span className="text-xs leading-5 text-violet-800/75">
+                      I agree to the LMS terms of service and
+                      understand that my account information will be
+                      securely stored.
                     </span>
                   </label>
 
@@ -343,11 +419,11 @@ function Register() {
                 </Button>
               </form>
 
-              <p className="mt-7 text-center text-sm text-slate-400">
+              <p className="mt-7 text-center text-sm text-violet-800/75">
                 Already have an account?{' '}
                 <Link
                   to="/login"
-                  className="font-semibold text-blue-400 hover:text-blue-300"
+                  className="font-semibold text-violet-300 hover:text-violet-200"
                 >
                   Sign in
                 </Link>
@@ -355,7 +431,7 @@ function Register() {
 
               <button
                 onClick={() => navigate('/')}
-                className="mt-5 w-full text-center text-sm text-slate-600 hover:text-slate-400"
+                className="mt-5 w-full text-center text-sm text-violet-700 transition hover:text-violet-950"
               >
                 ← Back to home
               </button>
@@ -370,7 +446,7 @@ function Register() {
 function Benefit({ text }) {
   return (
     <div className="flex items-center gap-3 text-slate-300">
-      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/10 text-sm text-blue-400">
+      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-400/10 text-sm text-violet-300">
         ✓
       </span>
 
@@ -391,7 +467,9 @@ function getPasswordStrength(password) {
 
   if (password.length >= 6) score += 1
   if (password.length >= 10) score += 1
-  if (/[A-Z]/.test(password) && /[0-9]/.test(password)) score += 1
+  if (/[A-Z]/.test(password) && /[0-9]/.test(password)) {
+    score += 1
+  }
 
   if (score === 1) {
     return {
