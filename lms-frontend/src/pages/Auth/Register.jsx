@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'
-import Card from '../../components/common/Card'
 import { authApi } from '../../services/api'
 
 function Register() {
@@ -12,56 +11,88 @@ function Register() {
   const [mobileNumber, setMobileNumber] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [acceptTerms, setAcceptTerms] = useState(false)
+  const [confirmPassword, setConfirmPassword] =
+    useState('')
+
+  const [showPassword, setShowPassword] =
+    useState(false)
+
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState(false)
+
+  const [acceptTerms, setAcceptTerms] =
+    useState(false)
+
   const [errors, setErrors] = useState({})
   const [message, setMessage] = useState('')
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const passwordStrength = getPasswordStrength(password)
+  const passwordStrength =
+    getPasswordStrength(password)
 
   async function handleSubmit(e) {
     e.preventDefault()
 
     const newErrors = {}
+
     setMessage('')
     setSuccess(false)
 
     if (!name.trim()) {
-      newErrors.name = 'Full name is required'
+      newErrors.name =
+        'Full name is required'
     } else if (name.trim().length < 2) {
-      newErrors.name = 'Name must contain at least 2 characters'
+      newErrors.name =
+        'Name must contain at least 2 characters'
     }
 
     if (!email.trim()) {
-      newErrors.email = 'Email is required'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Enter a valid email address'
+      newErrors.email =
+        'Email is required'
+    } else if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    ) {
+      newErrors.email =
+        'Enter a valid email address'
     }
 
     if (!mobileNumber.trim()) {
-      newErrors.mobileNumber = 'Mobile number is required'
-    } else if (!/^\+?\d{10}$/.test(mobileNumber.replace(/[\s\-()]/g, ''))) {
-      newErrors.mobileNumber = 'Enter a valid 10-digit mobile number'
+      newErrors.mobileNumber =
+        'Mobile number is required'
+    } else if (
+      !/^\+?\d{10}$/.test(
+        mobileNumber.replace(
+          /[\s\-()]/g,
+          ''
+        )
+      )
+    ) {
+      newErrors.mobileNumber =
+        'Enter a valid 10-digit mobile number'
     }
 
     if (!password) {
-      newErrors.password = 'Password is required'
+      newErrors.password =
+        'Password is required'
     } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
+      newErrors.password =
+        'Password must be at least 6 characters'
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
+      newErrors.confirmPassword =
+        'Please confirm your password'
+    } else if (
+      password !== confirmPassword
+    ) {
+      newErrors.confirmPassword =
+        'Passwords do not match'
     }
 
     if (!acceptTerms) {
-      newErrors.terms = 'Please accept the terms to continue'
+      newErrors.terms =
+        'Please accept the terms to continue'
     }
 
     setErrors(newErrors)
@@ -78,12 +109,20 @@ function Register() {
         email: email.trim(),
         password,
         confirmPassword,
-        mobile_number: mobileNumber.trim(),
+        mobile_number:
+          mobileNumber.trim(),
       })
 
       setSuccess(true)
-      setMessage('Account created successfully! You can now sign in.')
-      setTimeout(() => navigate('/login'), 1800)
+
+      setMessage(
+        'Account created successfully! You can now sign in.'
+      )
+
+      setTimeout(
+        () => navigate('/login'),
+        1800
+      )
     } catch (error) {
       setMessage(error.message)
     } finally {
@@ -92,290 +131,469 @@ function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="grid min-h-screen lg:grid-cols-2">
-        {/* Branding panel */}
-        <div className="relative hidden overflow-hidden lg:flex lg:order-2">
-          <div className="absolute inset-0 bg-blue-600/10" />
+    <div className="min-h-screen bg-[#F6F2E9]">
 
-          <div className="relative flex w-full flex-col justify-between p-12">
-            <button
-              onClick={() => navigate('/')}
-              className="ml-auto w-fit text-2xl font-bold"
-            >
-              LMS<span className="text-blue-500">.</span>
-            </button>
+      <div className="grid min-h-screen lg:grid-cols-[1.08fr_.92fr]">
 
-            <div className="max-w-lg">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-blue-400">
-                Start Learning
-              </p>
+        {/* =====================================================
+            REGISTER FORM
+        ====================================================== */}
 
-              <h1 className="text-5xl font-bold leading-tight">
-                Build your future with better learning.
-              </h1>
+        <main className="order-2 flex items-center justify-center px-5 py-10 sm:px-8 lg:order-1 lg:px-14">
 
-              <p className="mt-6 text-lg leading-8 text-slate-400">
-                Join the LMS platform and manage your courses, assignments,
-                resources, and academic progress from one place.
-              </p>
+          <div className="w-full max-w-[560px]">
 
-              <div className="mt-8 space-y-4">
-                <Benefit text="Access your courses anytime" />
-                <Benefit text="Track your academic progress" />
-                <Benefit text="Manage assignments efficiently" />
-                <Benefit text="Learn from experienced faculty" />
-              </div>
+            <div className="mb-8 lg:hidden">
+
+              <button
+                onClick={() => navigate('/')}
+                className="flex items-center gap-3"
+              >
+                <BrandMark />
+
+                <span className="text-xl font-black">
+                  CourseHub
+                </span>
+              </button>
             </div>
 
-            <p className="text-right text-sm text-slate-600">
-              Secure authentication powered by Supabase
+            <p className="text-xs font-black uppercase tracking-[.18em] text-[#E85B43]">
+              Get started
             </p>
-          </div>
-        </div>
 
-        {/* Register panel */}
-        <div className="flex items-center justify-center px-6 py-12 lg:order-1">
-          <Card>
-            <div className="w-full max-w-md">
-              <div className="mb-7">
-                <div className="mb-6 lg:hidden">
-                  <button
-                    onClick={() => navigate('/')}
-                    className="text-2xl font-bold"
-                  >
-                    LMS<span className="text-blue-500">.</span>
-                  </button>
-                </div>
+            <h1 className="mt-3 text-5xl font-black tracking-[-.06em]">
+              Make space
+              <br />
+              for learning.
+            </h1>
 
-                <h2 className="text-3xl font-bold">Create your account</h2>
+            <p className="mt-4 max-w-md text-sm leading-6 text-black/45">
+              Create your CourseHub account and bring your
+              academic life into one focused workspace.
+            </p>
 
-                <p className="mt-2 text-sm text-slate-400">
-                  Join the Learning Management System.
-                </p>
-              </div>
+            <div className="mt-8 rounded-[28px] border border-black/10 bg-white p-5 shadow-[0_25px_70px_rgba(21,21,21,.07)] sm:p-7">
 
               {message && (
                 <div
-                  className={`mb-5 rounded-xl border p-4 text-sm ${
+                  className={`mb-5 rounded-2xl border p-4 text-xs font-bold leading-5 ${
                     success
-                      ? 'border-green-500/20 bg-green-500/10 text-green-300'
-                      : 'border-red-500/20 bg-red-500/10 text-red-300'
+                      ? 'border-[#B7E4D5] bg-[#EDF9F5] text-[#18765D]'
+                      : 'border-[#F2C7BC] bg-[#FFF1ED] text-[#B83D29]'
                   }`}
                 >
                   {message}
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">
-                    Full name
-                  </label>
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-5"
+              >
 
+                <Field
+                  label="Full name"
+                  error={errors.name}
+                >
                   <Input
-                    placeholder="Karthik Madipalli"
+                    placeholder="Your full name"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) =>
+                      setName(e.target.value)
+                    }
                   />
+                </Field>
 
-                  {errors.name && (
-                    <p className="mt-2 text-sm text-red-400">
-                      {errors.name}
-                    </p>
-                  )}
+                <div className="grid gap-5 sm:grid-cols-2">
+
+                  <Field
+                    label="Mobile number"
+                    error={errors.mobileNumber}
+                  >
+                    <Input
+                      placeholder="9876543210"
+                      type="tel"
+                      value={mobileNumber}
+                      onChange={(e) =>
+                        setMobileNumber(
+                          e.target.value
+                        )
+                      }
+                    />
+                  </Field>
+
+                  <Field
+                    label="Email address"
+                    error={errors.email}
+                  >
+                    <Input
+                      placeholder="you@example.com"
+                      type="email"
+                      value={email}
+                      onChange={(e) =>
+                        setEmail(e.target.value)
+                      }
+                    />
+                  </Field>
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">
-                    Email address
-                  </label>
-
-                  <Input
-                    placeholder="you@example.com"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-
-                  {errors.email && (
-                    <p className="mt-2 text-sm text-red-400">
-                      {errors.email}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">
-                    Mobile number
-                  </label>
-
-                  <Input
-                    placeholder="9876543210"
-                    type="tel"
-                    value={mobileNumber}
-                    onChange={(e) => setMobileNumber(e.target.value)}
-                  />
-
-                  {errors.mobileNumber && (
-                    <p className="mt-2 text-sm text-red-400">
-                      {errors.mobileNumber}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">
-                    Password
-                  </label>
-
+                <Field
+                  label="Password"
+                  error={errors.password}
+                >
                   <div className="relative">
+
                     <Input
                       placeholder="Create a password"
-                      type={showPassword ? 'text' : 'password'}
+                      type={
+                        showPassword
+                          ? 'text'
+                          : 'password'
+                      }
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white"
-                    >
-                      {showPassword ? 'Hide' : 'Show'}
-                    </button>
-                  </div>
-
-                  {password && (
-                    <div className="mt-3">
-                      <div className="flex gap-1">
-                        <div
-                          className={`h-1.5 flex-1 rounded-full ${
-                            passwordStrength.score >= 1
-                              ? 'bg-red-500'
-                              : 'bg-slate-800'
-                          }`}
-                        />
-                        <div
-                          className={`h-1.5 flex-1 rounded-full ${
-                            passwordStrength.score >= 2
-                              ? 'bg-yellow-500'
-                              : 'bg-slate-800'
-                          }`}
-                        />
-                        <div
-                          className={`h-1.5 flex-1 rounded-full ${
-                            passwordStrength.score >= 3
-                              ? 'bg-green-500'
-                              : 'bg-slate-800'
-                          }`}
-                        />
-                      </div>
-
-                      <p className="mt-2 text-xs text-slate-500">
-                        Password strength: {passwordStrength.label}
-                      </p>
-                    </div>
-                  )}
-
-                  {errors.password && (
-                    <p className="mt-2 text-sm text-red-400">
-                      {errors.password}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-300">
-                    Confirm password
-                  </label>
-
-                  <div className="relative">
-                    <Input
-                      placeholder="Repeat your password"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      onChange={(e) =>
+                        setPassword(
+                          e.target.value
+                        )
+                      }
                     />
 
                     <button
                       type="button"
                       onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
+                        setShowPassword(
+                          !showPassword
+                        )
                       }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-[10px] font-black text-[#E85B43]"
                     >
-                      {showConfirmPassword ? 'Hide' : 'Show'}
+                      {showPassword
+                        ? 'Hide'
+                        : 'Show'}
                     </button>
                   </div>
 
-                  {errors.confirmPassword && (
-                    <p className="mt-2 text-sm text-red-400">
-                      {errors.confirmPassword}
-                    </p>
+                  {password && (
+                    <div className="mt-3 rounded-xl bg-[#F7F4EE] p-3">
+
+                      <div className="flex gap-1.5">
+
+                        {[1, 2, 3, 4].map(
+                          (level) => (
+                            <span
+                              key={level}
+                              className={`h-1.5 flex-1 rounded-full ${
+                                passwordStrength.score >=
+                                level
+                                  ? level >= 3
+                                    ? 'bg-[#59BFA2]'
+                                    : '#E85B43'
+                                  : 'bg-black/8'
+                              }`}
+                              style={
+                                passwordStrength.score >=
+                                  level &&
+                                level < 3
+                                  ? {
+                                      backgroundColor:
+                                        '#E8A13D',
+                                    }
+                                  : undefined
+                              }
+                            />
+                          )
+                        )}
+                      </div>
+
+                      <p className="mt-2 text-[10px] font-bold text-black/40">
+                        Password strength:{' '}
+
+                        <span className="text-black/70">
+                          {
+                            passwordStrength.label
+                          }
+                        </span>
+                      </p>
+                    </div>
                   )}
-                </div>
+                </Field>
+
+                <Field
+                  label="Confirm password"
+                  error={errors.confirmPassword}
+                >
+                  <div className="relative">
+
+                    <Input
+                      placeholder="Repeat your password"
+                      type={
+                        showConfirmPassword
+                          ? 'text'
+                          : 'password'
+                      }
+                      value={confirmPassword}
+                      onChange={(e) =>
+                        setConfirmPassword(
+                          e.target.value
+                        )
+                      }
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(
+                          !showConfirmPassword
+                        )
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-[10px] font-black text-[#E85B43]"
+                    >
+                      {showConfirmPassword
+                        ? 'Hide'
+                        : 'Show'}
+                    </button>
+                  </div>
+                </Field>
 
                 <div>
-                  <label className="flex cursor-pointer items-start gap-3">
+
+                  <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-black/8 bg-[#FAF8F3] p-3.5">
+
                     <input
                       type="checkbox"
                       checked={acceptTerms}
-                      onChange={(e) => setAcceptTerms(e.target.checked)}
-                      className="mt-1 h-4 w-4 accent-blue-600"
+                      onChange={(e) =>
+                        setAcceptTerms(
+                          e.target.checked
+                        )
+                      }
+                      className="mt-0.5 h-4 w-4 accent-[#151515]"
                     />
 
-                    <span className="text-xs leading-5 text-slate-400">
-                      I agree to the LMS terms of service and understand
-                      that my account information will be securely stored.
+                    <span className="text-xs leading-5 text-black/45">
+                      I agree to the LMS terms of service
+                      and understand that my account
+                      information will be securely stored.
                     </span>
                   </label>
 
                   {errors.terms && (
-                    <p className="mt-2 text-sm text-red-400">
+                    <p className="mt-2 text-xs font-bold text-[#D64C36]">
                       {errors.terms}
                     </p>
                   )}
                 </div>
 
                 <Button disabled={loading}>
-                  {loading ? 'Creating account...' : 'Create account'}
+                  {loading
+                    ? 'Creating account...'
+                    : 'Create account →'}
                 </Button>
               </form>
 
-              <p className="mt-7 text-center text-sm text-slate-400">
+              <div className="my-6 flex items-center gap-3">
+
+                <span className="h-px flex-1 bg-black/8" />
+
+                <span className="text-[9px] font-black uppercase tracking-[.12em] text-black/25">
+                  Already registered
+                </span>
+
+                <span className="h-px flex-1 bg-black/8" />
+              </div>
+
+              <p className="text-center text-sm text-black/45">
+
                 Already have an account?{' '}
+
                 <Link
                   to="/login"
-                  className="font-semibold text-blue-400 hover:text-blue-300"
+                  className="font-black text-[#E85B43]"
                 >
                   Sign in
                 </Link>
               </p>
-
-              <button
-                onClick={() => navigate('/')}
-                className="mt-5 w-full text-center text-sm text-slate-600 hover:text-slate-400"
-              >
-                ← Back to home
-              </button>
             </div>
-          </Card>
-        </div>
+
+            <button
+              onClick={() => navigate('/')}
+              className="mx-auto mt-6 block text-xs font-bold text-black/30 hover:text-[#E85B43]"
+            >
+              ← Back to home
+            </button>
+          </div>
+        </main>
+
+        {/* =====================================================
+            BRAND PANEL
+        ====================================================== */}
+
+        <aside className="relative order-1 hidden overflow-hidden bg-[#DFFF63] lg:order-2 lg:flex">
+
+          <div className="absolute -right-32 -top-32 h-[500px] w-[500px] rounded-full bg-white/45 blur-[100px]" />
+
+          <div className="absolute -bottom-40 -left-40 h-[550px] w-[550px] rounded-full bg-[#A9E8D5]/35 blur-[110px]" />
+
+          <div className="relative z-10 flex w-full flex-col justify-between p-10 xl:p-14">
+
+            <button
+              onClick={() => navigate('/')}
+              className="ml-auto flex items-center gap-3"
+            >
+              <span className="text-xl font-black tracking-[-.05em]">
+                CourseHub
+              </span>
+
+              <BrandMark />
+            </button>
+
+            <div className="max-w-xl">
+
+              <p className="text-xs font-black uppercase tracking-[.18em] text-[#344018]">
+                Built for your next chapter
+              </p>
+
+              <h2 className="mt-5 text-5xl font-black leading-[.94] tracking-[-.065em] xl:text-6xl">
+
+                One place.
+                <br />
+
+                Every part of
+                <br />
+
+                <span className="text-[#E85B43]">
+                  learning.
+                </span>
+              </h2>
+
+              <p className="mt-7 max-w-md text-base leading-7 text-[#344018]/65">
+                Courses, assignments, resources, progress,
+                and academic connections—all organized around
+                the way you learn.
+              </p>
+
+              <div className="mt-9 space-y-3">
+
+                {[
+                  'Access your courses anytime',
+                  'Track your academic progress',
+                  'Manage assignments efficiently',
+                  'Learn from experienced faculty',
+                ].map((item, index) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-3 rounded-2xl border border-black/10 bg-black/[0.04] px-4 py-3"
+                  >
+
+                    <span className="text-[10px] font-black text-[#E85B43]">
+                      0{index + 1}
+                    </span>
+
+                    <span className="text-sm font-black">
+                      {item}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-10 rounded-[26px] bg-[#151515] p-5 text-white shadow-[0_25px_50px_rgba(21,21,21,.15)]">
+
+                <div className="flex items-center justify-between">
+
+                  <div>
+
+                    <p className="text-[9px] font-black uppercase tracking-[.15em] text-white/30">
+                      Learning dashboard
+                    </p>
+
+                    <p className="mt-1 text-sm font-black">
+                      Everything in one rhythm.
+                    </p>
+                  </div>
+
+                  <span className="rounded-full bg-[#DFFF63] px-3 py-1.5 text-[9px] font-black text-black">
+                    READY
+                  </span>
+                </div>
+
+                <div className="mt-5 grid grid-cols-3 gap-2">
+
+                  <div className="rounded-xl bg-[#FF7659] p-3">
+
+                    <p className="text-[8px] font-black text-white/60">
+                      COURSES
+                    </p>
+
+                    <p className="mt-1 text-lg font-black">
+                      12
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-[#59BFA2] p-3 text-[#123029]">
+
+                    <p className="text-[8px] font-black text-black/40">
+                      PROGRESS
+                    </p>
+
+                    <p className="mt-1 text-lg font-black">
+                      78%
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-[#9CC5FF] p-3 text-[#102744]">
+
+                    <p className="text-[8px] font-black text-black/40">
+                      STREAK
+                    </p>
+
+                    <p className="mt-1 text-lg font-black">
+                      6d
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs font-semibold text-[#344018]/40">
+              A calmer way to learn.
+            </p>
+          </div>
+        </aside>
       </div>
     </div>
   )
 }
 
-function Benefit({ text }) {
+function Field({
+  label,
+  error,
+  children,
+}) {
   return (
-    <div className="flex items-center gap-3 text-slate-300">
-      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/10 text-sm text-blue-400">
-        ✓
-      </span>
+    <div>
 
-      <span>{text}</span>
+      <label className="mb-2 block text-[10px] font-black uppercase tracking-[.12em] text-black/55">
+        {label}
+      </label>
+
+      {children}
+
+      {error && (
+        <p className="mt-2 text-xs font-bold text-[#D64C36]">
+          {error}
+        </p>
+      )}
     </div>
+  )
+}
+
+function BrandMark() {
+  return (
+    <span className="relative flex h-10 w-10 items-center justify-center rounded-[13px] bg-[#151515] text-white">
+      <span className="h-3.5 w-3.5 rounded-[4px] border-2 border-current" />
+
+      <span className="absolute h-1.5 w-1.5 translate-x-2.5 -translate-y-2.5 rounded-full bg-[#FF7659]" />
+    </span>
   )
 }
 
@@ -383,32 +601,48 @@ function getPasswordStrength(password) {
   if (!password) {
     return {
       score: 0,
-      label: 'Not entered',
+      label: 'Not set',
     }
   }
 
   let score = 0
 
-  if (password.length >= 6) score += 1
-  if (password.length >= 10) score += 1
-  if (/[A-Z]/.test(password) && /[0-9]/.test(password)) score += 1
+  if (password.length >= 6) {
+    score++
+  }
 
-  if (score === 1) {
+  if (password.length >= 10) {
+    score++
+  }
+
+  if (/[A-Z]/.test(password)) {
+    score++
+  }
+
+  if (/[0-9]/.test(password)) {
+    score++
+  }
+
+  if (/[^A-Za-z0-9]/.test(password)) {
+    score++
+  }
+
+  if (score <= 1) {
     return {
       score,
       label: 'Weak',
     }
   }
 
-  if (score === 2) {
+  if (score <= 3) {
     return {
       score,
-      label: 'Moderate',
+      label: 'Good',
     }
   }
 
   return {
-    score: 3,
+    score,
     label: 'Strong',
   }
 }

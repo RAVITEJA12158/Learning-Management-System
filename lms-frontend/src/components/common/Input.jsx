@@ -12,7 +12,7 @@ function Input({
       value={value}
       onChange={onChange}
       disabled={disabled}
-      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition-all placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-slate-100"
+      className="w-full rounded-2xl border border-[#DDD7CE] bg-[#FFFEFB] px-4 py-3.5 text-sm font-medium text-[#151515] shadow-[0_3px_10px_rgba(21,21,21,.025)] outline-none transition-all duration-200 placeholder:text-[#AAA39A] hover:border-[#BEB6AA] focus:border-[#151515] focus:ring-4 focus:ring-black/[0.05] disabled:cursor-not-allowed disabled:bg-[#F3EFE8]"
     />
   )
 }
