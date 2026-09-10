@@ -85,18 +85,17 @@ function Login() {
     setLoading(true)
 
     try {
-      const data = await authApi.login(
-        email.trim(),
+      const data = await authApi.login({
+        email: email.trim(),
         password,
-        secretCode.trim()
-      )
+        secretCode: secretCode.trim(),
+      })
 
-      if (
-        data.role_id !== selectedRole.roleId
-      ) {
+      const returnedRole = (data.role || '').toLowerCase()
+      if (returnedRole && returnedRole !== selectedRole.id) {
         setMessage(
           `This account belongs to the ${roleName(
-            data.role_id
+            data.role
           )} workspace. Select that role to continue.`
         )
 
@@ -105,15 +104,13 @@ function Login() {
 
       const user = {
         id: data.userId,
-        name: data.username,
+        name: data.name || data.username,
         email: email.trim(),
-        role: selectedRole.id,
+        role: returnedRole || selectedRole.id,
       }
 
-      localStorage.setItem(
-        'lms_token',
-        data.token
-      )
+      localStorage.setItem('token', data.token)
+      localStorage.setItem('lms_token', data.token)
 
       login(user)
 
@@ -514,10 +511,14 @@ function BrandMark({
   )
 }
 
-function roleName(roleId) {
+function roleName(role) {
+  if (typeof role === 'string') {
+    const found = roles.find((r) => r.id === role.toLowerCase())
+    return found ? found.label : role
+  }
   return (
     roles.find(
-      (role) => role.roleId === roleId
+      (r) => r.roleId === role
     )?.label || 'correct'
   )
 }

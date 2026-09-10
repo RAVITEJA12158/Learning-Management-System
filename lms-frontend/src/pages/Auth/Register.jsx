@@ -4,27 +4,29 @@ import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'
 import { authApi } from '../../services/api'
 
+const roles = [
+  {
+    id: 'student',
+    label: 'Student',
+    letter: 'S',
+    description: 'Learn, take quizzes & track progress',
+  },
+  {
+    id: 'faculty',
+    label: 'Faculty',
+    letter: 'F',
+    description: 'Create courses, modules & assignments',
+  },
+]
+
 function Register() {
   const navigate = useNavigate()
 
+  const [selectedRole, setSelectedRole] = useState(roles[0])
   const [name, setName] = useState('')
-  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
-  const [mobile, setMobile] = useState('')
-  const [role, setRole] = useState('student')
+  const [mobileNumber, setMobileNumber] = useState('')
   const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] =
-    useState('')
-
-  const [showPassword, setShowPassword] =
-    useState(false)
-
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState(false)
-
-  const [acceptTerms, setAcceptTerms] =
-    useState(false)
-
   const [confirmPassword, setConfirmPassword] = useState('')
 
   const [showPassword, setShowPassword] = useState(false)
@@ -36,101 +38,81 @@ function Register() {
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const passwordStrength =
-    getPasswordStrength(password)
+  const passwordStrength = getPasswordStrength(password)
 
   async function handleSubmit(e) {
     e.preventDefault()
 
     const newErrors = {}
-
     setMessage('')
     setSuccess(false)
 
     if (!name.trim()) {
-      newErrors.name =
-        'Full name is required'
+      newErrors.name = 'Full name is required'
     } else if (name.trim().length < 2) {
-      newErrors.name =
-        'Name must contain at least 2 characters'
+      newErrors.name = 'Name must contain at least 2 characters'
     }
 
     if (!email.trim()) {
-      newErrors.email =
-        'Email is required'
-    } else if (
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-    ) {
-      newErrors.email =
-        'Enter a valid email address'
+      newErrors.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      newErrors.email = 'Enter a valid email address'
     }
 
+    const cleanedMobile = mobileNumber.replace(/[\s\-()]/g, '')
     if (!mobileNumber.trim()) {
-      newErrors.mobileNumber =
-        'Mobile number is required'
-    } else if (
-      !/^\+?\d{10}$/.test(
-        mobileNumber.replace(
-          /[\s\-()]/g,
-          ''
-        )
-      )
-    ) {
-      newErrors.mobileNumber =
-        'Enter a valid 10-digit mobile number'
+      newErrors.mobileNumber = 'Mobile number is required'
+    } else if (!/^\+?\d{10}$/.test(cleanedMobile)) {
+      newErrors.mobileNumber = 'Enter a valid 10-digit mobile number'
     }
 
     if (!password) {
-      newErrors.password =
-        'Password is required'
+      newErrors.password = 'Password is required'
     } else if (password.length < 6) {
-      newErrors.password =
-        'Password must be at least 6 characters'
+      newErrors.password = 'Password must be at least 6 characters'
+    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/.test(password)) {
+      newErrors.password = 'Include uppercase, lowercase, number, and special character (@$!%*?&)'
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword =
-        'Please confirm your password'
-    } else if (
-      password !== confirmPassword
-    ) {
-      newErrors.confirmPassword =
-        'Passwords do not match'
+      newErrors.confirmPassword = 'Please confirm your password'
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match'
     }
 
     if (!acceptTerms) {
-      newErrors.terms =
-        'Please accept the terms to continue'
+      newErrors.terms = 'Please accept the terms to continue'
     }
 
-      setErrors(newErrors)
+    setErrors(newErrors)
 
-      if (Object.keys(newErrors).length > 0) {
-        return
-      }
+    if (Object.keys(newErrors).length > 0) {
+      return
+    }
 
-      setLoading(true)
+    setLoading(true)
 
     try {
+      const generatedUsername =
+        email.trim().split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') ||
+        name.trim().toLowerCase().replace(/\s+/g, '_')
+
       await authApi.register({
-        username: name.trim(),
-        email: email.trim(),
+        name: name.trim(),
+        username: generatedUsername,
+        email: email.trim().toLowerCase(),
         password,
         confirmPassword,
-        mobile_number:
-          mobileNumber.trim(),
+        mobile_number: cleanedMobile,
+        role: selectedRole.id,
       })
 
       setSuccess(true)
+      setMessage('Account created successfully! Redirecting to sign in...')
 
-      setMessage(
-        'Account created successfully! You can now sign in.'
-      )
-
-      setTimeout(
-        () => navigate('/login'),
-        1800
-      )
+      setTimeout(() => {
+        navigate('/login')
+      }, 1500)
     } catch (error) {
       setMessage(error.message)
     } finally {
@@ -140,28 +122,19 @@ function Register() {
 
   return (
     <div className="min-h-screen bg-[#F6F2E9]">
-
       <div className="grid min-h-screen lg:grid-cols-[1.08fr_.92fr]">
-
         {/* =====================================================
             REGISTER FORM
         ====================================================== */}
-
         <main className="order-2 flex items-center justify-center px-5 py-10 sm:px-8 lg:order-1 lg:px-14">
-
           <div className="w-full max-w-[560px]">
-
             <div className="mb-8 lg:hidden">
-
               <button
                 onClick={() => navigate('/')}
                 className="flex items-center gap-3"
               >
                 <BrandMark />
-
-                <span className="text-xl font-black">
-                  CourseHub
-                </span>
+                <span className="text-xl font-black">CourseHub</span>
               </button>
             </div>
 
@@ -176,11 +149,54 @@ function Register() {
             </h1>
 
             <p className="mt-4 max-w-md text-sm leading-6 text-black/45">
-              Create your CourseHub account and bring your
-              academic life into one focused workspace.
+              Create your CourseHub account and bring your academic life into one focused workspace.
             </p>
 
             <div className="mt-8 rounded-[28px] border border-black/10 bg-white p-5 shadow-[0_25px_70px_rgba(21,21,21,.07)] sm:p-7">
+              {/* Workspace / Role Selector */}
+              <div className="mb-6">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-[10px] font-black uppercase tracking-[.15em] text-black/40">
+                    I want to register as
+                  </p>
+                  <span className="text-[9px] font-black text-black/25">ROLE</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {roles.map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => setSelectedRole(r)}
+                      className={`hub-lift rounded-2xl border p-3.5 text-left transition-all ${
+                        selectedRole.id === r.id
+                          ? 'border-[#151515] bg-[#151515] text-white shadow-md'
+                          : 'border-black/10 bg-[#FAF8F3] text-black/70 hover:border-black/25'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className={`flex h-7 w-7 items-center justify-center rounded-xl text-[10px] font-black ${
+                            selectedRole.id === r.id
+                              ? 'bg-[#DFFF63] text-[#151515]'
+                              : 'bg-black/5 text-black/45'
+                          }`}
+                        >
+                          {r.letter}
+                        </span>
+                        <span className="text-xs font-black">{r.label}</span>
+                      </div>
+                      <p
+                        className={`mt-2 text-[9px] leading-3.5 ${
+                          selectedRole.id === r.id ? 'text-white/40' : 'text-black/35'
+                        }`}
+                      >
+                        {r.description}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {message && (
                 <div
@@ -194,194 +210,107 @@ function Register() {
                 </div>
               )}
 
-              <form
-                onSubmit={handleSubmit}
-                className="space-y-5"
-              >
-
-                <Field
-                  label="Full name"
-                  error={errors.name}
-                >
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <Field label="Full name" error={errors.name}>
                   <Input
-                    placeholder="Your full name"
+                    placeholder="e.g. John Doe"
                     value={name}
-                    onChange={(e) =>
-                      setName(e.target.value)
-                    }
+                    onChange={(e) => setName(e.target.value)}
                   />
                 </Field>
 
-                <div className="grid gap-5 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Academic email" error={errors.email}>
+                    <Input
+                      placeholder="you@college.edu"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </Field>
 
-                  <Field
-                    label="Mobile number"
-                    error={errors.mobileNumber}
-                  >
+                  <Field label="Mobile number" error={errors.mobileNumber}>
                     <Input
                       placeholder="9876543210"
                       type="tel"
                       value={mobileNumber}
-                      onChange={(e) =>
-                        setMobileNumber(
-                          e.target.value
-                        )
-                      }
-                    />
-                  </Field>
-
-                  <Field
-                    label="Email address"
-                    error={errors.email}
-                  >
-                    <Input
-                      placeholder="you@example.com"
-                      type="email"
-                      value={email}
-                      onChange={(e) =>
-                        setEmail(e.target.value)
-                      }
+                      onChange={(e) => setMobileNumber(e.target.value)}
                     />
                   </Field>
                 </div>
 
-                <Field
-                  label="Password"
-                  error={errors.password}
-                >
+                <Field label="Password" error={errors.password}>
                   <div className="relative">
-
                     <Input
-                      placeholder="Create a password"
-                      type={
-                        showPassword
-                          ? 'text'
-                          : 'password'
-                      }
+                      placeholder="At least 6 characters (e.g. Pass@123)"
+                      type={showPassword ? 'text' : 'password'}
                       value={password}
-                      onChange={(e) =>
-                        setPassword(
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => setPassword(e.target.value)}
                     />
 
                     <button
                       type="button"
-                      onClick={() =>
-                        setShowPassword(
-                          !showPassword
-                        )
-                      }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-[10px] font-black text-[#E85B43]"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-[10px] font-black text-[#E85B43] hover:bg-[#FFF1ED]"
                     >
-                      {showPassword
-                        ? 'Hide'
-                        : 'Show'}
+                      {showPassword ? 'Hide' : 'Show'}
                     </button>
                   </div>
 
                   {password && (
-                    <div className="mt-3 rounded-xl bg-[#F7F4EE] p-3">
-
+                    <div className="mt-2.5 rounded-xl bg-[#F7F4EE] p-2.5">
                       <div className="flex gap-1.5">
-
-                        {[1, 2, 3, 4].map(
-                          (level) => (
-                            <span
-                              key={level}
-                              className={`h-1.5 flex-1 rounded-full ${
-                                passwordStrength.score >=
-                                level
-                                  ? level >= 3
-                                    ? 'bg-[#59BFA2]'
-                                    : '#E85B43'
-                                  : 'bg-black/8'
-                              }`}
-                              style={
-                                passwordStrength.score >=
-                                  level &&
-                                level < 3
-                                  ? {
-                                      backgroundColor:
-                                        '#E8A13D',
-                                    }
-                                  : undefined
-                              }
-                            />
-                          )
-                        )}
+                        {[1, 2, 3, 4].map((level) => (
+                          <span
+                            key={level}
+                            className={`h-1.5 flex-1 rounded-full ${
+                              passwordStrength.score >= level
+                                ? level >= 3
+                                  ? 'bg-[#59BFA2]'
+                                  : 'bg-[#E8A13D]'
+                                : 'bg-black/10'
+                            }`}
+                          />
+                        ))}
                       </div>
 
-                      <p className="mt-2 text-[10px] font-bold text-black/40">
-                        Password strength:{' '}
-
-                        <span className="text-black/70">
-                          {
-                            passwordStrength.label
-                          }
-                        </span>
+                      <p className="mt-1.5 text-[10px] font-bold text-black/40">
+                        Strength:{' '}
+                        <span className="text-black/70">{passwordStrength.label}</span>
                       </p>
                     </div>
                   )}
                 </Field>
 
-                <Field
-                  label="Confirm password"
-                  error={errors.confirmPassword}
-                >
+                <Field label="Confirm password" error={errors.confirmPassword}>
                   <div className="relative">
-
                     <Input
                       placeholder="Repeat your password"
-                      type={
-                        showConfirmPassword
-                          ? 'text'
-                          : 'password'
-                      }
+                      type={showConfirmPassword ? 'text' : 'password'}
                       value={confirmPassword}
-                      onChange={(e) =>
-                        setConfirmPassword(
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                     />
 
                     <button
                       type="button"
-                      onClick={() =>
-                        setShowConfirmPassword(
-                          !showConfirmPassword
-                        )
-                      }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-[10px] font-black text-[#E85B43]"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-[10px] font-black text-[#E85B43] hover:bg-[#FFF1ED]"
                     >
-                      {showConfirmPassword
-                        ? 'Hide'
-                        : 'Show'}
+                      {showConfirmPassword ? 'Hide' : 'Show'}
                     </button>
                   </div>
                 </Field>
 
                 <div>
-
                   <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-black/8 bg-[#FAF8F3] p-3.5">
-
                     <input
                       type="checkbox"
                       checked={acceptTerms}
-                      onChange={(e) =>
-                        setAcceptTerms(
-                          e.target.checked
-                        )
-                      }
+                      onChange={(e) => setAcceptTerms(e.target.checked)}
                       className="mt-0.5 h-4 w-4 accent-[#151515]"
                     />
-
-                    <span className="text-xs leading-5 text-black/45">
-                      I agree to the LMS terms of service
-                      and understand that my account
-                      information will be securely stored.
+                    <span className="text-xs leading-5 text-black/55">
+                      I agree to the LMS terms of service and acknowledge that my academic information will be securely managed.
                     </span>
                   </label>
 
@@ -393,31 +322,21 @@ function Register() {
                 </div>
 
                 <Button disabled={loading}>
-                  {loading
-                    ? 'Creating account...'
-                    : 'Create account →'}
+                  {loading ? 'Creating account...' : `Register as ${selectedRole.label} →`}
                 </Button>
               </form>
 
               <div className="my-6 flex items-center gap-3">
-
                 <span className="h-px flex-1 bg-black/8" />
-
                 <span className="text-[9px] font-black uppercase tracking-[.12em] text-black/25">
                   Already registered
                 </span>
-
                 <span className="h-px flex-1 bg-black/8" />
               </div>
 
               <p className="text-center text-sm text-black/45">
-
                 Already have an account?{' '}
-
-                <Link
-                  to="/login"
-                  className="font-black text-[#E85B43]"
-                >
+                <Link to="/login" className="font-black text-[#E85B43]">
                   Sign in
                 </Link>
               </p>
@@ -435,53 +354,37 @@ function Register() {
         {/* =====================================================
             BRAND PANEL
         ====================================================== */}
-
         <aside className="relative order-1 hidden overflow-hidden bg-[#DFFF63] lg:order-2 lg:flex">
-
           <div className="absolute -right-32 -top-32 h-[500px] w-[500px] rounded-full bg-white/45 blur-[100px]" />
-
           <div className="absolute -bottom-40 -left-40 h-[550px] w-[550px] rounded-full bg-[#A9E8D5]/35 blur-[110px]" />
 
           <div className="relative z-10 flex w-full flex-col justify-between p-10 xl:p-14">
-
             <button
               onClick={() => navigate('/')}
               className="ml-auto flex items-center gap-3"
             >
-              <span className="text-xl font-black tracking-[-.05em]">
-                CourseHub
-              </span>
-
+              <span className="text-xl font-black tracking-[-.05em]">CourseHub</span>
               <BrandMark />
             </button>
 
             <div className="max-w-xl">
-
               <p className="text-xs font-black uppercase tracking-[.18em] text-[#344018]">
                 Built for your next chapter
               </p>
 
               <h2 className="mt-5 text-5xl font-black leading-[.94] tracking-[-.065em] xl:text-6xl">
-
                 One place.
                 <br />
-
                 Every part of
                 <br />
-
-                <span className="text-[#E85B43]">
-                  learning.
-                </span>
+                <span className="text-[#E85B43]">learning.</span>
               </h2>
 
               <p className="mt-7 max-w-md text-base leading-7 text-[#344018]/65">
-                Courses, assignments, resources, progress,
-                and academic connections—all organized around
-                the way you learn.
+                Courses, assignments, resources, progress, and academic connections—all organized around the way you learn.
               </p>
 
               <div className="mt-9 space-y-3">
-
                 {[
                   'Access your courses anytime',
                   'Track your academic progress',
@@ -492,28 +395,20 @@ function Register() {
                     key={item}
                     className="flex items-center gap-3 rounded-2xl border border-black/10 bg-black/[0.04] px-4 py-3"
                   >
-
                     <span className="text-[10px] font-black text-[#E85B43]">
                       0{index + 1}
                     </span>
-
-                    <span className="text-sm font-black">
-                      {item}
-                    </span>
+                    <span className="text-sm font-black">{item}</span>
                   </div>
                 ))}
               </div>
 
               <div className="mt-10 rounded-[26px] bg-[#151515] p-5 text-white shadow-[0_25px_50px_rgba(21,21,21,.15)]">
-
                 <div className="flex items-center justify-between">
-
                   <div>
-
                     <p className="text-[9px] font-black uppercase tracking-[.15em] text-white/30">
                       Learning dashboard
                     </p>
-
                     <p className="mt-1 text-sm font-black">
                       Everything in one rhythm.
                     </p>
@@ -525,38 +420,19 @@ function Register() {
                 </div>
 
                 <div className="mt-5 grid grid-cols-3 gap-2">
-
                   <div className="rounded-xl bg-[#FF7659] p-3">
-
-                    <p className="text-[8px] font-black text-white/60">
-                      COURSES
-                    </p>
-
-                    <p className="mt-1 text-lg font-black">
-                      12
-                    </p>
+                    <p className="text-[8px] font-black text-white/60">COURSES</p>
+                    <p className="mt-1 text-lg font-black">12</p>
                   </div>
 
                   <div className="rounded-xl bg-[#59BFA2] p-3 text-[#123029]">
-
-                    <p className="text-[8px] font-black text-black/40">
-                      PROGRESS
-                    </p>
-
-                    <p className="mt-1 text-lg font-black">
-                      78%
-                    </p>
+                    <p className="text-[8px] font-black text-black/40">PROGRESS</p>
+                    <p className="mt-1 text-lg font-black">78%</p>
                   </div>
 
                   <div className="rounded-xl bg-[#9CC5FF] p-3 text-[#102744]">
-
-                    <p className="text-[8px] font-black text-black/40">
-                      STREAK
-                    </p>
-
-                    <p className="mt-1 text-lg font-black">
-                      6d
-                    </p>
+                    <p className="text-[8px] font-black text-black/40">STREAK</p>
+                    <p className="mt-1 text-lg font-black">6d</p>
                   </div>
                 </div>
               </div>
@@ -568,50 +444,19 @@ function Register() {
           </div>
         </aside>
       </div>
-    )
-  }
+    </div>
+  )
+}
 
-  function Field({
-    label,
-    error,
-    children,
-  }) {
-    return (
-      <div>
-
-        <label className="mb-2 block text-[10px] font-black uppercase tracking-[.12em] text-black/55">
-          {label}
-        </label>
-
-        {children}
-
-        {error && (
-          <p className="mt-2 text-xs font-bold text-[#D64C36]">
-            {error}
-          </p>
-        )}
-      </div>
-    )
-  }
-
-function Field({
-  label,
-  error,
-  children,
-}) {
+function Field({ label, error, children }) {
   return (
     <div>
-
       <label className="mb-2 block text-[10px] font-black uppercase tracking-[.12em] text-black/55">
         {label}
       </label>
-
       {children}
-
       {error && (
-        <p className="mt-2 text-xs font-bold text-[#D64C36]">
-          {error}
-        </p>
+        <p className="mt-1.5 text-xs font-bold text-[#D64C36]">{error}</p>
       )}
     </div>
   )
@@ -621,7 +466,6 @@ function BrandMark() {
   return (
     <span className="relative flex h-10 w-10 items-center justify-center rounded-[13px] bg-[#151515] text-white">
       <span className="h-3.5 w-3.5 rounded-[4px] border-2 border-current" />
-
       <span className="absolute h-1.5 w-1.5 translate-x-2.5 -translate-y-2.5 rounded-full bg-[#FF7659]" />
     </span>
   )
@@ -635,46 +479,20 @@ function getPasswordStrength(password) {
     }
   }
 
-    let score = 0
-
-  if (password.length >= 6) {
-    score++
-  }
-
-  if (password.length >= 10) {
-    score++
-  }
-
-  if (/[A-Z]/.test(password)) {
-    score++
-  }
-
-  if (/[0-9]/.test(password)) {
-    score++
-  }
-
-  if (/[^A-Za-z0-9]/.test(password)) {
-    score++
-  }
+  let score = 0
+  if (password.length >= 6) score++
+  if (password.length >= 10) score++
+  if (/[A-Z]/.test(password)) score++
+  if (/[0-9]/.test(password)) score++
+  if (/[^A-Za-z0-9]/.test(password)) score++
 
   if (score <= 1) {
-    return {
-      score,
-      label: 'Weak',
-    }
+    return { score, label: 'Weak' }
   }
-
   if (score <= 3) {
-    return {
-      score,
-      label: 'Good',
-    }
+    return { score, label: 'Good' }
   }
-
-  return {
-    score,
-    label: 'Strong',
-  }
+  return { score, label: 'Strong' }
 }
 
 export default Register

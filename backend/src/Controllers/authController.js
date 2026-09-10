@@ -54,9 +54,10 @@ const register = async (req, res) => {
       },
     });
 
+    const jwtSecret = process.env.JWT_SECRET || "lms_super_secure_jwt_secret_key_2026_dev";
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      process.env.JWT_SECRET,
+      jwtSecret,
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
     );
 
@@ -107,9 +108,10 @@ const login = async (req, res) => {
       }
     }
 
+    const jwtSecret = process.env.JWT_SECRET || "lms_super_secure_jwt_secret_key_2026_dev";
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      process.env.JWT_SECRET,
+      jwtSecret,
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
     );
 

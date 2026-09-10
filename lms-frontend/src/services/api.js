@@ -2,11 +2,17 @@ const API_BASE_URL =
   import.meta.env.VITE_API_URL || '/api'
 
 async function apiRequest(endpoint, options = {}) {
+  const token = localStorage.getItem('token') || localStorage.getItem('lms_token');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
+    headers,
     ...options,
   })
 
@@ -60,4 +66,15 @@ export const authApi = {
   register(payload) {
     return api.post('/auth/register', payload)
   },
+  login(payloadOrEmail, password, secretCode) {
+    if (typeof payloadOrEmail === 'object' && payloadOrEmail !== null) {
+      return api.post('/auth/login', payloadOrEmail)
+    }
+    return api.post('/auth/login', {
+      email: payloadOrEmail,
+      password,
+      secretCode,
+    })
+  }
 }
+
