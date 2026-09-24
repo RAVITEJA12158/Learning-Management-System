@@ -1,56 +1,78 @@
 import { createContext, useContext, useEffect, useState } from 'react'
+import { supabase } from '../services/supabase'
 
 const AuthContext = createContext(null)
-const AUTH_STORAGE_KEY = 'lms_auth'
 
-function getStoredSession() {
-  try {
-    const stored = localStorage.getItem(AUTH_STORAGE_KEY)
-    return stored ? JSON.parse(stored) : null
-  } catch {
-    localStorage.removeItem(AUTH_STORAGE_KEY)
+function getUserFromSession(session) {
+  if (!session?.user) {
     return null
+  }
+
+  return {
+    id: session.user.id,
+    email: session.user.email,
+    name:
+      session.user.user_metadata?.name ||
+      session.user.email?.split('@')[0] ||
+      'User',
+    role: session.user.user_metadata?.role || 'student',
   }
 }
 
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(getStoredSession)
+  const [session, setSession] = useState(null)
+  const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setLoading(false)
+    let mounted = true
 
-    function syncSession() {
-      setSession(getStoredSession())
+    async function loadSession() {
+      const { data, error } = await supabase.auth.getSession()
+
+      if (error) {
+        console.error('Failed to load authentication session:', error)
+      }
+
+      if (!mounted) {
+        return
+      }
+
+      setSession(data.session)
+      setUser(getUserFromSession(data.session))
+      setLoading(false)
     }
 
-    window.addEventListener('storage', syncSession)
-    window.addEventListener('lms-auth-changed', syncSession)
+    loadSession()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession)
+      setUser(getUserFromSession(nextSession))
+      setLoading(false)
+    })
+
     return () => {
-      window.removeEventListener('storage', syncSession)
-      window.removeEventListener('lms-auth-changed', syncSession)
+      mounted = false
+      subscription.unsubscribe()
     }
   }, [])
 
-  function signIn(nextSession) {
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextSession))
-    setSession(nextSession)
-    window.dispatchEvent(new Event('lms-auth-changed'))
-  }
+  async function signOut() {
+    const { error } = await supabase.auth.signOut()
 
-  function signOut() {
-    localStorage.removeItem(AUTH_STORAGE_KEY)
-    setSession(null)
-    window.dispatchEvent(new Event('lms-auth-changed'))
+    if (error) {
+      throw error
+    }
   }
 
   const value = {
     session,
-    user: session?.user || null,
-    isAuthenticated: Boolean(session?.token),
+    user,
+    isAuthenticated: Boolean(session),
     loading,
-    accessToken: session?.token || null,
-    signIn,
+    accessToken: session?.access_token || null,
     signOut,
   }
 
