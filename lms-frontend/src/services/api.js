@@ -3,8 +3,9 @@ const API_BASE_URL =
 
 async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('token') || localStorage.getItem('lms_token');
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
   const headers = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(options.headers || {}),
   };
   if (token) {
@@ -58,6 +59,18 @@ export const api = {
   delete(endpoint) {
     return apiRequest(endpoint, {
       method: 'DELETE',
+    })
+  },
+
+  // For multipart/form-data uploads (e.g. content files). Don't set
+  // Content-Type manually — the browser needs to add its own multipart
+  // boundary, which apiRequest's default JSON header would otherwise clobber.
+  upload(endpoint, formData) {
+    const token = localStorage.getItem('token') || localStorage.getItem('lms_token');
+    return apiRequest(endpoint, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
     })
   },
 }

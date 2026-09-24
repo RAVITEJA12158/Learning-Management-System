@@ -9,11 +9,13 @@ router.get('/:id', authenticate, courseController.getCourseById);
 
 // Student routes
 router.post('/:id/enroll', authenticate, requireRole(['STUDENT']), courseController.enrollStudent);
+router.delete('/:id/enroll', authenticate, requireRole(['STUDENT']), courseController.unenrollStudent);
 router.get('/student/enrolled', authenticate, requireRole(['STUDENT']), courseController.getEnrolledCourses);
 
 // Faculty routes
 router.post('/', authenticate, requireRole(['FACULTY', 'ADMIN']), courseController.createCourse);
 router.put('/:id', authenticate, requireRole(['FACULTY', 'ADMIN']), courseController.updateCourse);
 router.get('/faculty/created', authenticate, requireRole(['FACULTY']), courseController.getCreatedCourses);
+router.get('/:id/roster', authenticate, requireRole(['FACULTY', 'ADMIN']), courseController.getCourseRoster);
 
 module.exports = router;

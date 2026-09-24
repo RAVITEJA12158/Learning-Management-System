@@ -155,6 +155,52 @@ exports.getEnrolledCourses = async (req, res) => {
   }
 };
 
+// Drop a student's own enrollment
+exports.unenrollStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const studentId = req.user.userId;
+
+    const enrollment = await prisma.courseEnrollment.findUnique({
+      where: { courseId_studentId: { courseId: id, studentId } },
+    });
+    if (!enrollment) return res.status(404).json({ error: 'Not enrolled in this course.' });
+
+    const updated = await prisma.courseEnrollment.update({
+      where: { courseId_studentId: { courseId: id, studentId } },
+      data: { status: 'DROPPED' },
+    });
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to drop enrollment.' });
+  }
+};
+
+// Faculty/Admin: roster of students enrolled in a course
+exports.getCourseRoster = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const course = await prisma.course.findUnique({ where: { id } });
+    if (!course) return res.status(404).json({ error: 'Course not found.' });
+    if (course.createdById !== req.user.userId && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Not authorized to view this roster.' });
+    }
+
+    const enrollments = await prisma.courseEnrollment.findMany({
+      where: { courseId: id },
+      include: {
+        student: { select: { id: true, name: true, email: true, profileImage: true } },
+      },
+      orderBy: { enrolledAt: 'asc' },
+    });
+
+    res.json(enrollments);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch course roster.' });
+  }
+};
+
 // Get faculty's created courses
 exports.getCreatedCourses = async (req, res) => {
   try {

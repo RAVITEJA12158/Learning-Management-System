@@ -5,11 +5,13 @@ const router = express.Router();
 const authRoutes = require('./authRoutes');
 const courseRoutes = require('./courseRoutes');
 const moduleRoutes = require('./moduleRoutes');
+const progressRoutes = require('./progressRoutes');
 const { authenticate } = require('../Middleware/auth');
 
 router.use('/auth', authRoutes);
 router.use('/courses', courseRoutes);
 router.use('/modules', moduleRoutes);
+router.use('/progress', progressRoutes);
 
 // Protected route for testing integration
 router.get('/protected', authenticate, (req, res) => {
