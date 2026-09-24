@@ -1,8 +1,15 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Input from '../../components/common/Input'
+<<<<<<< HEAD
+import Card from '../../components/common/Card'
+import Button from '../../components/common/Button'
+import { useAuth } from '../../context/AuthContext'
+import { authApi } from '../../services/api'
+=======
 import { authApi } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
+>>>>>>> 372372a56f1ecfeeb3044bb57e7cef9f68e1446c
 
 const roles = [
   {
@@ -30,12 +37,14 @@ const roles = [
 
 function Login() {
   const navigate = useNavigate()
+<<<<<<< HEAD
+  const { signIn } = useAuth()
+
+  const [loginRole, setLoginRole] = useState('student')
+
+=======
   const { login } = useAuth()
-
-  const [selectedRole, setSelectedRole] = useState(
-    roles[0]
-  )
-
+  const [selectedRole, setSelectedRole] = useState(roles[0])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [secretCode, setSecretCode] = useState('')
@@ -49,9 +58,7 @@ function Login() {
 
   async function handleSubmit(event) {
     event.preventDefault()
-
     const nextErrors = {}
-
     setMessage('')
 
     if (
@@ -83,7 +90,35 @@ function Login() {
     }
 
     setLoading(true)
+<<<<<<< HEAD
 
+    try {
+      const data = await authApi.login({
+        email: email.trim(),
+        password,
+        secretCode: loginRole === 'admin' ? secretCode.trim() : undefined,
+      })
+      const actualRole = data.role?.toLowerCase()
+
+      if (actualRole !== loginRole) {
+        setMessage(
+          `This account is registered as ${actualRole || 'another role'}. Please select the correct login type.`,
+        )
+        return
+      }
+
+      signIn({
+        token: data.token,
+        user: {
+          id: data.userId,
+          name: data.name,
+          username: data.username,
+          email: email.trim(),
+          role: actualRole,
+        },
+      })
+      navigate(`/${actualRole}`)
+=======
     try {
       const data = await authApi.login({
         email: email.trim(),
@@ -113,12 +148,7 @@ function Login() {
       localStorage.setItem('lms_token', data.token)
 
       login(user)
-
-      navigate(
-        selectedRole.id === 'student'
-          ? '/student'
-          : `/${selectedRole.id}`
-      )
+      navigate(selectedRole.id === 'student' ? '/student' : `/${selectedRole.id}`)
     } catch (error) {
       setMessage(error.message)
     } finally {

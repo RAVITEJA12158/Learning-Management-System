@@ -1,4 +1,5 @@
 const prisma = require('../lib/prisma');
+const { uploadBufferToCloudinary } = require('../Middleware/upload');
 
 // === Modules ===
 
@@ -125,6 +126,33 @@ exports.updateContent = async (req, res) => {
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update content.' });
+  }
+};
+
+// Uploads a learning-material file (PDF, slides, image, video, etc.) to
+// Cloudinary and returns its URL, so the frontend can then call
+// createContent/updateContent with that URL as `contentUrl`. Kept as a
+// separate step (rather than bundled into createContent) so the same
+// endpoint can also be used to swap out a file on an existing content item.
+exports.uploadContentFile = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded.' });
+    }
+
+    const result = await uploadBufferToCloudinary(req.file.buffer, {
+      folder: 'lms/content',
+    });
+
+    res.status(201).json({
+      url: result.secure_url,
+      resourceType: result.resource_type,
+      originalName: req.file.originalname,
+      bytes: result.bytes,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message || 'Failed to upload file.' });
   }
 };
 

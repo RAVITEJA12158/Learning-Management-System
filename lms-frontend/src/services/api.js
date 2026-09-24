@@ -3,8 +3,9 @@ const API_BASE_URL =
 
 async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('token') || localStorage.getItem('lms_token');
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
   const headers = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(options.headers || {}),
   };
   if (token) {
@@ -60,21 +61,27 @@ export const api = {
       method: 'DELETE',
     })
   },
+
+  // For multipart/form-data uploads (e.g. content files). Don't set
+  // Content-Type manually — the browser needs to add its own multipart
+  // boundary, which apiRequest's default JSON header would otherwise clobber.
+  upload(endpoint, formData) {
+    const token = localStorage.getItem('token') || localStorage.getItem('lms_token');
+    return apiRequest(endpoint, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    })
+  },
 }
 
 export const authApi = {
-  register(payload) {
-    return api.post('/auth/register', payload)
-  },
-  login(payloadOrEmail, password, secretCode) {
-    if (typeof payloadOrEmail === 'object' && payloadOrEmail !== null) {
-      return api.post('/auth/login', payloadOrEmail)
-    }
-    return api.post('/auth/login', {
-      email: payloadOrEmail,
-      password,
-      secretCode,
-    })
-  }
+  login: (email, password, secretCode) => request('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password, ...(secretCode ? { secretCode } : {}) }),
+  }),
+  register: (payload) => request('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
 }
-

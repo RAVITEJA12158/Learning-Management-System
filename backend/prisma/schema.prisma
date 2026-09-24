@@ -8,7 +8,12 @@
 // ============================================================================
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // "native" covers local dev on whatever OS you're on (Windows/macOS);
+  // debian-openssl-3.0.x covers Docker/Render/CI, which run on Debian-based
+  // Node images. Without both, `prisma generate` on one machine produces a
+  // client that can't load its query engine on the other.
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
