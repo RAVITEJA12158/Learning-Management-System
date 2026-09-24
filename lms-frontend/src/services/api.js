@@ -1,30 +1,68 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || '/api'
 
-async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+async function apiRequest(endpoint, options = {}) {
+  const token = localStorage.getItem('token') || localStorage.getItem('lms_token');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    headers,
     ...options,
   })
 
-  const data = await response.json().catch(() => ({}))
+  const contentType = response.headers.get('content-type')
+
+  const data = contentType?.includes('application/json')
+    ? await response.json()
+    : await response.text()
 
   if (!response.ok) {
-    throw new Error(data.error || 'Something went wrong. Please try again.')
+    const message =
+      typeof data === 'object' && (data?.message || data?.error)
+        ? data.message || data.error
+        : 'Something went wrong'
+
+    throw new Error(message)
   }
 
   return data
 }
 
-export const authApi = {
-<<<<<<< HEAD
-  register(payload) {
-    return api.post('/auth/register', payload)
+export const api = {
+  get(endpoint) {
+    return apiRequest(endpoint, {
+      method: 'GET',
+    })
   },
 
-  login(payload) {
-    return api.post('/auth/login', payload)
+  post(endpoint, body) {
+    return apiRequest(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
   },
-=======
+
+  put(endpoint, body) {
+    return apiRequest(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    })
+  },
+
+  delete(endpoint) {
+    return apiRequest(endpoint, {
+      method: 'DELETE',
+    })
+  },
+}
+
+export const authApi = {
   login: (email, password, secretCode) => request('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password, ...(secretCode ? { secretCode } : {}) }),
@@ -33,5 +71,4 @@ export const authApi = {
     method: 'POST',
     body: JSON.stringify(payload),
   }),
->>>>>>> 372372a56f1ecfeeb3044bb57e7cef9f68e1446c
 }
