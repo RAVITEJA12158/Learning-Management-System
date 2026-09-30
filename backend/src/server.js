@@ -1,14 +1,25 @@
 require('dotenv').config();
 const express = require('express');
+const helmet = require('helmet');
 const cors = require('cors');
+const corsOptions = require('./config/corsOption');
 const prisma = require('./lib/prisma');
 const routes = require('./routes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
-app.use(express.json());
+// ── Security middleware ──────────────────────────────────────
+// Helmet sets secure HTTP headers (X-Content-Type-Options,
+// Strict-Transport-Security, X-Frame-Options, etc.)
+app.use(helmet());
+
+// CORS — use the whitelist-based config instead of wide-open cors()
+app.use(cors(corsOptions));
+
+// Body parsing with a sane size limit to prevent DoS via huge payloads.
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
 // Health check — also verifies the DB connection via Prisma
 app.get('/health', async (req, res) => {
@@ -20,13 +31,18 @@ app.get('/health', async (req, res) => {
   }
 });
 
-app.use('/api',routes);
+app.use('/api', routes);
 
 app.use((req, res) => res.status(404).json({ error: 'Not found' }));
 
-app.use((err, req, res, next) => {
+// Global error handler — never leak stack traces in production
+app.use((err, req, res, _next) => {
   console.error(err);
-  res.status(500).json({ error: 'Internal server error' });
+  const message =
+    process.env.NODE_ENV === 'production'
+      ? 'Internal server error'
+      : err.message || 'Internal server error';
+  res.status(500).json({ error: message });
 });
 
 if (require.main === module) {

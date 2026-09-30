@@ -17,8 +17,14 @@ function BrandMark({ dark = false }) {
 
 function DashboardLayout() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // If not authenticated, redirect to login
+  if (!isAuthenticated) {
+    navigate('/login', { replace: true });
+    return null;
+  }
 
   const handleLogout = () => {
     logout();

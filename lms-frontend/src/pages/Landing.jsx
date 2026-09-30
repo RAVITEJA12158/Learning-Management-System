@@ -352,6 +352,263 @@ function Glyph({
 }
 
 /* ============================================================
+   SECTION LEAD
+============================================================ */
+
+function SectionLead({
+  label,
+  title,
+  copy,
+  dark = false,
+}) {
+  return (
+    <div>
+      <p
+        className={`text-xs font-black uppercase tracking-[.18em] ${
+          dark ? 'text-[#9df5d8]' : 'text-[#705cff]'
+        }`}
+      >
+        {label}
+      </p>
+
+      <h2
+        className={`mt-4 text-4xl font-extrabold tracking-[-.06em] sm:text-5xl ${
+          dark ? 'text-white' : ''
+        }`}
+      >
+        {title}
+      </h2>
+
+      <p
+        className={`mt-5 max-w-lg text-base leading-7 ${
+          dark ? 'text-white/50' : 'text-slate-500'
+        }`}
+      >
+        {copy}
+      </p>
+    </div>
+  )
+}
+
+/* ============================================================
+   MINI PROOF
+============================================================ */
+
+function MiniProof({ number, text }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-2xl font-extrabold text-[#DFFF63]">{number}</span>
+      <span className="text-xs font-bold text-white/40">{text}</span>
+    </div>
+  )
+}
+
+/* ============================================================
+   HERO PRODUCT
+============================================================ */
+
+function HeroProduct() {
+  return (
+    <div className="relative mx-auto w-full max-w-lg">
+      <div className="rounded-[28px] border border-black/10 bg-white p-5 shadow-[0_25px_60px_rgba(21,21,21,.08)]">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#DFFF63] text-xs font-black">C</span>
+          <span className="text-sm font-black">Course Dashboard</span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          {courses.map((c) => (
+            <div key={c.code} className={`rounded-2xl ${c.accent} p-3`}>
+              <p className={`text-[9px] font-black ${c.text}`}>{c.code}</p>
+              <p className={`mt-1 text-xs font-bold ${c.text}`}>{c.name}</p>
+              <div className="mt-3 h-1.5 w-full rounded-full bg-black/10">
+                <div
+                  className="h-full rounded-full bg-black/25"
+                  style={{ width: `${c.progress}%` }}
+                />
+              </div>
+              <p className={`mt-1 text-[8px] font-bold ${c.text}/60`}>{c.lesson}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   FEATURE CARD
+============================================================ */
+
+function FeatureCard({ number, title, text }) {
+  return (
+    <div className="hub-lift rounded-[24px] border border-black/8 bg-white p-5 shadow-sm">
+      <span className="text-xs font-black text-[#705cff]">{number}</span>
+      <h3 className="mt-3 text-lg font-extrabold tracking-[-.03em]">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-slate-500">{text}</p>
+    </div>
+  )
+}
+
+/* ============================================================
+   TINY METRIC
+============================================================ */
+
+function TinyMetric({ label, value, note, color }) {
+  return (
+    <div className={`rounded-2xl ${color} p-4`}>
+      <p className="text-[9px] font-black uppercase tracking-wider opacity-50">{label}</p>
+      <p className="mt-1 text-2xl font-extrabold">{value}</p>
+      <p className="mt-1 text-[10px] font-bold opacity-50">{note}</p>
+    </div>
+  )
+}
+
+/* ============================================================
+   TIMELINE
+============================================================ */
+
+function Timeline() {
+  const items = [
+    { time: '09:00', title: 'Data Structures', tag: 'Lecture', color: 'bg-[#DFFF63]' },
+    { time: '11:30', title: 'Web Systems Lab', tag: 'Lab', color: 'bg-[#A9E8D5]' },
+    { time: '14:00', title: 'Database Design', tag: 'Tutorial', color: 'bg-[#FFB39E]' },
+  ]
+
+  return (
+    <div className="rounded-[24px] bg-white p-5 shadow-sm border border-black/8">
+      <p className="text-[10px] font-black uppercase tracking-[.15em] text-black/40 mb-4">Today&apos;s timeline</p>
+      <div className="space-y-3">
+        {items.map((item) => (
+          <div key={item.title} className="flex items-center gap-4 rounded-xl bg-[#FAF8F3] p-3">
+            <span className="text-xs font-bold text-black/40 w-12">{item.time}</span>
+            <span className={`h-2 w-2 rounded-full ${item.color}`} />
+            <span className="text-sm font-bold flex-1">{item.title}</span>
+            <span className="text-[9px] font-black text-black/30 uppercase">{item.tag}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   NOTIFICATION CARD
+============================================================ */
+
+function Notification() {
+  return (
+    <div className="rounded-[24px] bg-white p-5 shadow-sm border border-black/8">
+      <p className="text-[10px] font-black uppercase tracking-[.15em] text-black/40 mb-3">Notifications</p>
+      <div className="space-y-2">
+        <div className="rounded-xl bg-[#FFF1ED] p-3">
+          <p className="text-xs font-bold text-[#B83D29]">Assignment due tomorrow</p>
+          <p className="text-[10px] text-[#B83D29]/60 mt-1">Database Design — ER Diagram</p>
+        </div>
+        <div className="rounded-xl bg-[#EDF9F5] p-3">
+          <p className="text-xs font-bold text-[#18765D]">New grade posted</p>
+          <p className="text-[10px] text-[#18765D]/60 mt-1">Web Systems — Quiz 3: 92%</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   FOCUS CARD
+============================================================ */
+
+function FocusCard() {
+  return (
+    <div className="rounded-[24px] bg-[#151515] p-5 text-white shadow-sm">
+      <p className="text-[10px] font-black uppercase tracking-[.15em] text-white/30">Focus mode</p>
+      <p className="mt-3 text-lg font-extrabold">2h 14m</p>
+      <p className="text-[10px] font-bold text-white/40 mt-1">Study session active</p>
+      <div className="mt-4 h-1.5 w-full rounded-full bg-white/10">
+        <div className="h-full w-[65%] rounded-full bg-[#DFFF63]" />
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   COURSE GALLERY
+============================================================ */
+
+function CourseGallery() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {courses.map((c) => (
+        <div key={c.code} className={`hub-lift rounded-[24px] ${c.accent} p-5`}>
+          <div className="flex items-center gap-3">
+            <Glyph name={c.icon} size={18} />
+            <span className={`text-[10px] font-black uppercase tracking-wider ${c.text}`}>{c.code}</span>
+          </div>
+          <h3 className={`mt-3 text-lg font-extrabold ${c.text}`}>{c.name}</h3>
+          <p className={`mt-1 text-xs font-bold ${c.text}/60`}>{c.lesson}</p>
+          <div className="mt-4 h-1.5 w-full rounded-full bg-black/10">
+            <div className="h-full rounded-full bg-black/20" style={{ width: `${c.progress}%` }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/* ============================================================
+   ROLE TILE
+============================================================ */
+
+function RoleTile({ glyph, name, line }) {
+  return (
+    <div className="hub-lift rounded-2xl border border-white/10 bg-white/[0.05] p-4 text-center">
+      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
+        <Glyph name={glyph} size={20} />
+      </div>
+      <p className="mt-3 text-sm font-extrabold">{name}</p>
+      <p className="mt-1 text-[10px] text-white/40">{line}</p>
+    </div>
+  )
+}
+
+/* ============================================================
+   QUOTE
+============================================================ */
+
+function Quote({ name, course, quote, featured = false }) {
+  return (
+    <div
+      className={`hub-lift rounded-[24px] border p-6 ${
+        featured
+          ? 'border-[#705cff]/20 bg-[#705cff] text-white shadow-lg'
+          : 'border-black/8 bg-white shadow-sm'
+      }`}
+    >
+      <p className={`text-sm leading-6 ${featured ? 'text-white/80' : 'text-slate-600'}`}>
+        &ldquo;{quote}&rdquo;
+      </p>
+      <div className="mt-5">
+        <p className="text-sm font-extrabold">{name}</p>
+        <p className={`text-[10px] mt-0.5 ${featured ? 'text-white/50' : 'text-slate-400'}`}>{course}</p>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   MARK (footer logo icon)
+============================================================ */
+
+function Mark() {
+  return (
+    <span className="relative flex h-8 w-8 items-center justify-center rounded-[10px] bg-[#705cff] text-white">
+      <span className="h-2.5 w-2.5 rounded-[3px] border-2 border-current" />
+      <span className="absolute h-1.5 w-1.5 translate-x-2 -translate-y-2 rounded-full bg-[#9df5d8]" />
+    </span>
+  )
+}
+
+/* ============================================================
    FOOTER COLUMN
 ============================================================ */
 
