@@ -15,6 +15,7 @@ jest.mock('../src/lib/prisma', () => ({
 describe('Authentication Integration Flow', () => {
   let token;
   const testUser = {
+    name: 'Integration User',
     username: 'integrationuser',
     email: 'integration@example.com',
     password: 'Password1!',
@@ -58,12 +59,13 @@ describe('Authentication Integration Flow', () => {
     // Real bcrypt is used, so we need to provide a real hashed password for the mock DB to return
     const hashedPassword = await bcrypt.hash(testUser.password, 10);
     prisma.user.findUnique.mockResolvedValue({
-      id: 99,
+      id: '99',
+      name: testUser.name,
       username: testUser.username,
       email: testUser.email,
-      password: hashedPassword,
-      role_id: 1,
-      is_active: true,
+      passwordHash: hashedPassword,
+      role: 'STUDENT',
+      isVerified: true,
     });
 
     const loginRes = await request(app)
@@ -89,7 +91,7 @@ describe('Authentication Integration Flow', () => {
 
     expect(protectedRes.status).toBe(200);
     expect(protectedRes.body.message).toBe('You have accessed a protected route');
-    expect(protectedRes.body.user).toHaveProperty('userId', 99);
+    expect(protectedRes.body.user).toHaveProperty('userId', '99');
   });
 
   it('should deny access to protected route with no token', async () => {

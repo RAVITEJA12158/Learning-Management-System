@@ -1,0 +1,189 @@
+{
+  "info": {
+    "name": "Course & Enrollment API Regression (Sprint 2)",
+    "description": "Postman Regression Suite for Course CRUD, Role-Based Access Control, Faculty Assignments, and Student Enrollments",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Courses",
+      "item": [
+        {
+          "name": "Get All Courses",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses?search=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses"],
+              "query": [{ "key": "search", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Get Course By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{courseId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{courseId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Course (Faculty/Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Advanced Database Systems\",\n  \"courseCode\": \"CS401\",\n  \"semester\": \"Fall 2026\",\n  \"description\": \"Comprehensive deep-dive into distributed relational databases.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/courses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses"]
+            }
+          }
+        },
+        {
+          "name": "Update Course",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Advanced Distributed Databases\",\n  \"description\": \"Updated syllabus description.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{courseId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{courseId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Course",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{courseId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{courseId}}"]
+            }
+          }
+        },
+        {
+          "name": "Assign Instructor",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"facultyId\": \"{{targetFacultyId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{courseId}}/instructors",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{courseId}}", "instructors"]
+            }
+          }
+        },
+        {
+          "name": "Remove Instructor",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{courseId}}/instructors/{{targetFacultyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{courseId}}", "instructors", "{{targetFacultyId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Enrollment",
+      "item": [
+        {
+          "name": "Enroll in Course (Student)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{courseId}}/enroll",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{courseId}}", "enroll"]
+            }
+          }
+        },
+        {
+          "name": "Get Enrolled Courses (Student)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/student/enrolled",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "student", "enrolled"]
+            }
+          }
+        },
+        {
+          "name": "Drop Course (Student)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{courseId}}/enroll",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{courseId}}", "enroll"]
+            }
+          }
+        },
+        {
+          "name": "Get Course Roster (Faculty/Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{courseId}}/roster",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{courseId}}", "roster"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
