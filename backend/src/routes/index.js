@@ -1,5 +1,4 @@
 const express = require('express');
-
 const router = express.Router();
 
 const authRoutes = require('./authRoutes');
@@ -7,6 +6,10 @@ const courseRoutes = require('./courseRoutes');
 const moduleRoutes = require('./moduleRoutes');
 const progressRoutes = require('./progressRoutes');
 const { authenticate } = require('../Middleware/auth');
+const { apiLimiter } = require('../Middleware/rateLimiter');
+
+// Apply general rate limit to all /api routes
+router.use(apiLimiter);
 
 router.use('/auth', authRoutes);
 router.use('/courses', courseRoutes);
@@ -18,4 +21,4 @@ router.get('/protected', authenticate, (req, res) => {
   res.status(200).json({ message: 'You have accessed a protected route', user: req.user });
 });
 
-module.exports = router;
+module.exports = router;

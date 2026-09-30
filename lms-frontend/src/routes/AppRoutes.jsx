@@ -2,14 +2,12 @@ import { Routes, Route } from 'react-router-dom'
 import Landing from '../pages/Landing'
 import Login from '../pages/Auth/Login'
 import Register from '../pages/Auth/Register'
-import UITest from '../pages/UITest'
 import StudentDashboard from '../pages/Student/StudentDashboard'
 import FacultyDashboard from '../pages/Faculty/FacultyDashboard'
 import AdminDashboard from '../pages/Admin/AdminDashboard'
 import CourseCatalog from '../pages/CourseCatalog'
 import CourseDetails from '../pages/CourseDetails'
 import CourseForm from '../components/CourseForm'
-
 import DashboardLayout from '../components/layout/DashboardLayout'
 
 function AppRoutes() {
@@ -18,7 +16,6 @@ function AppRoutes() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/ui-test" element={<UITest />} />
 
       {/* Internal pages with shared layout */}
       <Route element={<DashboardLayout />}>
