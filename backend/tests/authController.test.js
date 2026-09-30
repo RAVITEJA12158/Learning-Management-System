@@ -1,4 +1,4 @@
-jest.mock("../src/config/db", () => ({
+jest.mock("../src/lib/prisma", () => ({
   user: {
     findFirst: jest.fn(),
     findUnique: jest.fn(),
@@ -8,7 +8,7 @@ jest.mock("../src/config/db", () => ({
 jest.mock("bcryptjs", () => ({ hash: jest.fn(), compare: jest.fn() }));
 jest.mock("jsonwebtoken", () => ({ sign: jest.fn() }));
 
-const prisma = require("../src/config/db");
+const prisma = require("../src/lib/prisma");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { register, login } = require("../src/Controllers/authController");

@@ -1,4 +1,4 @@
-const prisma = require("../config/db");
+const prisma = require("../lib/prisma");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -54,10 +54,10 @@ const register = async (req, res) => {
       },
     });
 
-    const jwtSecret = process.env.JWT_SECRET || "lms_super_secure_jwt_secret_key_2026_dev";
+    if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET not configured');
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      jwtSecret,
+      process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
     );
 
@@ -108,10 +108,10 @@ const login = async (req, res) => {
       }
     }
 
-    const jwtSecret = process.env.JWT_SECRET || "lms_super_secure_jwt_secret_key_2026_dev";
+    if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET not configured');
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      jwtSecret,
+      process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
     );
 
