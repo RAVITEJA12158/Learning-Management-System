@@ -19,8 +19,11 @@ router.post('/', authenticate, requireRole(['FACULTY', 'ADMIN']), courseControll
 router.get('/', authenticate, courseController.getAllCourses);
 router.get('/:id', authenticate, courseController.getCourseById);
 router.put('/:id', authenticate, requireRole(['FACULTY', 'ADMIN']), courseController.updateCourse);
+router.delete('/:id', authenticate, requireRole(['FACULTY', 'ADMIN']), courseController.deleteCourse);
 router.post('/:id/enroll', authenticate, requireRole(['STUDENT']), courseController.enrollStudent);
 router.delete('/:id/enroll', authenticate, requireRole(['STUDENT']), courseController.unenrollStudent);
 router.get('/:id/roster', authenticate, requireRole(['FACULTY', 'ADMIN']), courseController.getCourseRoster);
+router.post('/:id/instructors', authenticate, requireRole(['FACULTY', 'ADMIN']), courseController.assignInstructor);
+router.delete('/:id/instructors/:facultyId', authenticate, requireRole(['FACULTY', 'ADMIN']), courseController.removeInstructor);
 
 module.exports = router;

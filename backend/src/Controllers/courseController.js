@@ -137,12 +137,12 @@ exports.enrollStudent = async (req, res) => {
   }
 };
 
-// Get user's enrolled courses
+// Get user's enrolled courses (only ACTIVE enrollments)
 exports.getEnrolledCourses = async (req, res) => {
   try {
     const studentId = req.user.userId;
     const enrollments = await prisma.courseEnrollment.findMany({
-      where: { studentId },
+      where: { studentId, status: 'ACTIVE' },
       include: {
         course: {
           include: { createdBy: { select: { name: true } } },
@@ -170,9 +170,102 @@ exports.unenrollStudent = async (req, res) => {
       where: { courseId_studentId: { courseId: id, studentId } },
       data: { status: 'DROPPED' },
     });
-    res.json(updated);
+    res.json({ message: 'Successfully dropped course.', enrollment: updated });
   } catch (err) {
     res.status(500).json({ error: 'Failed to drop enrollment.' });
+  }
+};
+
+// Delete a course
+exports.deleteCourse = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const course = await prisma.course.findUnique({ where: { id } });
+    if (!course) return res.status(404).json({ error: 'Course not found.' });
+    if (course.createdById !== req.user.userId && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Not authorized to delete this course.' });
+    }
+
+    await prisma.course.delete({ where: { id } });
+    res.json({ message: 'Course deleted successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete course.' });
+  }
+};
+
+// Assign an instructor to a course
+exports.assignInstructor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { facultyId } = req.body;
+
+    if (!facultyId) {
+      return res.status(400).json({ error: 'facultyId is required.' });
+    }
+
+    const course = await prisma.course.findUnique({ where: { id } });
+    if (!course) return res.status(404).json({ error: 'Course not found.' });
+    if (course.createdById !== req.user.userId && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Not authorized to assign instructors for this course.' });
+    }
+
+    // Verify target user is FACULTY or ADMIN
+    const instructor = await prisma.user.findUnique({ where: { id: facultyId } });
+    if (!instructor || (instructor.role !== 'FACULTY' && instructor.role !== 'ADMIN')) {
+      return res.status(400).json({ error: 'Target user must be a faculty member or admin.' });
+    }
+
+    // Check if already assigned
+    const existing = await prisma.courseInstructor.findUnique({
+      where: { courseId_facultyId: { courseId: id, facultyId } },
+    });
+    if (existing) {
+      return res.status(400).json({ error: 'Faculty member is already assigned to this course.' });
+    }
+
+    const assignment = await prisma.courseInstructor.create({
+      data: {
+        courseId: id,
+        facultyId,
+      },
+      include: {
+        faculty: { select: { id: true, name: true, email: true, username: true } },
+      },
+    });
+
+    res.status(201).json(assignment);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to assign instructor.' });
+  }
+};
+
+// Remove an assigned instructor
+exports.removeInstructor = async (req, res) => {
+  try {
+    const { id, facultyId } = req.params;
+
+    const course = await prisma.course.findUnique({ where: { id } });
+    if (!course) return res.status(404).json({ error: 'Course not found.' });
+    if (course.createdById !== req.user.userId && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Not authorized to remove instructors from this course.' });
+    }
+
+    const existing = await prisma.courseInstructor.findUnique({
+      where: { courseId_facultyId: { courseId: id, facultyId } },
+    });
+    if (!existing) {
+      return res.status(404).json({ error: 'Faculty assignment not found.' });
+    }
+
+    await prisma.courseInstructor.delete({
+      where: { courseId_facultyId: { courseId: id, facultyId } },
+    });
+
+    res.json({ message: 'Instructor removed successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to remove instructor.' });
   }
 };
 

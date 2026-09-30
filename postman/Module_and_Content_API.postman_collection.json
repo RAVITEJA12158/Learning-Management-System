@@ -1,0 +1,185 @@
+{
+  "info": {
+    "name": "Module & Content Delivery API Regression (Sprint 3)",
+    "description": "Postman Regression Suite for Modules, Content Items, Cloudinary File Uploads, and Student Progress Tracking",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Modules",
+      "item": [
+        {
+          "name": "Create Module",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": \"{{courseId}}\",\n  \"title\": \"Module 1: Relational Modeling\",\n  \"description\": \"Core relational algebra and schema normalization.\",\n  \"position\": 1,\n  \"isPublished\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/modules",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "modules"]
+            }
+          }
+        },
+        {
+          "name": "Update Module",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Module 1: Relational Modeling (Updated)\",\n  \"position\": 1,\n  \"isPublished\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/modules/{{moduleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "modules", "{{moduleId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Module",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/modules/{{moduleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "modules", "{{moduleId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Content Items & Uploads",
+      "item": [
+        {
+          "name": "Upload Content File to Cloudinary",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/modules/content/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "modules", "content", "upload"]
+            }
+          }
+        },
+        {
+          "name": "Create Content Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"moduleId\": \"{{moduleId}}\",\n  \"title\": \"Lecture 1 Slides\",\n  \"type\": \"PDF\",\n  \"contentUrl\": \"https://res.cloudinary.com/demo/image/upload/sample.pdf\",\n  \"description\": \"Read before next lab session.\",\n  \"position\": 1,\n  \"isPublished\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/modules/content",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "modules", "content"]
+            }
+          }
+        },
+        {
+          "name": "Update Content Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Lecture 1 Slides\",\n  \"isPublished\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/modules/content/{{contentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "modules", "content", "{{contentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Content Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/modules/content/{{contentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "modules", "content", "{{contentId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Progress Tracking",
+      "item": [
+        {
+          "name": "Mark Content Progress",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completed\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/progress/content/{{contentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "progress", "content", "{{contentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Course Progress",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/progress/course/{{courseId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "progress", "course", "{{courseId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

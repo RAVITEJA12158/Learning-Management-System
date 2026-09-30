@@ -1,0 +1,151 @@
+{
+  "info": {
+    "name": "Assignment & Submission API Regression (Sprint 4)",
+    "description": "Postman Regression Suite for Assignment CRUD, Late Submission Rules, Cloudinary Submissions, and Grading/Feedback",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Assignments",
+      "item": [
+        {
+          "name": "Get Assignments for Course",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/assignments/course/{{courseId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assignments", "course", "{{courseId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Assignment (Faculty/Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": \"{{courseId}}\",\n  \"title\": \"Assignment 1: Relational Schema Design\",\n  \"description\": \"Design 3NF schemas with ER diagrams and SQL scripts.\",\n  \"maxMarks\": 100,\n  \"dueDate\": \"2026-10-15T23:59:59.000Z\",\n  \"allowLateSubmission\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/assignments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assignments"]
+            }
+          }
+        },
+        {
+          "name": "Get Assignment By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/assignments/{{assignmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assignments", "{{assignmentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Assignment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Assignment 1: Relational Schema Design (Extended Deadline)\",\n  \"maxMarks\": 100,\n  \"dueDate\": \"2026-10-20T23:59:59.000Z\",\n  \"allowLateSubmission\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/assignments/{{assignmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assignments", "{{assignmentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Assignment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/assignments/{{assignmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assignments", "{{assignmentId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Submissions & Grading",
+      "item": [
+        {
+          "name": "Submit Assignment (Student)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{studentToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fileUrl\": \"https://res.cloudinary.com/demo/raw/upload/solution.pdf\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/assignments/{{assignmentId}}/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assignments", "{{assignmentId}}", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Get Submissions for Assignment (Faculty/Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/assignments/{{assignmentId}}/submissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assignments", "{{assignmentId}}", "submissions"]
+            }
+          }
+        },
+        {
+          "name": "Grade Submission (Faculty/Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{facultyToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"marks\": 92.5,\n  \"feedback\": \"Clean schema normalization with excellent indexing explanations.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/assignments/submissions/{{submissionId}}/grade",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assignments", "submissions", "{{submissionId}}", "grade"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
