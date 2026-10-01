@@ -170,8 +170,8 @@ function CourseDetails() {
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-7xl px-4 py-12 sm:px-8 w-full">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 text-center text-xs font-bold text-slate-400">
+      <main className="mx-auto max-w-[1440px] px-4 py-12 sm:px-8 w-full">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-8 text-center text-xs font-bold text-slate-400 dark:text-zinc-500">
           Loading course details...
         </div>
       </main>
@@ -180,8 +180,8 @@ function CourseDetails() {
 
   if (!course) {
     return (
-      <main className="mx-auto max-w-7xl px-4 py-12 sm:px-8 w-full">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 text-center text-xs font-bold text-slate-500">
+      <main className="mx-auto max-w-[1440px] px-4 py-12 sm:px-8 w-full">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-8 text-center text-xs font-bold text-slate-500 dark:text-zinc-400">
           Course not found.
         </div>
       </main>
@@ -203,16 +203,16 @@ function CourseDetails() {
     : 'Dr. Alan Turing, Prof. Katherine Johnson';
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-8 lg:py-10 w-full font-sans transition-colors duration-200">
+    <main className="mx-auto max-w-[1440px] px-4 py-8 sm:px-8 lg:py-10 w-full font-sans transition-colors duration-200">
       
       {/* 1. TOP HEADER BANNER (TITLE & PROGRESS CARD) */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tight transition-colors">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-zinc-50 tracking-tight transition-colors">
             {course.courseCode ? `${course.courseCode}: ` : ''}{course.title}
           </h1>
-          <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 mt-1.5 transition-colors">
-            Instructors: <span className="text-slate-800 dark:text-slate-200 font-semibold">{instructorsText}</span>
+          <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-zinc-400 mt-1.5 transition-colors">
+            Instructors: <span className="text-slate-800 dark:text-zinc-200 font-semibold">{instructorsText}</span>
           </p>
 
           {/* Enroll / Drop Buttons */}
@@ -247,14 +247,14 @@ function CourseDetails() {
         </div>
 
         {/* Top-Right Progress Box */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs flex items-center justify-between gap-4 shrink-0 min-w-[240px] transition-colors">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-4 shadow-xs flex items-center justify-between gap-4 shrink-0 min-w-[240px] transition-colors">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
               <ChartIcon className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">{overallCompletionPercent}% Complete</p>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+              <p className="text-sm font-bold text-slate-900 dark:text-zinc-50">{overallCompletionPercent}% Complete</p>
+              <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium">
                 {completedContentCount} of {totalContentCount || 10} completed
               </p>
             </div>
@@ -272,7 +272,7 @@ function CourseDetails() {
       )}
 
       {/* 2. MAIN TABS NAVIGATION BAR */}
-      <div className="border-b border-slate-200/80 dark:border-slate-800 mb-8 flex items-center gap-6 overflow-x-auto no-scrollbar transition-colors">
+      <div className="border-b border-slate-200/80 dark:border-zinc-800 mb-8 flex items-center gap-6 overflow-x-auto no-scrollbar transition-colors">
         {[
           { id: 'modules', label: 'Modules (Active)' },
           { id: 'assignments', label: 'Assignments' },
@@ -286,7 +286,7 @@ function CourseDetails() {
             className={`pb-3 text-xs sm:text-sm font-bold transition whitespace-nowrap relative cursor-pointer ${
               activeTab === tab.id
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
+                : 'text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-100'
             }`}
           >
             {tab.label}
@@ -307,48 +307,48 @@ function CourseDetails() {
               isEnrolled={isEnrolled}
             />
           ) : activeTab === 'quizzes' ? (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs transition-colors">
-              <h2 className="text-base font-bold text-slate-900 dark:text-white mb-4">Active Quizzes</h2>
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-6 shadow-xs transition-colors">
+              <h2 className="text-base font-bold text-slate-900 dark:text-zinc-50 mb-4">Active Quizzes</h2>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800/80">
                   <div>
-                    <h3 className="text-xs font-bold text-slate-900 dark:text-white">Web Dev Quiz 1</h3>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Duration: 30 mins · 15 Questions</p>
+                    <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-50">Web Dev Quiz 1</h3>
+                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5">Duration: 30 mins · 15 Questions</p>
                   </div>
                   <Badge variant="active">Active</Badge>
                 </div>
-                <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800/80">
                   <div>
-                    <h3 className="text-xs font-bold text-slate-900 dark:text-white">Algo Quiz 4</h3>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Duration: 45 mins · 20 Questions</p>
+                    <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-50">Algo Quiz 4</h3>
+                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5">Duration: 45 mins · 20 Questions</p>
                   </div>
                   <Badge variant="active">Active</Badge>
                 </div>
               </div>
             </div>
           ) : activeTab === 'announcements' ? (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs space-y-4 transition-colors">
-              <h2 className="text-base font-bold text-slate-900 dark:text-white mb-2">Course Announcements</h2>
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1">
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-6 shadow-xs space-y-4 transition-colors">
+              <h2 className="text-base font-bold text-slate-900 dark:text-zinc-50 mb-2">Course Announcements</h2>
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800/80 space-y-1">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white">ML Exam Dates Finalized</h3>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">2 hours ago</span>
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-50">ML Exam Dates Finalized</h3>
+                  <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">2 hours ago</span>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-300">The midterm exam for Machine Learning has been scheduled for Nov 25th in Room 302.</p>
+                <p className="text-xs text-slate-600 dark:text-zinc-300">The midterm exam for Machine Learning has been scheduled for Nov 25th in Room 302.</p>
               </div>
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1">
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800/80 space-y-1">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white">New Practice Dataset Uploaded</h3>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">10+ minutes ago</span>
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-50">New Practice Dataset Uploaded</h3>
+                  <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">10+ minutes ago</span>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-300">Please review module 1 practice dataset files prior to Friday's lecture.</p>
+                <p className="text-xs text-slate-600 dark:text-zinc-300">Please review module 1 practice dataset files prior to Friday's lecture.</p>
               </div>
             </div>
           ) : activeTab === 'discussions' ? (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 shadow-xs transition-colors">
-              <h2 className="text-base font-bold text-slate-900 dark:text-white mb-4">Class Discussion Forum</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Ask questions and discuss topics with fellow students and instructors.</p>
-              <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-center text-xs font-medium text-slate-500 dark:text-slate-400">
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-6 shadow-xs transition-colors">
+              <h2 className="text-base font-bold text-slate-900 dark:text-zinc-50 mb-4">Class Discussion Forum</h2>
+              <p className="text-xs text-slate-500 dark:text-zinc-400">Ask questions and discuss topics with fellow students and instructors.</p>
+              <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800/80 text-center text-xs font-medium text-slate-500 dark:text-zinc-400">
                 No active discussion threads yet. Be the first to start a conversation!
               </div>
             </div>
@@ -356,7 +356,7 @@ function CourseDetails() {
             /* MODULES TAB (DEFAULT ACTIVE TAB) */
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight transition-colors">
+                <h2 className="text-lg font-extrabold text-slate-900 dark:text-zinc-50 tracking-tight transition-colors">
                   Course Curriculum (Modules)
                 </h2>
                 {isCreatorOrStaff && (
@@ -385,15 +385,15 @@ function CourseDetails() {
                     return (
                       <div
                         key={module.id}
-                        className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden transition-colors"
+                        className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-xs overflow-hidden transition-colors"
                       >
                         {/* MODULE HEADER ROW */}
                         <div
                           onClick={() => toggleModuleAccordion(module.id)}
-                          className="p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition select-none"
+                          className="p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50/80 dark:hover:bg-zinc-800/60 transition select-none"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
+                            <span className="text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition">
                               <ChevronDownIcon
                                 className={`w-4 h-4 transition-transform duration-200 ${
                                   isExpanded ? 'rotate-180' : ''
@@ -401,25 +401,25 @@ function CourseDetails() {
                               />
                             </span>
                             <div>
-                              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
+                              <h3 className="text-sm font-extrabold text-slate-900 dark:text-zinc-50">
                                 Module {module.position || mIdx + 1}: {module.title}
                               </h3>
                               {module.description && (
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium leading-relaxed max-w-xl">
+                                <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-medium leading-relaxed max-w-xl">
                                   {module.description}
                                 </p>
                               )}
                             </div>
                           </div>
 
-                          <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full shrink-0">
+                          <span className="text-[11px] font-bold text-slate-600 dark:text-zinc-300 bg-slate-100 dark:bg-zinc-800 px-2.5 py-1 rounded-full shrink-0">
                             {modProgress}%
                           </span>
                         </div>
 
                         {/* MODULE CONTENT ITEMS LIST */}
                         {isExpanded && (
-                          <div className="border-t border-slate-100 dark:border-slate-800 p-4 space-y-2.5 bg-slate-50/40 dark:bg-slate-950/40">
+                          <div className="border-t border-slate-100 dark:border-zinc-800 p-4 space-y-2.5 bg-slate-50/40 dark:bg-zinc-950/40">
                             {module.content && module.content.length > 0 ? (
                               module.content.map((c) => {
                                 const isCompleted = completedItems[c.id] || false;
@@ -429,11 +429,11 @@ function CourseDetails() {
                                   <div
                                     key={c.id}
                                     onClick={() => setSelectedContent(c)}
-                                    className="flex items-center justify-between p-3.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700 hover:border-blue-400/50 hover:shadow-xs transition cursor-pointer group"
+                                    className="flex items-center justify-between p-3.5 rounded-xl bg-white dark:bg-zinc-800/90 border border-slate-200/70 dark:border-zinc-700/80 hover:border-blue-400/50 hover:shadow-xs transition cursor-pointer group"
                                   >
                                     <div className="flex items-center gap-3">
                                       {/* Content Type Icon Tile */}
-                                      <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 shrink-0">
+                                      <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 shrink-0">
                                         {contentType.includes('VIDEO') ? (
                                           <VideoIcon className="w-4 h-4" />
                                         ) : contentType.includes('LINK') || contentType.includes('URL') ? (
@@ -444,11 +444,11 @@ function CourseDetails() {
                                       </div>
 
                                       <div>
-                                        <h4 className={`text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition ${isCompleted ? 'line-through text-slate-400 dark:text-slate-500' : ''}`}>
+                                        <h4 className={`text-xs font-bold text-slate-900 dark:text-zinc-50 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition ${isCompleted ? 'line-through text-slate-400 dark:text-zinc-500' : ''}`}>
                                           {c.type ? `${c.type.charAt(0) + c.type.slice(1).toLowerCase()}: ` : ''}{c.title}
                                         </h4>
                                         {c.description && (
-                                          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-md mt-0.5">
+                                          <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate max-w-md mt-0.5">
                                             {c.description}
                                           </p>
                                         )}
@@ -468,7 +468,7 @@ function CourseDetails() {
                                               <CheckIcon className="w-3 h-3 text-white" />
                                             </span>
                                           ) : (
-                                            <span className="h-5 w-5 rounded-full border-2 border-slate-300 dark:border-slate-600 hover:border-blue-500 transition block" />
+                                            <span className="h-5 w-5 rounded-full border-2 border-slate-300 dark:border-zinc-600 hover:border-blue-500 transition block" />
                                           )}
                                         </button>
                                       )}
@@ -477,7 +477,7 @@ function CourseDetails() {
                                 );
                               })
                             ) : (
-                              <p className="text-xs font-medium text-slate-400 dark:text-slate-500 italic p-2">
+                              <p className="text-xs font-medium text-slate-400 dark:text-zinc-500 italic p-2">
                                 No content items added to this module yet.
                               </p>
                             )}
@@ -488,7 +488,7 @@ function CourseDetails() {
                   })}
                 </div>
               ) : (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-8 text-center text-xs font-bold text-slate-400">
+                <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-8 text-center text-xs font-bold text-slate-400 dark:text-zinc-500">
                   The curriculum for this course has not been published yet.
                 </div>
               )}
@@ -499,35 +499,35 @@ function CourseDetails() {
 
         {/* RIGHT COLUMN - SIDEBAR HIGHLIGHTS & DEADLINES (1/3 width) */}
         <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs space-y-6 sticky top-24 transition-colors">
-            <h2 className="text-base font-extrabold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3.5 transition-colors">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-5 shadow-xs space-y-6 sticky top-24 transition-colors">
+            <h2 className="text-base font-extrabold text-slate-900 dark:text-zinc-50 border-b border-slate-100 dark:border-zinc-800 pb-3.5 transition-colors">
               Course Highlights & Deadlines
             </h2>
 
             {/* Recent Announcements */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Recent Announcements</h3>
+                <h3 className="text-xs font-bold text-slate-800 dark:text-zinc-300 uppercase tracking-wider">Recent Announcements</h3>
                 <button onClick={() => setActiveTab('announcements')} className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">View all</button>
               </div>
               <div className="space-y-2.5">
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                  <div className="p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-full shrink-0 mt-0.5">
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800/80">
+                  <div className="p-2 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-full shrink-0 mt-0.5">
                     <BellIcon className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">ML Exam Dates Finalized</h4>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Due to 2 hours ago</p>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-50">ML Exam Dates Finalized</h4>
+                    <p className="text-[10px] text-slate-500 dark:text-zinc-400 mt-0.5">Due to 2 hours ago</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                  <div className="p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-full shrink-0 mt-0.5">
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800/80">
+                  <div className="p-2 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-full shrink-0 mt-0.5">
                     <DocumentIcon className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">New Practice Dataset</h4>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">10+ minutes ago</p>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-50">New Practice Dataset</h4>
+                    <p className="text-[10px] text-slate-500 dark:text-zinc-400 mt-0.5">10+ minutes ago</p>
                   </div>
                 </div>
               </div>
@@ -536,63 +536,63 @@ function CourseDetails() {
             {/* Upcoming Assessments */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Upcoming Assessments</h3>
+                <h3 className="text-xs font-bold text-slate-800 dark:text-zinc-300 uppercase tracking-wider">Upcoming Assessments</h3>
                 <button onClick={() => setActiveTab('assignments')} className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">View All</button>
               </div>
               <div className="space-y-2.5">
                 {assignments.length > 0 ? (
                   assignments.slice(0, 3).map((asm) => (
-                    <div key={asm.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                    <div key={asm.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800/80">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-100/60 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg shrink-0">
+                        <div className="p-2 bg-blue-100/60 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-lg shrink-0">
                           <DocumentIcon className="w-4 h-4" />
                         </div>
                         <div>
-                          <h4 className="text-xs font-bold text-slate-900 dark:text-white">{asm.title}</h4>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Due: {new Date(asm.dueDate).toLocaleDateString()}</p>
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-50">{asm.title}</h4>
+                          <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium">Due: {new Date(asm.dueDate).toLocaleDateString()}</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 shrink-0">
+                      <span className="text-[10px] font-semibold text-slate-600 dark:text-zinc-300 bg-white dark:bg-zinc-800 px-2 py-1 rounded border border-slate-200 dark:border-zinc-700 shrink-0">
                         {new Date(asm.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                       </span>
                     </div>
                   ))
                 ) : (
                   <>
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800/80">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-100/60 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg shrink-0">
+                        <div className="p-2 bg-blue-100/60 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-lg shrink-0">
                           <DocumentIcon className="w-4 h-4" />
                         </div>
                         <div>
-                          <h4 className="text-xs font-bold text-slate-900 dark:text-white">ML Assignment 3</h4>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Due 12: Nov 18</p>
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-50">ML Assignment 3</h4>
+                          <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium">Due: Nov 18</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 shrink-0">Due Nov 18</span>
+                      <span className="text-[10px] font-semibold text-slate-600 dark:text-zinc-300 bg-white dark:bg-zinc-800 px-2 py-1 rounded border border-slate-200 dark:border-zinc-700 shrink-0">Due Nov 18</span>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800/80">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-100/60 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg shrink-0">
+                        <div className="p-2 bg-blue-100/60 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-lg shrink-0">
                           <DocumentIcon className="w-4 h-4" />
                         </div>
                         <div>
-                          <h4 className="text-xs font-bold text-slate-900 dark:text-white">Linear Algebra Quiz</h4>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Due 12: Nov 20</p>
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-50">Linear Algebra Quiz</h4>
+                          <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium">Due: Nov 20</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 shrink-0">Due Nov 20</span>
+                      <span className="text-[10px] font-semibold text-slate-600 dark:text-zinc-300 bg-white dark:bg-zinc-800 px-2 py-1 rounded border border-slate-200 dark:border-zinc-700 shrink-0">Due Nov 20</span>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800/80">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-100/60 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg shrink-0">
+                        <div className="p-2 bg-blue-100/60 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-lg shrink-0">
                           <DocumentIcon className="w-4 h-4" />
                         </div>
                         <div>
-                          <h4 className="text-xs font-bold text-slate-900 dark:text-white">Machine Algebra Quiz</h4>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Active Completed</p>
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-50">Machine Algebra Quiz</h4>
+                          <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium">Active Completed</p>
                         </div>
                       </div>
                       <Badge variant="active">Active</Badge>

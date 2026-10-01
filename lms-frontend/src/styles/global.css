@@ -45,9 +45,10 @@ body {
   transition: background-color 200ms ease, color 200ms ease;
 }
 
+/* Neutral Zinc Dark Mode Canvas */
 html.dark body {
-  background: #0b1120;
-  color: #f1f5f9;
+  background: #09090b;
+  color: #fafafa;
 }
 
 button,
@@ -68,6 +69,11 @@ button:disabled {
 ::selection {
   background: #dfff63;
   color: #151515;
+}
+
+.dark ::selection {
+  background: #2563eb;
+  color: #fafafa;
 }
 
 .hub-lift {

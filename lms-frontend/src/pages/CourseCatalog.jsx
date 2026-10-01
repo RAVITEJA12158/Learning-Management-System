@@ -63,60 +63,64 @@ function CourseCatalog() {
       await courseService.enroll(courseId);
       setEnrolledCourseIds((prev) => new Set([...prev, courseId]));
     } catch (err) {
-      console.error(err);
-      navigate(`/courses/${courseId}`);
+      console.error('Failed to enroll:', err);
     } finally {
       setEnrollingId(null);
     }
   };
 
-  const allCourses = dbCourses.length > 0 ? dbCourses : MOCK_CATALOG_COURSES;
-
+  // Filter and sort catalog courses
   const filteredCourses = useMemo(() => {
-    return allCourses
+    return dbCourses
       .filter((course) => {
         const matchesSearch =
-          searchQuery === '' ||
-          course.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          course.courseCode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          course.description?.toLowerCase().includes(searchQuery.toLowerCase());
+          !searchQuery.trim() ||
+          course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (course.courseCode && course.courseCode.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (course.description && course.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
         const matchesSemester =
           selectedSemester === 'All' ||
-          (course.semester && course.semester.toLowerCase().includes(selectedSemester.toLowerCase()));
+          course.semester === selectedSemester ||
+          `Semester ${course.semester}` === selectedSemester;
 
         const matchesCategory =
           selectedCategory === 'All' ||
-          (course.category && course.category.toLowerCase().includes(selectedCategory.toLowerCase()));
+          course.category === selectedCategory ||
+          course.department === selectedCategory;
 
         return matchesSearch && matchesSemester && matchesCategory;
       })
       .sort((a, b) => {
-        if (sortBy === 'Popularity') return (b.popularity || 0) - (a.popularity || 0);
-        if (sortBy === 'Title') return (a.title || '').localeCompare(b.title || '');
+        if (sortBy === 'Title') return a.title.localeCompare(b.title);
         if (sortBy === 'Course Code') return (a.courseCode || '').localeCompare(b.courseCode || '');
-        return 0;
+        return (b.rating || 4.8) - (a.rating || 4.8);
       });
-  }, [allCourses, searchQuery, selectedSemester, selectedCategory, sortBy]);
+  }, [dbCourses, searchQuery, selectedSemester, selectedCategory, sortBy]);
 
-  const totalPages = Math.ceil(filteredCourses.length / itemsPerPage) || 1;
-  const paginatedCourses = filteredCourses.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  // Paginated slice
+  const paginatedCourses = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredCourses.slice(start, start + itemsPerPage);
+  }, [filteredCourses, currentPage]);
 
-  const recommendedCourses = useMemo(() => allCourses.slice(0, 3), [allCourses]);
+  const totalPages = Math.ceil(filteredCourses.length / itemsPerPage);
+
+  // Recommendations slice
+  const recommendedCourses = useMemo(() => {
+    return dbCourses.slice(0, 4);
+  }, [dbCourses]);
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-8 lg:py-10 w-full font-sans transition-colors duration-200">
+    <main className="mx-auto max-w-[1440px] px-4 py-8 sm:px-8 lg:py-10 w-full transition-colors duration-200">
       
-      {/* 1. HEADER */}
+      {/* 1. TOP HEADER BANNER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight transition-colors">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-zinc-50 tracking-tight transition-colors">
             Explore All Courses | Course Catalog
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1 transition-colors">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 font-medium mt-1 transition-colors">
             Find your next learning adventure
           </p>
         </div>
@@ -133,7 +137,7 @@ function CourseCatalog() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-8">
         {/* Search */}
         <div className="relative">
-          <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-zinc-500">
             <SearchIcon />
           </span>
           <input
@@ -144,13 +148,13 @@ function CourseCatalog() {
               setSearchQuery(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-xs"
+            className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-xs"
           />
         </div>
 
         {/* Semester Filter */}
         <div className="relative">
-          <label className="absolute -top-2 left-3 bg-white dark:bg-slate-900 px-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider z-10">
+          <label className="absolute -top-2 left-3 bg-white dark:bg-zinc-900 px-1 text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider z-10">
             Semester
           </label>
           <select
@@ -159,21 +163,21 @@ function CourseCatalog() {
               setSelectedSemester(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-xs appearance-none cursor-pointer"
+            className="w-full px-3.5 py-2.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-xs appearance-none cursor-pointer"
           >
             <option value="All">All Semesters</option>
             <option value="Fall 2024">Fall 2024</option>
             <option value="Spring 2024">Spring 2024</option>
             <option value="Fall 2023">Fall 2023</option>
           </select>
-          <span className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+          <span className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400 dark:text-zinc-500">
             <ChevronDownIcon className="w-3.5 h-3.5" />
           </span>
         </div>
 
         {/* Category Filter */}
         <div className="relative">
-          <label className="absolute -top-2 left-3 bg-white dark:bg-slate-900 px-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider z-10">
+          <label className="absolute -top-2 left-3 bg-white dark:bg-zinc-900 px-1 text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider z-10">
             Category
           </label>
           <select
@@ -182,33 +186,33 @@ function CourseCatalog() {
               setSelectedCategory(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-xs appearance-none cursor-pointer"
+            className="w-full px-3.5 py-2.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-xs appearance-none cursor-pointer"
           >
             <option value="All">All Categories</option>
             <option value="Computer Science">Computer Science</option>
             <option value="Artificial Intelligence">Artificial Intelligence</option>
             <option value="Data Science">Data Science</option>
           </select>
-          <span className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+          <span className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400 dark:text-zinc-500">
             <ChevronDownIcon className="w-3.5 h-3.5" />
           </span>
         </div>
 
         {/* Sort Filter */}
         <div className="relative">
-          <label className="absolute -top-2 left-3 bg-white dark:bg-slate-900 px-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider z-10">
+          <label className="absolute -top-2 left-3 bg-white dark:bg-zinc-900 px-1 text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider z-10">
             Sort By
           </label>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-xs appearance-none cursor-pointer"
+            className="w-full px-3.5 py-2.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-xs appearance-none cursor-pointer"
           >
             <option value="Popularity">Popularity</option>
             <option value="Title">Title (A-Z)</option>
             <option value="Course Code">Course Code</option>
           </select>
-          <span className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+          <span className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400 dark:text-zinc-500">
             <ChevronDownIcon className="w-3.5 h-3.5" />
           </span>
         </div>
@@ -220,13 +224,13 @@ function CourseCatalog() {
         {/* LEFT COLUMN: AVAILABLE COURSES GRID (2/3 width) */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight transition-colors">
+            <h2 className="text-lg font-extrabold text-slate-900 dark:text-zinc-50 tracking-tight transition-colors">
               Available Courses ({filteredCourses.length})
             </h2>
           </div>
 
           {loading ? (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 text-center text-xs font-bold text-slate-400">
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-8 text-center text-xs font-bold text-slate-400 dark:text-zinc-500">
               Loading courses...
             </div>
           ) : paginatedCourses.length > 0 ? (
@@ -244,16 +248,16 @@ function CourseCatalog() {
               ))}
             </div>
           ) : (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-10 text-center shadow-xs">
-              <p className="text-base font-bold text-slate-900 dark:text-white">No courses match your filter criteria.</p>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Try adjusting your search terms or filters.</p>
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-10 text-center shadow-xs">
+              <p className="text-base font-bold text-slate-900 dark:text-zinc-50">No courses match your filter criteria.</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">Try adjusting your search terms or filters.</p>
               <button
                 onClick={() => {
                   setSearchQuery('');
                   setSelectedSemester('All');
                   setSelectedCategory('All');
                 }}
-                className="mt-4 text-xs font-bold text-blue-600 hover:underline"
+                className="mt-4 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
               >
                 Clear all filters
               </button>
@@ -271,7 +275,7 @@ function CourseCatalog() {
               >
                 &lt; Prev
               </Button>
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">
                 Page {currentPage} of {totalPages}
               </span>
               <Button
@@ -288,8 +292,8 @@ function CourseCatalog() {
 
         {/* RIGHT COLUMN: RECOMMENDED FOR YOU (1/3 width) */}
         <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs space-y-5 sticky top-24 transition-colors">
-            <h2 className="text-base font-extrabold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3.5 transition-colors">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-5 shadow-xs space-y-5 sticky top-24 transition-colors">
+            <h2 className="text-base font-extrabold text-slate-900 dark:text-zinc-50 border-b border-slate-100 dark:border-zinc-800 pb-3.5 transition-colors">
               Recommended for You
             </h2>
 
@@ -316,33 +320,33 @@ function CourseCatalog() {
         title="Fast Enrollment Guide"
         subtitle="How course enrollment and scheduling works"
       >
-        <div className="space-y-4 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+        <div className="space-y-4 text-xs text-slate-600 dark:text-zinc-300 leading-relaxed">
           <div className="flex gap-3">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold shrink-0">1</span>
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold shrink-0">1</span>
             <div>
-              <strong className="block text-slate-900 dark:text-white">Select Your Term & Subject</strong>
+              <strong className="block text-slate-900 dark:text-zinc-50">Select Your Term & Subject</strong>
               Use the semester and category filters above to narrow down offerings that match your degree roadmap.
             </div>
           </div>
 
           <div className="flex gap-3">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold shrink-0">2</span>
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold shrink-0">2</span>
             <div>
-              <strong className="block text-slate-900 dark:text-white">Instant One-Click Enrollment</strong>
+              <strong className="block text-slate-900 dark:text-zinc-50">Instant One-Click Enrollment</strong>
               Click the blue <strong>Enroll</strong> button on any course with the green <em>Open</em> badge for instant registration.
             </div>
           </div>
 
           <div className="flex gap-3">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold shrink-0">3</span>
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold shrink-0">3</span>
             <div>
-              <strong className="block text-slate-900 dark:text-white">Access Your Workspace</strong>
+              <strong className="block text-slate-900 dark:text-zinc-50">Access Your Workspace</strong>
               Enrolled courses immediately appear on your <strong>My Dashboard</strong> workspace with curriculum materials and deadline alerts.
             </div>
           </div>
         </div>
 
-        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-zinc-800 flex justify-end">
           <Button onClick={() => setShowGuideModal(false)}>
             Got it, Let's Explore
           </Button>

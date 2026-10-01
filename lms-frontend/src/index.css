@@ -46,25 +46,23 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Neutral Zinc Dark Mode Specifications */
 :root[data-theme="dark"],
 .dark {
-  --background: #0b1120;
-  --surface: #0f172a;
-  --surface-muted: #1e293b;
+  --background: #09090b; /* Base Canvas: bg-zinc-950 */
+  --surface: #18181b;    /* Surface Cards & Widgets: bg-zinc-900 */
+  --surface-muted: #27272a; /* Pill & Inputs: bg-zinc-800 */
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #fafafa;   /* Primary Text: text-zinc-50 */
+  --text-secondary: #a1a1aa; /* Secondary Text: text-zinc-400 */
+  --text-muted: #71717a;     /* Muted Text: text-zinc-500 */
 
-  --border: #1e293b;
-  --border-focus: #3b82f6;
+  --border: #27272a;         /* Crisp 1px Borders: border-zinc-800 */
+  --border-focus: #2563eb;   /* Action Accent: blue-600 */
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md:
-    0 4px 6px -1px rgba(0, 0, 0, 0.4),
-    0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg:
-    0 20px 40px rgba(0, 0, 0, 0.5);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
 }
 
 * {
@@ -110,8 +108,8 @@ a {
 }
 
 .dark ::selection {
-  background: #1e3a8a;
-  color: #bfdbfe;
+  background: #2563eb;
+  color: #fafafa;
 }
 
 ::-webkit-scrollbar {
@@ -123,7 +121,7 @@ a {
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #09090b;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -132,7 +130,7 @@ a {
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #27272a;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -140,7 +138,7 @@ a {
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #3f3f46;
 }
 
 #root {
@@ -172,7 +170,7 @@ a {
 .hub-lift:focus-visible,
 .hub-nav:focus-visible,
 .hub-footer-link:focus-visible {
-  outline: 3px solid rgba(112, 92, 255, 0.45);
+  outline: 3px solid rgba(37, 99, 235, 0.45);
   outline-offset: 3px;
 }
 

@@ -26,8 +26,8 @@ export function CourseCard({
   const status = course.status || (index === 0 ? 'Cors badged' : 'Status');
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition flex flex-col overflow-hidden group">
-      {/* Banner */}
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-xs hover:shadow-md transition flex flex-col overflow-hidden group">
+      {/* Dark-themed blueprint or geometric graphic banner */}
       <div
         onClick={() => navigate(`/courses/${course.id}`)}
         className="h-32 relative overflow-hidden cursor-pointer"
@@ -43,24 +43,24 @@ export function CourseCard({
       <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
         <div>
           {mode === 'catalog' && (
-            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">
+            <p className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-0.5">
               {course.semester || 'Fall 2024'}
             </p>
           )}
 
           <h3
             onClick={() => navigate(`/courses/${course.id}`)}
-            className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition cursor-pointer"
+            className="font-bold text-slate-900 dark:text-zinc-50 text-xs sm:text-sm line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition cursor-pointer"
           >
             {course.courseCode ? `${course.courseCode}: ` : ''}{course.title}
           </h3>
 
           {mode === 'catalog' ? (
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
+            <p className="text-[11px] text-slate-500 dark:text-zinc-400 line-clamp-2 mt-1 leading-relaxed">
               {course.description || 'Learn fundamental concepts, theories, and practical applications.'}
             </p>
           ) : (
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium">
+            <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 font-medium">
               {instructor}
             </p>
           )}
@@ -70,14 +70,14 @@ export function CourseCard({
         {mode === 'student' ? (
           <div className="space-y-2.5">
             {/* Progress line */}
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-400 gap-2">
-              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-zinc-400 gap-2">
+              <div className="w-full bg-slate-100 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
                 <div
                   className="bg-blue-600 dark:bg-blue-500 h-1.5 rounded-full transition-all duration-500"
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">{progress}%</span>
+              <span className="text-[10px] font-bold text-slate-600 dark:text-zinc-300">{progress}%</span>
             </div>
 
             {/* Action Row */}
@@ -95,14 +95,14 @@ export function CourseCard({
           </div>
         ) : (
           /* Catalog mode footer */
-          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+          <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
               <img
                 src={instructorAvatar}
                 alt={instructor}
-                className="h-6 w-6 rounded-full object-cover shrink-0 border border-slate-200 dark:border-slate-700"
+                className="h-6 w-6 rounded-full object-cover shrink-0 border border-slate-200 dark:border-zinc-700"
               />
-              <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 truncate">
+              <span className="text-[11px] font-medium text-slate-700 dark:text-zinc-300 truncate">
                 {instructor}
               </span>
             </div>
@@ -141,7 +141,7 @@ export function RecommendedCourseItem({ course, index = 0, isEnrolled, onEnroll 
   const navigate = useNavigate();
 
   return (
-    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-3">
+    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800 space-y-3">
       <div className="flex items-start gap-3">
         {/* Mini Thumbnail */}
         <div
@@ -156,11 +156,11 @@ export function RecommendedCourseItem({ course, index = 0, isEnrolled, onEnroll 
         <div className="min-w-0">
           <h4
             onClick={() => navigate(`/courses/${course.id}`)}
-            className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1 cursor-pointer hover:text-blue-600 transition"
+            className="text-xs font-bold text-slate-900 dark:text-zinc-50 line-clamp-1 cursor-pointer hover:text-blue-600 transition"
           >
             {course.courseCode ? `${course.courseCode}: ` : ''}{course.title}
           </h4>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">
+          <p className="text-[10px] text-slate-500 dark:text-zinc-400 line-clamp-2 mt-0.5">
             {course.description}
           </p>
         </div>
@@ -171,9 +171,9 @@ export function RecommendedCourseItem({ course, index = 0, isEnrolled, onEnroll 
           <img
             src={course.instructorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80'}
             alt={course.instructorName}
-            className="h-5 w-5 rounded-full object-cover border border-slate-200 dark:border-slate-700"
+            className="h-5 w-5 rounded-full object-cover border border-slate-200 dark:border-zinc-700"
           />
-          <span className="text-[10px] font-medium text-slate-600 dark:text-slate-300">
+          <span className="text-[10px] font-medium text-slate-600 dark:text-zinc-300">
             {course.instructorName || 'Dr. Grace Hopper'}
           </span>
         </div>
@@ -183,7 +183,7 @@ export function RecommendedCourseItem({ course, index = 0, isEnrolled, onEnroll 
           {isEnrolled ? (
             <button
               onClick={() => navigate(`/courses/${course.id}`)}
-              className="text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:underline px-2 py-1"
+              className="text-[10px] font-bold text-slate-600 dark:text-zinc-300 hover:underline px-2 py-1 cursor-pointer"
             >
               View
             </button>
