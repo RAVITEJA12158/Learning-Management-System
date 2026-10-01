@@ -46,6 +46,27 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+:root[data-theme="dark"],
+.dark {
+  --background: #0b1120;
+  --surface: #0f172a;
+  --surface-muted: #1e293b;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --border: #1e293b;
+  --border-focus: #3b82f6;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.4),
+    0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg:
+    0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -60,6 +81,7 @@ body {
   min-height: 100vh;
   background: var(--background);
   color: var(--text-primary);
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
 button,
@@ -87,6 +109,11 @@ a {
   color: #1e3a8a;
 }
 
+.dark ::selection {
+  background: #1e3a8a;
+  color: #bfdbfe;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -95,20 +122,32 @@ a {
   background: #f1f5f9;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
 ::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background: #cbd5e1;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
 #root {
   min-height: 100vh;
 }
 
-/* CourseHub's shared interaction language: every clickable or card-like item feels responsive. */
+/* CourseHub's shared interaction language */
 .hub-lift,
 .hub-nav,
 .hub-footer-link {
