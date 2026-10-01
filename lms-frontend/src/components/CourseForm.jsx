@@ -11,7 +11,8 @@ function CourseForm() {
     title: '',
     courseCode: '',
     description: '',
-    semester: ''
+    semester: '',
+    bannerUrl: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -29,7 +30,8 @@ function CourseForm() {
         title: data.title || '',
         courseCode: data.courseCode || '',
         description: data.description || '',
-        semester: data.semester || ''
+        semester: data.semester || '',
+        bannerUrl: data.bannerUrl || data.banner || data.imageUrl || ''
       });
     } catch (err) {
       setError('Failed to load course data.');
@@ -135,13 +137,28 @@ function CourseForm() {
 
           <div>
             <label className="mb-2 block text-[10px] font-black uppercase tracking-[.12em] text-[#151515]/55">
+              Course Banner Image URL (Optional)
+            </label>
+            <input 
+              type="url" 
+              name="bannerUrl"
+              value={formData.bannerUrl} 
+              onChange={handleChange} 
+              placeholder="https://example.com/course-banner.png"
+              className="w-full rounded-[20px] border border-black/10 bg-white px-5 py-4 text-sm font-medium text-[#151515] shadow-sm outline-none transition hover:border-black/25 focus:border-[#151515] focus:ring-4 focus:ring-black/[0.05]"
+            />
+            <p className="mt-1 text-[11px] text-slate-400">If left empty, a dynamic graphic banner matching course subject will be generated automatically.</p>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-[10px] font-black uppercase tracking-[.12em] text-[#151515]/55">
               Description
             </label>
             <textarea 
               name="description"
               value={formData.description} 
               onChange={handleChange} 
-              rows="5"
+              rows="4"
               placeholder="Detailed description of the course..."
               className="w-full resize-y rounded-[20px] border border-black/10 bg-white px-5 py-4 text-sm font-medium text-[#151515] shadow-sm outline-none transition hover:border-black/25 focus:border-[#151515] focus:ring-4 focus:ring-black/[0.05]"
             ></textarea>

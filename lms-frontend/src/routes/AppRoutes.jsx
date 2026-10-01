@@ -8,6 +8,9 @@ import AdminDashboard from '../pages/Admin/AdminDashboard'
 import CourseCatalog from '../pages/CourseCatalog'
 import CourseDetails from '../pages/CourseDetails'
 import CourseForm from '../components/CourseForm'
+import Profile from '../pages/Profile'
+import Settings from '../pages/Settings'
+import Contact from '../pages/Contact'
 import DashboardLayout from '../components/layout/DashboardLayout'
 
 function AppRoutes() {
@@ -26,6 +29,9 @@ function AppRoutes() {
         <Route path="/courses/:id" element={<CourseDetails />} />
         <Route path="/faculty/courses/new" element={<CourseForm />} />
         <Route path="/faculty/courses/:id/edit" element={<CourseForm />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/contact" element={<Contact />} />
       </Route>
     </Routes>
   )
