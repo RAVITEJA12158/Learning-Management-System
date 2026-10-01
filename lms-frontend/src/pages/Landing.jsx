@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import BrandMark from '../components/common/BrandMark'
 
 const featureCards = [
   {
@@ -169,27 +170,6 @@ function Landing() {
   )
 }
 
-/* ============================================================
-   BRAND
-============================================================ */
-
-function BrandMark({
-  dark = false,
-}) {
-  return (
-    <span
-      className={`relative flex h-10 w-10 items-center justify-center rounded-[13px] ${
-        dark
-          ? 'bg-white text-[#151515]'
-          : 'bg-[#151515] text-white'
-      }`}
-    >
-      <span className="h-3.5 w-3.5 rounded-[4px] border-2 border-current" />
-
-      <span className="absolute h-1.5 w-1.5 translate-x-2.5 -translate-y-2.5 rounded-full bg-[#E85B43]" />
-    </span>
-  )
-}
 
 /* ============================================================
    GLYPH

@@ -1,114 +1,353 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { courseService } from '../services/courseService';
+import { MOCK_CATALOG_COURSES } from '../utils/mockData';
+import { CourseCard, RecommendedCourseItem } from '../components/common/CourseCard';
+import Modal from '../components/common/Modal';
+import Button from '../components/common/Button';
+import { SearchIcon, ChevronDownIcon } from '../components/common/Icons';
 
 function CourseCatalog() {
-  const [courses, setCourses] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const [dbCourses, setDbCourses] = useState([]);
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState(new Set());
+  const [loading, setLoading] = useState(true);
+  const [enrollingId, setEnrollingId] = useState(null);
+
+  // Filters & Search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSemester, setSelectedSemester] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [sortBy, setSortBy] = useState('Popularity');
+
+  // Fast Enrollment Guide Modal
+  const [showGuideModal, setShowGuideModal] = useState(false);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9;
+
   useEffect(() => {
-    fetchCourses();
+    fetchData();
   }, []);
 
-  const fetchCourses = async (query = '') => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const data = await courseService.getAll(query);
-      setCourses(data);
+      const [allData, enrolledData] = await Promise.allSettled([
+        courseService.getAll(),
+        courseService.getEnrolled(),
+      ]);
+
+      if (allData.status === 'fulfilled' && Array.isArray(allData.value) && allData.value.length > 0) {
+        setDbCourses(allData.value);
+      } else {
+        setDbCourses(MOCK_CATALOG_COURSES);
+      }
+
+      if (enrolledData.status === 'fulfilled' && Array.isArray(enrolledData.value)) {
+        setEnrolledCourseIds(new Set(enrolledData.value.map((c) => c.id)));
+      }
     } catch (err) {
-      console.error('Failed to fetch courses:', err);
+      console.error('Failed to load courses:', err);
+      setDbCourses(MOCK_CATALOG_COURSES);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    fetchCourses(searchQuery);
+  const handleEnroll = async (courseId) => {
+    setEnrollingId(courseId);
+    try {
+      await courseService.enroll(courseId);
+      setEnrolledCourseIds((prev) => new Set([...prev, courseId]));
+    } catch (err) {
+      console.error(err);
+      navigate(`/courses/${courseId}`);
+    } finally {
+      setEnrollingId(null);
+    }
   };
 
+  const allCourses = dbCourses.length > 0 ? dbCourses : MOCK_CATALOG_COURSES;
+
+  const filteredCourses = useMemo(() => {
+    return allCourses
+      .filter((course) => {
+        const matchesSearch =
+          searchQuery === '' ||
+          course.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          course.courseCode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          course.description?.toLowerCase().includes(searchQuery.toLowerCase());
+
+        const matchesSemester =
+          selectedSemester === 'All' ||
+          (course.semester && course.semester.toLowerCase().includes(selectedSemester.toLowerCase()));
+
+        const matchesCategory =
+          selectedCategory === 'All' ||
+          (course.category && course.category.toLowerCase().includes(selectedCategory.toLowerCase()));
+
+        return matchesSearch && matchesSemester && matchesCategory;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'Popularity') return (b.popularity || 0) - (a.popularity || 0);
+        if (sortBy === 'Title') return (a.title || '').localeCompare(b.title || '');
+        if (sortBy === 'Course Code') return (a.courseCode || '').localeCompare(b.courseCode || '');
+        return 0;
+      });
+  }, [allCourses, searchQuery, selectedSemester, selectedCategory, sortBy]);
+
+  const totalPages = Math.ceil(filteredCourses.length / itemsPerPage) || 1;
+  const paginatedCourses = filteredCourses.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const recommendedCourses = useMemo(() => allCourses.slice(0, 3), [allCourses]);
+
   return (
-    <main className="relative z-10 mx-auto max-w-7xl px-5 pb-20 pt-10 sm:px-8 lg:pb-28 w-full">
-      <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-8 lg:py-10 w-full font-sans transition-colors duration-200">
+      
+      {/* 1. HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <p className="text-xs font-black uppercase tracking-[.18em] text-[#E85B43]">
-            Course Catalog
-          </p>
-          <h1 className="mt-4 text-4xl font-black leading-[.98] tracking-[-.055em] sm:text-5xl">
-            Browse All Courses
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight transition-colors">
+            Explore All Courses | Course Catalog
           </h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1 transition-colors">
+            Find your next learning adventure
+          </p>
         </div>
-        <button 
-          onClick={() => navigate(-1)}
-          className="hub-lift rounded-full border border-black/10 bg-white px-6 py-3 text-sm font-black text-[#151515] hover:border-black/25"
+
+        <Button
+          onClick={() => setShowGuideModal(true)}
+          className="self-start sm:self-auto shrink-0"
         >
-          ← Back
-        </button>
+          View Fast Enrollment Guide
+        </Button>
       </div>
 
-      <form onSubmit={handleSearch} className="mb-12 flex flex-col sm:flex-row gap-3 max-w-2xl">
-        <div className="relative flex-1">
-          <input 
-            type="text" 
-            placeholder="Search by title or course code..." 
+      {/* 2. FILTERS & SEARCH ROW */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-8">
+        {/* Search */}
+        <div className="relative">
+          <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <SearchIcon />
+          </span>
+          <input
+            type="text"
+            placeholder="Search by course code or title..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-[20px] border border-black/10 bg-white px-6 py-4 text-sm font-medium text-[#151515] shadow-sm outline-none transition hover:border-black/25 focus:border-[#151515] focus:ring-4 focus:ring-black/[0.05] placeholder:text-black/35"
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-xs"
           />
         </div>
-        <button 
-          type="submit" 
-          className="hub-lift shrink-0 rounded-[20px] bg-[#151515] px-8 py-4 text-sm font-black text-white hover:bg-[#292929]"
-        >
-          Search
-        </button>
-      </form>
 
-      {loading ? (
-        <div className="text-sm font-bold text-[#151515]/55">Loading courses...</div>
-      ) : courses.length > 0 ? (
-        <div className="grid gap-5 lg:grid-cols-3">
-          {courses.map(course => (
-            <div
-              key={course.id}
-              className="hub-lift group flex h-full flex-col justify-between rounded-[24px] border border-black/10 bg-white p-6 shadow-[0_15px_40px_rgba(21,21,21,.04)]"
-            >
-              <div>
-                <div className="flex items-start justify-between">
-                  <span className="inline-block rounded-full bg-[#FFB39E] px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-[#321D18]">
-                    {course.courseCode}
-                  </span>
-                  <span className="text-[10px] font-bold text-[#151515]/40">
-                    Sem {course.semester}
-                  </span>
-                </div>
-                <h3 className="mt-5 text-xl font-black leading-tight tracking-[-.03em] text-[#151515]">
-                  {course.title}
-                </h3>
-                <p className="mt-3 text-sm leading-6 text-[#151515]/55">
-                  {course.description?.substring(0, 100)}...
-                </p>
-              </div>
+        {/* Semester Filter */}
+        <div className="relative">
+          <label className="absolute -top-2 left-3 bg-white dark:bg-slate-900 px-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider z-10">
+            Semester
+          </label>
+          <select
+            value={selectedSemester}
+            onChange={(e) => {
+              setSelectedSemester(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-xs appearance-none cursor-pointer"
+          >
+            <option value="All">All Semesters</option>
+            <option value="Fall 2024">Fall 2024</option>
+            <option value="Spring 2024">Spring 2024</option>
+            <option value="Fall 2023">Fall 2023</option>
+          </select>
+          <span className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+            <ChevronDownIcon className="w-3.5 h-3.5" />
+          </span>
+        </div>
 
-              <div className="mt-8 border-t border-black/5 pt-5">
-                <button
-                  onClick={() => navigate(`/courses/${course.id}`)}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#151515] py-3 text-xs font-black text-white hover:bg-[#292929]"
-                >
-                  View Details <span className="text-[#FFB39E]">→</span>
-                </button>
-              </div>
+        {/* Category Filter */}
+        <div className="relative">
+          <label className="absolute -top-2 left-3 bg-white dark:bg-slate-900 px-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider z-10">
+            Category
+          </label>
+          <select
+            value={selectedCategory}
+            onChange={(e) => {
+              setSelectedCategory(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-xs appearance-none cursor-pointer"
+          >
+            <option value="All">All Categories</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="Artificial Intelligence">Artificial Intelligence</option>
+            <option value="Data Science">Data Science</option>
+          </select>
+          <span className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+            <ChevronDownIcon className="w-3.5 h-3.5" />
+          </span>
+        </div>
+
+        {/* Sort Filter */}
+        <div className="relative">
+          <label className="absolute -top-2 left-3 bg-white dark:bg-slate-900 px-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider z-10">
+            Sort By
+          </label>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-xs appearance-none cursor-pointer"
+          >
+            <option value="Popularity">Popularity</option>
+            <option value="Title">Title (A-Z)</option>
+            <option value="Course Code">Course Code</option>
+          </select>
+          <span className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+            <ChevronDownIcon className="w-3.5 h-3.5" />
+          </span>
+        </div>
+      </div>
+
+      {/* 3. MAIN 2-COLUMN LAYOUT */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* LEFT COLUMN: AVAILABLE COURSES GRID (2/3 width) */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight transition-colors">
+              Available Courses ({filteredCourses.length})
+            </h2>
+          </div>
+
+          {loading ? (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 text-center text-xs font-bold text-slate-400">
+              Loading courses...
             </div>
-          ))}
+          ) : paginatedCourses.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {paginatedCourses.map((course, idx) => (
+                <CourseCard
+                  key={course.id || idx}
+                  course={course}
+                  index={idx}
+                  mode="catalog"
+                  isEnrolled={enrolledCourseIds.has(course.id)}
+                  isEnrolling={enrollingId === course.id}
+                  onEnroll={handleEnroll}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-10 text-center shadow-xs">
+              <p className="text-base font-bold text-slate-900 dark:text-white">No courses match your filter criteria.</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Try adjusting your search terms or filters.</p>
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedSemester('All');
+                  setSelectedCategory('All');
+                }}
+                className="mt-4 text-xs font-bold text-blue-600 hover:underline"
+              >
+                Clear all filters
+              </button>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                &lt; Prev
+              </Button>
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                Next &gt;
+              </Button>
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="rounded-[28px] border border-black/10 bg-white p-10 text-center shadow-[0_25px_70px_rgba(21,21,21,.07)]">
-          <p className="text-lg font-black text-[#151515]">No courses found.</p>
-          <p className="mt-2 text-sm text-[#151515]/55">Try adjusting your search criteria.</p>
+
+        {/* RIGHT COLUMN: RECOMMENDED FOR YOU (1/3 width) */}
+        <div className="lg:col-span-1">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs space-y-5 sticky top-24 transition-colors">
+            <h2 className="text-base font-extrabold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3.5 transition-colors">
+              Recommended for You
+            </h2>
+
+            <div className="space-y-4">
+              {recommendedCourses.map((rec, rIdx) => (
+                <RecommendedCourseItem
+                  key={rec.id || rIdx}
+                  course={rec}
+                  index={rIdx}
+                  isEnrolled={enrolledCourseIds.has(rec.id)}
+                  onEnroll={handleEnroll}
+                />
+              ))}
+            </div>
+          </div>
         </div>
-      )}
+
+      </div>
+
+      {/* 4. FAST ENROLLMENT GUIDE MODAL */}
+      <Modal
+        isOpen={showGuideModal}
+        onClose={() => setShowGuideModal(false)}
+        title="Fast Enrollment Guide"
+        subtitle="How course enrollment and scheduling works"
+      >
+        <div className="space-y-4 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+          <div className="flex gap-3">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold shrink-0">1</span>
+            <div>
+              <strong className="block text-slate-900 dark:text-white">Select Your Term & Subject</strong>
+              Use the semester and category filters above to narrow down offerings that match your degree roadmap.
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold shrink-0">2</span>
+            <div>
+              <strong className="block text-slate-900 dark:text-white">Instant One-Click Enrollment</strong>
+              Click the blue <strong>Enroll</strong> button on any course with the green <em>Open</em> badge for instant registration.
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold shrink-0">3</span>
+            <div>
+              <strong className="block text-slate-900 dark:text-white">Access Your Workspace</strong>
+              Enrolled courses immediately appear on your <strong>My Dashboard</strong> workspace with curriculum materials and deadline alerts.
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+          <Button onClick={() => setShowGuideModal(false)}>
+            Got it, Let's Explore
+          </Button>
+        </div>
+      </Modal>
     </main>
   );
 }

@@ -1,20 +1,21 @@
 import { useState, useRef, useEffect } from 'react';
-import { Outlet, useNavigate, Link } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-
-function BrandMark({ dark = false }) {
-  return (
-    <span
-      className={`relative flex h-8 w-8 items-center justify-center rounded-[10px] ${
-        dark ? 'bg-white text-[#151515]' : 'bg-[#151515] text-white dark:bg-blue-600 dark:text-white'
-      }`}
-    >
-      <span className="h-2.5 w-2.5 rounded-[3px] border-2 border-current" />
-      <span className="absolute h-1.5 w-1.5 translate-x-2 -translate-y-2 rounded-full bg-[#FF7659]" />
-    </span>
-  );
-}
+import BrandMark from '../common/BrandMark';
+import Footer from './Footer';
+import {
+  SearchIcon,
+  BellIcon,
+  ChevronDownIcon,
+  SunIcon,
+  MoonIcon,
+  UserIcon,
+  CogIcon,
+  MailIcon,
+  BookIcon,
+  LogoutIcon,
+} from '../common/Icons';
 
 function DashboardLayout() {
   const navigate = useNavigate();
@@ -50,9 +51,10 @@ function DashboardLayout() {
 
   const getDashboardPath = () => {
     if (!user) return '/login';
-    if (user.role === 'student' || user.role === 'STUDENT') return '/student';
-    if (user.role === 'faculty' || user.role === 'FACULTY') return '/faculty';
-    if (user.role === 'admin' || user.role === 'ADMIN') return '/admin';
+    const role = user.role?.toLowerCase();
+    if (role === 'student') return '/student';
+    if (role === 'faculty') return '/faculty';
+    if (role === 'admin') return '/admin';
     return '/student';
   };
 
@@ -65,7 +67,7 @@ function DashboardLayout() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#F3F6FA] dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
-      {/* HEADER MATCHING IMAGE WITH COURSEHUB BRANDING & DARK MODE */}
+      {/* HEADER WITH BRANDING & THEME TOGGLE */}
       <header className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-xs transition-colors duration-200">
         <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 sm:px-8">
           
@@ -73,7 +75,7 @@ function DashboardLayout() {
           <div className="flex items-center gap-8">
             <button 
               onClick={() => navigate(getDashboardPath())} 
-              className="hub-lift flex items-center gap-3"
+              className="hub-lift flex items-center gap-3 cursor-pointer"
             >
               <BrandMark dark={isDark} />
               <span className="text-lg font-black tracking-[-.06em] text-[#151515] dark:text-white transition-colors">
@@ -84,21 +86,15 @@ function DashboardLayout() {
             <nav className="hidden items-center gap-6 lg:flex">
               <button 
                 onClick={() => navigate(getDashboardPath())} 
-                className="text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition"
+                className="text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer"
               >
                 My Courses
               </button>
               <button 
                 onClick={() => navigate('/courses')} 
-                className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
+                className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
               >
-                Resources
-              </button>
-              <button 
-                onClick={() => navigate('/courses')} 
-                className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
-              >
-                Community
+                Catalog & Resources
               </button>
             </nav>
           </div>
@@ -108,13 +104,11 @@ function DashboardLayout() {
             {/* Search Input Box */}
             <form onSubmit={handleSearchSubmit} className="relative">
               <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                <SearchIcon className="w-4 h-4" />
               </span>
               <input
                 type="text"
-                placeholder="Search"
+                placeholder="Search courses..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 pr-4 py-2 w-40 lg:w-56 bg-slate-100/80 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 rounded-full text-xs font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
@@ -124,29 +118,23 @@ function DashboardLayout() {
             {/* Quick Theme Toggle Button */}
             <button
               onClick={toggleTheme}
-              className="p-2.5 text-slate-600 dark:text-slate-300 bg-slate-100/70 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 rounded-full hover:bg-slate-200/70 dark:hover:bg-slate-700 transition"
+              className="p-2.5 text-slate-600 dark:text-slate-300 bg-slate-100/70 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 rounded-full hover:bg-slate-200/70 dark:hover:bg-slate-700 transition cursor-pointer"
               title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               aria-label="Toggle Theme"
             >
               {isDark ? (
-                <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
+                <SunIcon className="w-4 h-4 text-amber-400" />
               ) : (
-                <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
+                <MoonIcon className="w-4 h-4 text-slate-600" />
               )}
             </button>
 
             {/* Notification Bell Button */}
             <button 
-              className="relative p-2.5 text-slate-600 dark:text-slate-300 bg-slate-100/70 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 rounded-full hover:bg-slate-200/70 dark:hover:bg-slate-700 transition"
+              className="relative p-2.5 text-slate-600 dark:text-slate-300 bg-slate-100/70 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 rounded-full hover:bg-slate-200/70 dark:hover:bg-slate-700 transition cursor-pointer"
               aria-label="Notifications"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
+              <BellIcon className="w-4 h-4" />
               <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-blue-600 rounded-full text-[9px] font-extrabold text-white flex items-center justify-center border-2 border-white dark:border-slate-900">
                 1
               </span>
@@ -156,7 +144,7 @@ function DashboardLayout() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center gap-2.5 p-1 pr-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                className="flex items-center gap-2.5 p-1 pr-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <img
                   src={user?.avatar || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80"}
@@ -166,9 +154,7 @@ function DashboardLayout() {
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                   {user?.name || 'Sarah Jensen'}
                 </span>
-                <svg className={`w-3.5 h-3.5 text-slate-500 transition-transform ${profileOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-                </svg>
+                <ChevronDownIcon className={`w-3.5 h-3.5 text-slate-500 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Clickable Profile Dropdown Menu */}
@@ -185,37 +171,37 @@ function DashboardLayout() {
                   <div className="py-1">
                     <button
                       onClick={() => { setProfileOpen(false); navigate('/profile'); }}
-                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2.5 transition"
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2.5 transition cursor-pointer"
                     >
-                      <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                      <UserIcon className="w-4 h-4 text-slate-400" />
                       Profile
                     </button>
                     <button
                       onClick={() => { setProfileOpen(false); navigate('/settings'); }}
-                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2.5 transition"
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2.5 transition cursor-pointer"
                     >
-                      <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                      <CogIcon className="w-4 h-4 text-slate-400" />
                       Settings
                     </button>
                     <button
                       onClick={() => { setProfileOpen(false); navigate('/contact'); }}
-                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2.5 transition"
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2.5 transition cursor-pointer"
                     >
-                      <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                      <MailIcon className="w-4 h-4 text-slate-400" />
                       Contact Support
                     </button>
                     <button
                       onClick={() => { toggleTheme(); }}
-                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2.5 transition"
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2.5 transition cursor-pointer"
                     >
-                      <span className="text-sm">{isDark ? '☀️' : '🌙'}</span>
+                      {isDark ? <SunIcon className="w-4 h-4 text-amber-400" /> : <MoonIcon className="w-4 h-4 text-slate-600" />}
                       {isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                     </button>
                     <button
                       onClick={() => { setProfileOpen(false); navigate(getDashboardPath()); }}
-                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2.5 transition"
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-2.5 transition cursor-pointer"
                     >
-                      <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                      <BookIcon className="w-4 h-4 text-slate-400" />
                       My Dashboard
                     </button>
                   </div>
@@ -223,9 +209,9 @@ function DashboardLayout() {
                   <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2.5 transition"
+                      className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2.5 transition cursor-pointer"
                     >
-                      <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                      <LogoutIcon className="w-4 h-4 text-red-500" />
                       Sign out
                     </button>
                   </div>
@@ -238,13 +224,13 @@ function DashboardLayout() {
           <div className="flex items-center gap-2 sm:hidden">
             <button
               onClick={toggleTheme}
-              className="p-2 text-slate-600 dark:text-slate-300 rounded-full border border-slate-200 dark:border-slate-700"
+              className="p-2 text-slate-600 dark:text-slate-300 rounded-full border border-slate-200 dark:border-slate-700 cursor-pointer"
             >
-              {isDark ? '☀️' : '🌙'}
+              {isDark ? <SunIcon className="w-4 h-4 text-amber-400" /> : <MoonIcon className="w-4 h-4 text-slate-600" />}
             </button>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="rounded-full border border-slate-200 dark:border-slate-700 p-2 text-slate-700 dark:text-slate-200"
+              className="rounded-full border border-slate-200 dark:border-slate-700 p-2 text-slate-700 dark:text-slate-200 cursor-pointer"
             >
               <span className="block h-0.5 w-4 bg-current mb-1"></span>
               <span className="block h-0.5 w-4 bg-current mb-1"></span>
@@ -287,19 +273,8 @@ function DashboardLayout() {
         <Outlet />
       </div>
 
-      {/* FOOTER (SAME AS BEFORE) */}
-      <footer className="bg-[#151515] text-white">
-        <div className="mx-auto flex max-w-7xl flex-wrap justify-between gap-3 px-5 py-8 text-xs text-white/40 sm:px-8">
-          <div className="flex items-center gap-3">
-            <BrandMark dark />
-            <span className="text-sm font-black tracking-[-.05em] text-white">CourseHub</span>
-          </div>
-          <div className="flex items-center gap-5">
-            <span>© 2026 CourseHub.</span>
-            <span>Privacy · Terms</span>
-          </div>
-        </div>
-      </footer>
+      {/* GLOBAL REUSABLE FOOTER */}
+      <Footer />
     </div>
   );
 }

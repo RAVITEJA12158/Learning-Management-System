@@ -1,10 +1,21 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { courseService, progressService, assignmentService } from '../services/courseService';
 import { useAuth } from '../context/AuthContext';
 import ContentViewerModal from '../components/ContentViewerModal';
 import ModuleCurriculumManager from '../components/ModuleCurriculumManager';
 import CourseAssignmentsManager from '../components/CourseAssignmentsManager';
+import Button from '../components/common/Button';
+import Badge from '../components/common/Badge';
+import {
+  ChartIcon,
+  ChevronDownIcon,
+  VideoIcon,
+  LinkIcon,
+  DocumentIcon,
+  BellIcon,
+  CheckIcon,
+} from '../components/common/Icons';
 
 function CourseDetails() {
   const { id } = useParams();
@@ -151,7 +162,6 @@ function CourseDetails() {
     }));
   };
 
-  // Helper to calculate module progress percentage
   const calculateModuleProgress = (module) => {
     if (!module.content || module.content.length === 0) return 0;
     const completedCount = module.content.filter((c) => completedItems[c.id]).length;
@@ -208,30 +218,30 @@ function CourseDetails() {
           {/* Enroll / Drop Buttons */}
           <div className="mt-3 flex items-center gap-3">
             {isCreatorOrStaff ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-300">
+              <Badge variant="neutral">
                 🛡️ Staff Workspace
-              </span>
+              </Badge>
             ) : isEnrolled ? (
               <div className="flex items-center gap-3">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-3 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+                <Badge variant="success">
                   ✓ Enrolled
-                </span>
+                </Badge>
                 <button
                   onClick={handleDrop}
                   disabled={enrolling}
-                  className="text-[11px] font-bold text-red-600 dark:text-red-400 hover:underline"
+                  className="text-[11px] font-bold text-red-600 dark:text-red-400 hover:underline cursor-pointer"
                 >
                   {enrolling ? 'Processing...' : 'Drop Course'}
                 </button>
               </div>
             ) : (
-              <button
+              <Button
                 onClick={handleEnroll}
                 disabled={enrolling}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition shadow-xs"
+                size="sm"
               >
                 {enrolling ? 'Enrolling...' : 'Enroll in Course'}
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -240,9 +250,7 @@ function CourseDetails() {
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs flex items-center justify-between gap-4 shrink-0 min-w-[240px] transition-colors">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
+              <ChartIcon className="w-5 h-5" />
             </div>
             <div>
               <p className="text-sm font-bold text-slate-900 dark:text-white">{overallCompletionPercent}% Complete</p>
@@ -275,7 +283,7 @@ function CourseDetails() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`pb-3 text-xs sm:text-sm font-bold transition whitespace-nowrap relative ${
+            className={`pb-3 text-xs sm:text-sm font-bold transition whitespace-nowrap relative cursor-pointer ${
               activeTab === tab.id
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
@@ -307,14 +315,14 @@ function CourseDetails() {
                     <h3 className="text-xs font-bold text-slate-900 dark:text-white">Web Dev Quiz 1</h3>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Duration: 30 mins · 15 Questions</p>
                   </div>
-                  <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-950/40 px-3 py-1 rounded-full">Active</span>
+                  <Badge variant="active">Active</Badge>
                 </div>
                 <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
                   <div>
                     <h3 className="text-xs font-bold text-slate-900 dark:text-white">Algo Quiz 4</h3>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Duration: 45 mins · 20 Questions</p>
                   </div>
-                  <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-950/40 px-3 py-1 rounded-full">Active</span>
+                  <Badge variant="active">Active</Badge>
                 </div>
               </div>
             </div>
@@ -354,7 +362,7 @@ function CourseDetails() {
                 {isCreatorOrStaff && (
                   <button
                     onClick={() => setActiveTab('modules_manage')}
-                    className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                    className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                   >
                     + Manage Modules
                   </button>
@@ -385,18 +393,13 @@ function CourseDetails() {
                           className="p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition select-none"
                         >
                           <div className="flex items-center gap-3">
-                            <button className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
-                              <svg
+                            <span className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition">
+                              <ChevronDownIcon
                                 className={`w-4 h-4 transition-transform duration-200 ${
                                   isExpanded ? 'rotate-180' : ''
                                 }`}
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-                              </svg>
-                            </button>
+                              />
+                            </span>
                             <div>
                               <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
                                 Module {module.position || mIdx + 1}: {module.title}
@@ -432,18 +435,11 @@ function CourseDetails() {
                                       {/* Content Type Icon Tile */}
                                       <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 shrink-0">
                                         {contentType.includes('VIDEO') ? (
-                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                          </svg>
+                                          <VideoIcon className="w-4 h-4" />
                                         ) : contentType.includes('LINK') || contentType.includes('URL') ? (
-                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                          </svg>
+                                          <LinkIcon className="w-4 h-4" />
                                         ) : (
-                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                          </svg>
+                                          <DocumentIcon className="w-4 h-4" />
                                         )}
                                       </div>
 
@@ -464,12 +460,12 @@ function CourseDetails() {
                                       {isEnrolled && (
                                         <button
                                           onClick={(e) => handleToggleContentProgress(c.id, !isCompleted, e)}
-                                          className="p-1"
+                                          className="p-1 cursor-pointer"
                                           title={isCompleted ? 'Mark incomplete' : 'Mark complete'}
                                         >
                                           {isCompleted ? (
                                             <span className="h-5 w-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold">
-                                              ✓
+                                              <CheckIcon className="w-3 h-3 text-white" />
                                             </span>
                                           ) : (
                                             <span className="h-5 w-5 rounded-full border-2 border-slate-300 dark:border-slate-600 hover:border-blue-500 transition block" />
@@ -512,14 +508,12 @@ function CourseDetails() {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Recent Announcements</h3>
-                <button onClick={() => setActiveTab('announcements')} className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline">View all</button>
+                <button onClick={() => setActiveTab('announcements')} className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">View all</button>
               </div>
               <div className="space-y-2.5">
                 <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
                   <div className="p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-full shrink-0 mt-0.5">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
+                    <BellIcon className="w-4 h-4" />
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-slate-900 dark:text-white">ML Exam Dates Finalized</h4>
@@ -529,9 +523,7 @@ function CourseDetails() {
 
                 <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
                   <div className="p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-full shrink-0 mt-0.5">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+                    <DocumentIcon className="w-4 h-4" />
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-slate-900 dark:text-white">New Practice Dataset</h4>
@@ -545,7 +537,7 @@ function CourseDetails() {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Upcoming Assessments</h3>
-                <button onClick={() => setActiveTab('assignments')} className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline">View All</button>
+                <button onClick={() => setActiveTab('assignments')} className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">View All</button>
               </div>
               <div className="space-y-2.5">
                 {assignments.length > 0 ? (
@@ -553,9 +545,7 @@ function CourseDetails() {
                     <div key={asm.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-100/60 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg shrink-0">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
+                          <DocumentIcon className="w-4 h-4" />
                         </div>
                         <div>
                           <h4 className="text-xs font-bold text-slate-900 dark:text-white">{asm.title}</h4>
@@ -572,9 +562,7 @@ function CourseDetails() {
                     <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-100/60 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg shrink-0">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
+                          <DocumentIcon className="w-4 h-4" />
                         </div>
                         <div>
                           <h4 className="text-xs font-bold text-slate-900 dark:text-white">ML Assignment 3</h4>
@@ -587,9 +575,7 @@ function CourseDetails() {
                     <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-100/60 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg shrink-0">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
+                          <DocumentIcon className="w-4 h-4" />
                         </div>
                         <div>
                           <h4 className="text-xs font-bold text-slate-900 dark:text-white">Linear Algebra Quiz</h4>
@@ -602,16 +588,14 @@ function CourseDetails() {
                     <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-100/60 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg shrink-0">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                          </svg>
+                          <DocumentIcon className="w-4 h-4" />
                         </div>
                         <div>
                           <h4 className="text-xs font-bold text-slate-900 dark:text-white">Machine Algebra Quiz</h4>
                           <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Active Completed</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full shrink-0">Active</span>
+                      <Badge variant="active">Active</Badge>
                     </div>
                   </>
                 )}
