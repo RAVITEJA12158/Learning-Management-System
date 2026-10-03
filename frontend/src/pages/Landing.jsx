@@ -1,622 +1,740 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTheme } from '../context/ThemeContext'
 import BrandMark from '../components/common/BrandMark'
+import {
+  SunIcon,
+  MoonIcon,
+  BookIcon,
+  ChartIcon,
+  DocumentIcon,
+  ClipboardCheckIcon,
+  CheckCircleIcon,
+  ArrowRightIcon,
+} from '../components/common/Icons'
 
 const featureCards = [
   {
     number: '01',
+    icon: BookIcon,
     title: 'Everything in its place.',
-    text: 'Lectures, resources, assignments, recordings, and announcements organized around the way you actually study.',
+    text: 'Lectures, resources, assignments, and recordings organized seamlessly around the way you actually study.',
   },
   {
     number: '02',
+    icon: ChartIcon,
     title: 'Know what matters next.',
-    text: 'A focused overview of deadlines, upcoming classes, progress, and priorities without the usual dashboard noise.',
+    text: 'A focused overview of upcoming deadlines, lectures, progress metrics, and priorities without clutter.',
   },
   {
     number: '03',
+    icon: DocumentIcon,
     title: 'Progress with purpose.',
-    text: 'Turn grades, feedback, and learning activity into a clearer picture of where you are going next.',
+    text: 'Turn grades, quiz feedback, and milestones into actionable roadmaps that keep you moving forward.',
+  },
+  {
+    number: '04',
+    icon: ClipboardCheckIcon,
+    title: 'Academic integrity & control.',
+    text: 'Seamless collaboration between students, faculty, and administrators with granular role management.',
   },
 ]
 
-const courses = [
+const previewCourses = [
   {
     code: 'CS 302',
-    name: 'Data Structures',
+    name: 'Data Structures & Algorithms',
     lesson: '12 lessons',
-    progress: 72,
-    accent: 'bg-[#DFFF63]',
-    text: 'text-[#1A2414]',
-    icon: 'code',
+    progress: 74,
+    instructor: 'Dr. Sarah Wilson',
+    category: 'Computer Science',
   },
   {
     code: 'CS 341',
-    name: 'Web Systems',
+    name: 'Modern Web Systems',
     lesson: '08 lessons',
-    progress: 46,
-    accent: 'bg-[#A9E8D5]',
-    text: 'text-[#102A24]',
-    icon: 'browser',
+    progress: 52,
+    instructor: 'Prof. Alex Chen',
+    category: 'Software Engineering',
   },
   {
     code: 'DS 220',
-    name: 'Database Design',
+    name: 'Relational Database Architecture',
     lesson: '10 lessons',
-    progress: 89,
-    accent: 'bg-[#FFB39E]',
-    text: 'text-[#321D18]',
-    icon: 'database',
+    progress: 88,
+    instructor: 'Dr. Michael Kumar',
+    category: 'Data Systems',
   },
 ]
 
 function Landing() {
   const navigate = useNavigate()
+  const { isDark, toggleTheme } = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
 
   const to = (path) => navigate(path)
 
   const scrollTo = (id) => {
     setMenuOpen(false)
-
-    document
-      .getElementById(id)
-      ?.scrollIntoView({
-        behavior: 'smooth',
-      })
+    document.getElementById(id)?.scrollIntoView({
+      behavior: 'smooth',
+    })
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#F6F2E9] text-[#151515]">
-
+    <div className="min-h-screen overflow-x-hidden bg-[#F3F6FA] dark:bg-zinc-950 text-slate-900 dark:text-zinc-50 transition-colors duration-200 font-sans">
       {/* =====================================================
-          HERO
+          1. STICKY NAVIGATION BAR (MATCHING DASHBOARD)
       ====================================================== */}
-
-      <section
-        id="home"
-        className="relative overflow-hidden bg-[#F6F2E9]"
-      >
-
-        <div className="absolute right-[-180px] top-[-180px] h-[520px] w-[520px] rounded-full bg-[#DFFF63]/30 blur-[100px]" />
-
-        <div className="absolute left-[-180px] top-[35%] h-[430px] w-[430px] rounded-full bg-[#A9E8D5]/25 blur-[110px]" />
-
-        <header className="relative z-30 border-b border-[#151515]/10">
-
-          <div className="mx-auto flex h-[78px] max-w-7xl items-center justify-between px-5 sm:px-8">
-
+      <header className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md shadow-xs transition-colors duration-200">
+        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 sm:px-8">
+          {/* Left: Brand Logo */}
+          <div className="flex items-center gap-8">
             <button
               onClick={() => scrollTo('home')}
-              className="hub-lift flex items-center gap-3"
+              className="hub-lift flex items-center gap-3 cursor-pointer"
             >
-              <BrandMark />
-
-              <span className="text-lg font-black tracking-[-.06em]">
+              <BrandMark dark={isDark} />
+              <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-zinc-50">
                 CourseHub
               </span>
             </button>
 
-            <nav className="hidden items-center gap-8 lg:flex">
-
+            {/* Desktop Navigation Links */}
+            <nav className="hidden items-center gap-6 lg:flex">
               {[
                 ['Discover', 'home'],
                 ['Experience', 'experience'],
-                ['For educators', 'educators'],
+                ['Features', 'features'],
+                ['For Educators', 'educators'],
                 ['Stories', 'stories'],
               ].map(([label, id]) => (
                 <button
                   key={label}
                   onClick={() => scrollTo(id)}
-                  className="text-sm font-bold text-[#151515]/55 transition hover:text-[#151515]"
+                  className="text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
                 >
                   {label}
                 </button>
               ))}
             </nav>
+          </div>
 
-            <div className="hidden items-center gap-3 sm:flex">
+          {/* Right: Theme Toggle & Auth Buttons */}
+          <div className="flex items-center gap-3">
+            {/* Theme Toggle Button (Same as Dashboard) */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-800/80 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition cursor-pointer"
+            >
+              {isDark ? (
+                <SunIcon className="h-4 w-4 text-amber-400" />
+              ) : (
+                <MoonIcon className="h-4 w-4 text-slate-700" />
+              )}
+            </button>
 
+            <div className="hidden items-center gap-2 sm:flex">
               <button
                 onClick={() => to('/login')}
-                className="hub-lift rounded-full px-4 py-2.5 text-sm font-black hover:bg-black/5"
+                className="rounded-xl px-4 py-2 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 transition"
               >
                 Sign in
               </button>
 
               <button
                 onClick={() => to('/register')}
-                className="hub-lift rounded-full bg-[#151515] px-5 py-2.5 text-sm font-black text-white shadow-lg hover:bg-[#292929]"
+                className="hub-lift flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition active:scale-[0.98]"
+              >
+                Get started
+                <ArrowRightIcon className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* Mobile Hamburger Menu Toggle */}
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 sm:hidden"
+              aria-label="Open menu"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {menuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Dropdown Menu */}
+        {menuOpen && (
+          <div className="border-t border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-4 sm:hidden">
+            <div className="grid gap-1">
+              {[
+                ['Discover', 'home'],
+                ['Experience', 'experience'],
+                ['Features', 'features'],
+                ['For Educators', 'educators'],
+                ['Stories', 'stories'],
+              ].map(([label, id]) => (
+                <button
+                  key={label}
+                  onClick={() => scrollTo(id)}
+                  className="rounded-lg px-3 py-2.5 text-left text-xs font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2 border-t border-slate-200/80 dark:border-zinc-800 pt-3">
+              <button
+                onClick={() => to('/login')}
+                className="rounded-xl border border-slate-200 dark:border-zinc-700 py-2.5 text-center text-xs font-bold text-slate-800 dark:text-zinc-200"
+              >
+                Sign in
+              </button>
+              <button
+                onClick={() => to('/register')}
+                className="rounded-xl bg-blue-600 py-2.5 text-center text-xs font-bold text-white shadow-sm"
               >
                 Get started
               </button>
             </div>
-
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="rounded-full border border-[#151515]/15 p-2.5 sm:hidden"
-              aria-label="Open menu"
-            >
-              <Glyph
-                name={menuOpen ? 'close' : 'menu'}
-                size={20}
-              />
-            </button>
           </div>
-          {menuOpen && <div className="border-t border-white/10 bg-[#151b36] px-5 py-4 sm:hidden"><div className="grid gap-1">{['Discover', 'Experience', 'For educators', 'Stories'].map((label, i) => <button key={label} onClick={() => scrollTo(['home', 'experience', 'educators', 'stories'][i])} className="rounded-lg px-3 py-3 text-left text-sm font-bold text-white/75 hover:bg-white/10">{label}</button>)}</div><div className="mt-3 grid grid-cols-2 gap-3 border-t border-white/10 pt-4"><button onClick={() => to('/login')} className="rounded-xl border border-white/20 py-2.5 text-sm font-bold">Sign in</button><button onClick={() => to('/register')} className="rounded-xl bg-[#9df5d8] py-2.5 text-sm font-extrabold text-[#112037]">Create account</button></div></div>}
-        </header>
-        <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-14 px-5 pt-16 sm:px-8 lg:grid-cols-[.9fr_1.1fr] lg:pt-24">
-          <div className="max-w-xl"><div className="hub-lift inline-flex items-center gap-2 rounded-full border border-[#9df5d8]/20 bg-[#9df5d8]/10 px-3.5 py-2 text-xs font-bold text-[#9df5d8]"><span className="h-2 w-2 animate-pulse rounded-full bg-[#9df5d8]" />The learning space, reimagined</div><h1 className="mt-6 text-5xl font-extrabold tracking-[-.07em] sm:text-6xl lg:text-[72px] lg:leading-[.98]">Study with<br /><span className="text-[#a99aff]">your flow.</span></h1><p className="mt-7 max-w-lg text-base leading-7 text-white/65 sm:text-lg sm:leading-8">CourseHub brings your coursework, progress, and people into one beautifully focused space—so you can spend less time organizing and more time learning.</p><div className="mt-9 flex flex-wrap gap-3"><button onClick={() => to('/register')} className="hub-lift inline-flex items-center gap-2 rounded-xl bg-[#705cff] px-5 py-3.5 text-sm font-extrabold shadow-[0_12px_30px_rgba(112,92,255,.35)] hover:bg-[#816dff]">Begin your journey <Glyph name="arrow" size={17}/></button><button onClick={() => scrollTo('experience')} className="hub-lift inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-sm font-bold text-white/85 hover:bg-white/10">Take a look <Glyph name="play" size={16}/></button></div><div className="mt-11 flex flex-wrap gap-x-8 gap-y-3"><MiniProof number="10k+" text="active learners" /><MiniProof number="4.9/5" text="student rating" /><MiniProof number="95%" text="completion rate" /></div></div>
-          <HeroProduct />
+        )}
+      </header>
+
+      {/* =====================================================
+          2. HERO SECTION
+      ====================================================== */}
+      <section id="home" className="relative overflow-hidden pt-12 pb-20 sm:pt-20 lg:pb-28">
+        {/* Subtle Ambient Backdrops */}
+        <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-600/15" />
+        <div className="pointer-events-none absolute -left-24 top-1/2 h-80 w-80 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-600/10" />
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-8">
+          <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+            {/* Left Hero Content */}
+            <div className="max-w-xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-blue-200/70 dark:border-blue-900/60 bg-blue-50/80 dark:bg-blue-950/40 px-3.5 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400">
+                <span className="h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
+                The modern academic workspace
+              </div>
+
+              <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-slate-900 dark:text-zinc-50 sm:text-5xl lg:text-6xl lg:leading-[1.1]">
+                Study with{' '}
+                <span className="text-blue-600 dark:text-blue-400">
+                  your flow.
+                </span>
+              </h1>
+
+              <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600 dark:text-zinc-400">
+                CourseHub brings your courses, assignments, quizzes, and academic community into one beautifully focused hub—engineered for clarity, speed, and real mastery.
+              </p>
+
+              {/* CTAs */}
+              <div className="mt-8 flex flex-wrap items-center gap-3.5">
+                <button
+                  onClick={() => to('/register')}
+                  className="hub-lift inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-bold text-white shadow-sm shadow-blue-500/25 hover:bg-blue-700 transition"
+                >
+                  Begin your journey
+                  <ArrowRightIcon className="h-4 w-4" />
+                </button>
+
+                <button
+                  onClick={() => scrollTo('experience')}
+                  className="hub-lift inline-flex items-center gap-2 rounded-xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-3.5 text-sm font-semibold text-slate-800 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 transition"
+                >
+                  Explore preview
+                </button>
+              </div>
+
+              {/* Proof Badges */}
+              <div className="mt-10 grid grid-cols-3 gap-4 border-t border-slate-200/80 dark:border-zinc-800 pt-6">
+                <div>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-zinc-50">10k+</p>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5">Active Learners</p>
+                </div>
+                <div>
+                  <p className="text-xl sm:text-2xl font-black text-blue-600 dark:text-blue-400">4.9/5</p>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5">Student Rating</p>
+                </div>
+                <div>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-zinc-50">95%</p>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5">Completion Rate</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Interactive Dashboard Preview Card */}
+            <div className="relative">
+              <div className="rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-xl shadow-slate-900/5 transition-colors">
+                {/* Header in Preview */}
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800/80 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black">
+                      <BookIcon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-50">Active Courses</h3>
+                      <p className="text-xs text-slate-500 dark:text-zinc-400">Spring Semester 2026</p>
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/50">
+                    Live Sync
+                  </span>
+                </div>
+
+                {/* Course List in Preview */}
+                <div className="mt-4 space-y-3">
+                  {previewCourses.map((c) => (
+                    <div
+                      key={c.code}
+                      className="rounded-xl border border-slate-100 dark:border-zinc-800/60 bg-slate-50/70 dark:bg-zinc-800/40 p-4 transition hover:border-slate-300 dark:hover:border-zinc-700"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                            {c.code}
+                          </span>
+                          <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-zinc-100 mt-0.5">
+                            {c.name}
+                          </h4>
+                          <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5">
+                            {c.instructor} · {c.lesson}
+                          </p>
+                        </div>
+                        <span className="text-xs font-black text-slate-900 dark:text-zinc-100">
+                          {c.progress}%
+                        </span>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="mt-3 h-1.5 w-full rounded-full bg-slate-200 dark:bg-zinc-700 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-blue-600 dark:bg-blue-500 transition-all duration-500"
+                          style={{ width: `${c.progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Footer in Preview */}
+                <div className="mt-5 flex items-center justify-between rounded-xl bg-blue-50/60 dark:bg-blue-950/30 p-3.5 border border-blue-100 dark:border-blue-900/40">
+                  <div className="flex items-center gap-2.5">
+                    <ChartIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200">
+                      Overall Semester Progress
+                    </span>
+                  </div>
+                  <span className="text-xs font-extrabold text-blue-600 dark:text-blue-400">
+                    71.3% Complete
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <main>
-        <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:py-28"><div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end"><SectionLead label="More than an LMS" title="The academic hub you’ll actually want to open." copy="A fast, uncluttered home for everything learning asks of you." /><p className="max-w-xs border-l-2 border-[#705cff] pl-4 text-sm leading-6 text-slate-500">Designed around attention, not administration.</p></div><div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">{featureCards.map((card) => <FeatureCard key={card.title} {...card} />)}</div></section>
+      {/* =====================================================
+          3. FEATURES SECTION ("MORE THAN AN LMS")
+      ====================================================== */}
+      <section id="features" className="py-20 border-t border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 transition-colors">
+        <div className="mx-auto max-w-7xl px-4 sm:px-8">
+          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+                CORE CAPABILITIES
+              </p>
+              <h2 className="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-zinc-50">
+                The academic hub you’ll actually want to open.
+              </h2>
+              <p className="mt-3 max-w-xl text-sm sm:text-base text-slate-600 dark:text-zinc-400">
+                A fast, uncluttered home for coursework, submissions, assessments, and real-time collaboration.
+              </p>
+            </div>
+            <p className="max-w-xs border-l-2 border-blue-600 dark:border-blue-500 pl-4 text-xs sm:text-sm text-slate-500 dark:text-zinc-400 font-medium">
+              Engineered around high focus, not administrative overhead.
+            </p>
+          </div>
 
-        <section id="experience" className="bg-[#ecebff] py-20 lg:py-28"><div className="mx-auto max-w-7xl px-5 sm:px-8"><div className="grid items-end gap-7 lg:grid-cols-[.75fr_1.25fr]"><SectionLead label="Your learning cockpit" title="See your day. Own your pace." copy="No hunting through tabs. CourseHub turns the important stuff into a quiet, clear plan." /><div className="grid gap-4 sm:grid-cols-3"><TinyMetric label="Focus time" value="14.5h" note="This week" color="bg-[#232a4b] text-white" /><TinyMetric label="Assignments" value="03" note="Due this week" color="bg-white text-[#151933]" /><TinyMetric label="Class standing" value="Top 12%" note="Looking good" color="bg-[#9df5d8] text-[#123029]" /></div></div><div className="mt-7 grid gap-5 lg:grid-cols-[1.35fr_.65fr]"><Timeline /><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-1"><Notification /><FocusCard /></div></div></div></section>
-
-        <section id="educators" className="mx-auto grid max-w-7xl items-center gap-14 px-5 py-20 sm:px-8 lg:grid-cols-[1.1fr_.9fr] lg:py-28"><CourseGallery /><div><SectionLead label="For every kind of learner" title="Built to move with your ambition." copy="Explore a course catalogue that feels visual, personal, and alive—then keep every learning thread in reach." /><ul className="mt-7 space-y-4">{['Personal course roadmap', 'Smart deadlines and announcements', 'Progress you can act on', 'A single home on every device'].map((text) => <li key={text} className="hub-lift flex items-center gap-3 rounded-xl bg-white px-3 py-2.5 text-sm font-bold shadow-sm"><span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#ecebff] text-[#705cff]"><Glyph name="check" size={15}/></span>{text}</li>)}</ul><button onClick={() => to('/login')} className="hub-lift mt-8 inline-flex items-center gap-2 text-sm font-extrabold text-[#5945dd]">Explore courses <Glyph name="arrow" size={17}/></button></div></section>
-
-        <section className="bg-[#151a33] py-20 text-white lg:py-28"><div className="mx-auto max-w-7xl px-5 sm:px-8"><div className="grid items-end gap-7 lg:grid-cols-[.9fr_1.1fr]"><SectionLead dark label="Made for people" title="Where every role feels at home." copy="One shared system, tailored thoughtfully for the people who use it." /><div className="grid gap-3 sm:grid-cols-3"><RoleTile glyph="student" name="Students" line="Stay in the flow" /><RoleTile glyph="faculty" name="Faculty" line="Teach with clarity" /><RoleTile glyph="building" name="Teams" line="See the big picture" /></div></div></div></section>
-
-        <section id="stories" className="mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:py-28"><SectionLead label="Loved by learners" title="A little less chaos. A lot more progress." copy="Thoughtful technology fades into the background and lets the work shine." /><div className="mt-11 grid gap-5 lg:grid-cols-[1.1fr_.9fr_.9fr]"><Quote featured name="Ishita Nair" course="B.Des · Visual Communication" quote="CourseHub finally made my workload feel possible. It is the first thing I open when I start studying." /><Quote name="Arjun Rao" course="B.Tech · Computer Science" quote="I love the calm overview. Deadlines no longer sneak up on me." /><Quote name="Dr. Meera Shah" course="Faculty · Economics" quote="It is intuitive enough that students just get started." /></div></section>
-
-        <section className="mx-auto max-w-7xl px-5 pb-20 sm:px-8 lg:pb-28"><div className="relative overflow-hidden rounded-[30px] bg-[#705cff] px-6 py-14 text-center text-white shadow-[0_26px_70px_rgba(112,92,255,.3)] sm:px-12 sm:py-20"><div className="absolute -left-14 top-0 h-60 w-60 rounded-full bg-[#9df5d8]/25 blur-3xl" /><div className="absolute -right-14 bottom-0 h-60 w-60 rounded-full bg-[#ffbf81]/25 blur-3xl" /><div className="relative mx-auto max-w-2xl"><p className="text-sm font-bold uppercase tracking-[.18em] text-white/70">Your next chapter starts here</p><h2 className="mt-4 text-4xl font-extrabold tracking-[-.05em] sm:text-5xl">Learning can feel this good.</h2><p className="mt-5 text-lg leading-7 text-white/80">Start your CourseHub journey and build the habits that take you further.</p><div className="mt-8 flex flex-wrap justify-center gap-3"><button onClick={() => to('/register')} className="hub-lift inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3.5 text-sm font-extrabold text-[#5140d3] shadow-lg">Create your account <Glyph name="arrow" size={17}/></button><button onClick={() => to('/login')} className="hub-lift rounded-xl border border-white/30 px-5 py-3.5 text-sm font-bold hover:bg-white/10">I have an account</button></div></div></div></section>
-      </main>
-
-      <footer className="border-t border-slate-200 bg-white"><div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 md:grid-cols-[1.7fr_repeat(3,1fr)]"><div><div className="flex items-center gap-2.5"><Mark /><span className="text-lg font-extrabold tracking-[-.04em]">Course<span className="text-[#705cff]">Hub</span></span></div><p className="mt-4 max-w-xs text-sm leading-6 text-slate-500">The place where better learning takes shape.</p></div><FooterColumn title="Platform" items={['Courses', 'Assignments', 'Progress', 'Calendar']} /><FooterColumn title="Company" items={['About CourseHub', 'For faculty', 'For institutions', 'Contact']} /><FooterColumn title="Account" items={['Sign in', 'Create account', 'Help center', 'Privacy']} /></div><div className="border-t border-slate-100"><div className="mx-auto flex max-w-7xl flex-wrap justify-between gap-2 px-5 py-5 text-xs text-slate-400 sm:px-8"><span>© 2026 CourseHub. Thoughtfully made for learning.</span><span>Privacy · Terms</span></div></div></footer>
-    </div>
-  )
-}
-
-
-/* ============================================================
-   GLYPH
-============================================================ */
-
-function Glyph({
-  name,
-  size = 20,
-}) {
-  const icons = {
-    arrow: (
-      <>
-        <path d="M5 12h14" />
-        <path d="m13 6 6 6-6 6" />
-      </>
-    ),
-
-    check: (
-      <path d="m5 12 4 4L19 6" />
-    ),
-
-    menu: (
-      <>
-        <path d="M4 7h16" />
-        <path d="M4 12h16" />
-        <path d="M4 17h16" />
-      </>
-    ),
-
-    close: (
-      <>
-        <path d="m6 6 12 12" />
-        <path d="M18 6 6 18" />
-      </>
-    ),
-
-    layers: (
-      <>
-        <path d="m12 3 9 5-9 5-9-5 9-5Z" />
-        <path d="m3 12 9 5 9-5" />
-        <path d="m3 16 9 5 9-5" />
-      </>
-    ),
-
-    bell: (
-      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
-    ),
-
-    calendar: (
-      <>
-        <rect
-          x="3"
-          y="5"
-          width="18"
-          height="16"
-          rx="2"
-        />
-
-        <path d="M16 3v4" />
-
-        <path d="M8 3v4" />
-
-        <path d="M3 10h18" />
-      </>
-    ),
-
-    code: (
-      <>
-        <path d="m8 9-3 3 3 3" />
-        <path d="m16 9 3 3-3 3" />
-        <path d="M14 5l-4 14" />
-      </>
-    ),
-
-    browser: (
-      <>
-        <rect
-          x="3"
-          y="4"
-          width="18"
-          height="16"
-          rx="2"
-        />
-
-        <path d="M3 8h18" />
-
-        <path d="M7 6h.01" />
-
-        <path d="M10 6h.01" />
-      </>
-    ),
-
-    database: (
-      <>
-        <ellipse
-          cx="12"
-          cy="5"
-          rx="7"
-          ry="3"
-        />
-
-        <path d="M5 5v7c0 1.7 3.1 3 7 3s7-1.3 7-3V5" />
-
-        <path d="M5 12v7c0 1.7 3.1 3 7 3s7-1.3 7-3v-7" />
-      </>
-    ),
-
-    student: (
-      <>
-        <circle
-          cx="12"
-          cy="8"
-          r="3"
-        />
-
-        <path d="M5 21a7 7 0 0 1 14 0" />
-      </>
-    ),
-
-    faculty: (
-      <>
-        <path d="M3 10 12 5l9 5-9 5-9-5Z" />
-
-        <path d="M7 12v5c3 2 7 2 10 0v-5" />
-
-        <path d="M21 10v5" />
-      </>
-    ),
-
-    building: (
-      <>
-        <path d="M3 21h18" />
-
-        <path d="M5 21V8l7-4 7 4v13" />
-
-        <path d="M9 21v-5h6v5" />
-
-        <path d="M9 11h.01" />
-
-        <path d="M15 11h.01" />
-      </>
-    ),
-  }
-
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.9"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {icons[name]}
-    </svg>
-  )
-}
-
-/* ============================================================
-   SECTION LEAD
-============================================================ */
-
-function SectionLead({
-  label,
-  title,
-  copy,
-  dark = false,
-}) {
-  return (
-    <div>
-      <p
-        className={`text-xs font-black uppercase tracking-[.18em] ${
-          dark ? 'text-[#9df5d8]' : 'text-[#705cff]'
-        }`}
-      >
-        {label}
-      </p>
-
-      <h2
-        className={`mt-4 text-4xl font-extrabold tracking-[-.06em] sm:text-5xl ${
-          dark ? 'text-white' : ''
-        }`}
-      >
-        {title}
-      </h2>
-
-      <p
-        className={`mt-5 max-w-lg text-base leading-7 ${
-          dark ? 'text-white/50' : 'text-slate-500'
-        }`}
-      >
-        {copy}
-      </p>
-    </div>
-  )
-}
-
-/* ============================================================
-   MINI PROOF
-============================================================ */
-
-function MiniProof({ number, text }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-2xl font-extrabold text-[#DFFF63]">{number}</span>
-      <span className="text-xs font-bold text-white/40">{text}</span>
-    </div>
-  )
-}
-
-/* ============================================================
-   HERO PRODUCT
-============================================================ */
-
-function HeroProduct() {
-  return (
-    <div className="relative mx-auto w-full max-w-lg">
-      <div className="rounded-[28px] border border-black/10 bg-white p-5 shadow-[0_25px_60px_rgba(21,21,21,.08)]">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#DFFF63] text-xs font-black">C</span>
-          <span className="text-sm font-black">Course Dashboard</span>
-        </div>
-
-        <div className="grid grid-cols-3 gap-3">
-          {courses.map((c) => (
-            <div key={c.code} className={`rounded-2xl ${c.accent} p-3`}>
-              <p className={`text-[9px] font-black ${c.text}`}>{c.code}</p>
-              <p className={`mt-1 text-xs font-bold ${c.text}`}>{c.name}</p>
-              <div className="mt-3 h-1.5 w-full rounded-full bg-black/10">
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {featureCards.map((card) => {
+              const IconComponent = card.icon
+              return (
                 <div
-                  className="h-full rounded-full bg-black/25"
-                  style={{ width: `${c.progress}%` }}
-                />
+                  key={card.title}
+                  className="hub-lift rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-[#F3F6FA] dark:bg-zinc-900 p-6 shadow-xs transition hover:border-blue-500/50"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
+                      <IconComponent className="h-5 w-5" />
+                    </span>
+                    <span className="text-xs font-extrabold text-slate-400 dark:text-zinc-500">
+                      {card.number}
+                    </span>
+                  </div>
+                  <h3 className="mt-5 text-base font-bold text-slate-900 dark:text-zinc-100">
+                    {card.title}
+                  </h3>
+                  <p className="mt-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
+                    {card.text}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+          4. INTERACTIVE COCKPIT SECTION
+      ====================================================== */}
+      <section id="experience" className="py-20 bg-[#F3F6FA] dark:bg-zinc-950 border-t border-slate-200/80 dark:border-zinc-800 transition-colors">
+        <div className="mx-auto max-w-7xl px-4 sm:px-8">
+          <div className="grid items-end gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+                YOUR LEARNING COCKPIT
+              </p>
+              <h2 className="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-zinc-50">
+                See your day. Own your pace.
+              </h2>
+              <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-zinc-400">
+                No endless tab switching. CourseHub turns submissions, announcements, and deadlines into a calm, structured workflow.
+              </p>
+            </div>
+
+            {/* Quick Metrics (Dashboard Style) */}
+            <div className="grid gap-3.5 sm:grid-cols-3">
+              <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Focus Time</p>
+                <p className="mt-1 text-2xl font-black text-slate-900 dark:text-zinc-50">14.5h</p>
+                <p className="mt-0.5 text-[11px] text-blue-600 dark:text-blue-400 font-semibold">Active this week</p>
               </div>
-              <p className={`mt-1 text-[8px] font-bold ${c.text}/60`}>{c.lesson}</p>
+
+              <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Pending Tasks</p>
+                <p className="mt-1 text-2xl font-black text-slate-900 dark:text-zinc-50">03</p>
+                <p className="mt-0.5 text-amber-600 dark:text-amber-400 font-semibold">Due this week</p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Class Standing</p>
+                <p className="mt-1 text-2xl font-black text-emerald-600 dark:text-emerald-400">Top 12%</p>
+                <p className="mt-0.5 text-slate-500 dark:text-zinc-400 font-medium">Semester ranking</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Row: Timeline & Notifications */}
+          <div className="mt-8 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+            {/* Timeline Widget */}
+            <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-xs">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400">
+                  Today&apos;s Academic Schedule
+                </p>
+                <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                  3 Sessions
+                </span>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {[
+                  { time: '09:00 AM', title: 'Data Structures & Algorithms', tag: 'Lecture', hall: 'Hall B-201', active: false },
+                  { time: '11:30 AM', title: 'Modern Web Systems Lab', tag: 'Hands-on Lab', hall: 'Tech Lab 4', active: true },
+                  { time: '02:00 PM', title: 'Database Design Seminar', tag: 'Tutorial', hall: 'Virtual Room', active: false },
+                ].map((item) => (
+                  <div
+                    key={item.title}
+                    className={`flex items-center justify-between rounded-xl p-3.5 transition ${
+                      item.active
+                        ? 'border border-blue-200 dark:border-blue-900/60 bg-blue-50/60 dark:bg-blue-950/30'
+                        : 'border border-slate-100 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-800/40'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 w-16">
+                        {item.time}
+                      </span>
+                      <span className={`h-2.5 w-2.5 rounded-full ${item.active ? 'bg-blue-600 ring-4 ring-blue-500/20' : 'bg-slate-300 dark:bg-zinc-600'}`} />
+                      <div>
+                        <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-zinc-100">{item.title}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-zinc-400">{item.hall}</p>
+                      </div>
+                    </div>
+                    <span className="rounded-md bg-white dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-zinc-300 border border-slate-200/60 dark:border-zinc-700">
+                      {item.tag}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Stack: Notifications & Study Session */}
+            <div className="space-y-6">
+              {/* Notification Box */}
+              <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-xs">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 mb-3.5">
+                  Recent Alerts
+                </p>
+                <div className="space-y-2.5">
+                  <div className="rounded-xl border border-amber-200/70 bg-amber-50/70 dark:border-amber-900/40 dark:bg-amber-950/30 p-3">
+                    <p className="text-xs font-bold text-amber-800 dark:text-amber-300">Assignment due tomorrow</p>
+                    <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 mt-0.5">Database Systems — Normalized ER Schema</p>
+                  </div>
+                  <div className="rounded-xl border border-emerald-200/70 bg-emerald-50/70 dark:border-emerald-900/40 dark:bg-emerald-950/30 p-3">
+                    <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300">New grade published</p>
+                    <p className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 mt-0.5">Web Systems — Quiz 3: 94% (Score: A)</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Study Sprint Focus Box */}
+              <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400">Study Session</p>
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+                </div>
+                <p className="mt-2 text-2xl font-black text-slate-900 dark:text-zinc-50">2h 14m</p>
+                <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium mt-0.5">Algorithms deep-dive in progress</p>
+                <div className="mt-3.5 h-1.5 w-full rounded-full bg-slate-100 dark:bg-zinc-800 overflow-hidden">
+                  <div className="h-full rounded-full bg-blue-600 w-[68%]" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+          5. ROLE TAILORING ("WHERE EVERY ROLE FEELS AT HOME")
+      ====================================================== */}
+      <section id="educators" className="py-20 border-t border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 transition-colors">
+        <div className="mx-auto max-w-7xl px-4 sm:px-8">
+          <div className="text-center max-w-2xl mx-auto">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+              BUILT FOR YOUR CAMPUS
+            </p>
+            <h2 className="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-zinc-50">
+              Where every role feels at home.
+            </h2>
+            <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-zinc-400">
+              One unified architecture tailored specifically for each academic persona.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {[
+              {
+                role: 'Students',
+                badge: 'LEARNER WORKSPACE',
+                tagline: 'Stay in the academic flow',
+                desc: 'Organized course catalogs, interactive assignment dropboxes, live progress trackers, and direct faculty feedback.',
+                features: ['Instant grade visibility', 'Assignment deadlines timeline', 'Curated course catalog'],
+              },
+              {
+                role: 'Faculty',
+                badge: 'INSTRUCTOR WORKSPACE',
+                tagline: 'Teach with complete clarity',
+                desc: 'Effortless module creation, flexible grading rubrics, announcements broadcast, and student progress oversight.',
+                features: ['Comprehensive rubric grading', 'Content module builder', 'Student performance analytics'],
+              },
+              {
+                role: 'Administrators',
+                badge: 'CAMPUS WORKSPACE',
+                tagline: 'See the big picture',
+                desc: 'Institutional analytics, role permissions governance, audit visibility, and course lifecycle orchestration.',
+                features: ['Campus-wide enrollment logs', 'Access codes governance', 'Secure role provisioning'],
+              },
+            ].map((item) => (
+              <div
+                key={item.role}
+                className="hub-lift rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-[#F3F6FA] dark:bg-zinc-900 p-6 flex flex-col justify-between shadow-xs hover:border-blue-500/40 transition"
+              >
+                <div>
+                  <span className="inline-block rounded-md bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50">
+                    {item.badge}
+                  </span>
+                  <h3 className="mt-4 text-xl font-bold text-slate-900 dark:text-zinc-100">{item.role}</h3>
+                  <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mt-0.5">{item.tagline}</p>
+                  <p className="mt-3 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-zinc-400">{item.desc}</p>
+                </div>
+
+                <div className="mt-6 border-t border-slate-200/80 dark:border-zinc-800 pt-4 space-y-2">
+                  {item.features.map((feat) => (
+                    <div key={feat} className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-zinc-300">
+                      <CheckCircleIcon className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                      <span>{feat}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+          6. TESTIMONIALS SECTION ("LOVED BY LEARNERS")
+      ====================================================== */}
+      <section id="stories" className="py-20 border-t border-slate-200/80 dark:border-zinc-800 bg-[#F3F6FA] dark:bg-zinc-950 transition-colors">
+        <div className="mx-auto max-w-7xl px-4 sm:px-8">
+          <div className="text-center max-w-xl mx-auto">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+              COMMUNITY VOICES
+            </p>
+            <h2 className="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-zinc-50">
+              Loved by learners & faculty.
+            </h2>
+            <p className="mt-3 text-sm text-slate-600 dark:text-zinc-400">
+              Thoughtful technology that fades into the background and lets learning shine.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {[
+              {
+                name: 'Ishita Nair',
+                role: 'Student · Visual Communication',
+                quote: 'CourseHub finally made my academic workload feel possible. It is genuinely the first thing I open every morning.',
+              },
+              {
+                name: 'Arjun Rao',
+                role: 'Student · Computer Science',
+                quote: 'The calm dashboard layout is unmatched. Deadlines and lecture resources never get lost in browser tabs anymore.',
+              },
+              {
+                name: 'Dr. Meera Shah',
+                role: 'Faculty · Department of Economics',
+                quote: 'It is intuitive enough that students get started immediately with zero training required. Grading and rubric distribution is seamless.',
+              },
+            ].map((q) => (
+              <div
+                key={q.name}
+                className="hub-lift rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-xs flex flex-col justify-between"
+              >
+                <p className="text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-zinc-300 italic">
+                  &ldquo;{q.quote}&rdquo;
+                </p>
+                <div className="mt-6 border-t border-slate-100 dark:border-zinc-800 pt-4">
+                  <p className="text-sm font-bold text-slate-900 dark:text-zinc-100">{q.name}</p>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">{q.role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+          7. FINAL CTA BANNER
+      ====================================================== */}
+      <section className="py-16 mx-auto max-w-7xl px-4 sm:px-8">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 px-6 py-14 text-center text-white shadow-xl shadow-blue-500/10 sm:px-12 sm:py-20">
+          <div className="pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
+          <div className="pointer-events-none absolute -right-16 -bottom-16 h-64 w-64 rounded-full bg-blue-400/20 blur-2xl" />
+
+          <div className="relative mx-auto max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">
+              YOUR NEXT CHAPTER STARTS TODAY
+            </p>
+            <h2 className="mt-3 text-3xl sm:text-5xl font-extrabold tracking-tight">
+              Learning can feel this good.
+            </h2>
+            <p className="mt-4 text-sm sm:text-base text-blue-100 leading-relaxed">
+              Start your CourseHub journey today and build the academic habits that take you further.
+            </p>
+
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <button
+                onClick={() => to('/register')}
+                className="hub-lift inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-blue-700 shadow-md hover:bg-slate-50 transition"
+              >
+                Create your account
+                <ArrowRightIcon className="h-4 w-4" />
+              </button>
+
+              <button
+                onClick={() => to('/login')}
+                className="hub-lift rounded-xl border border-white/30 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/20 transition"
+              >
+                I have an account
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+          8. FOOTER (MATCHING DASHBOARD STYLING)
+      ====================================================== */}
+      <footer className="border-t border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-colors">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-8 md:grid-cols-[1.6fr_repeat(3,1fr)]">
+          <div>
+            <div className="flex items-center gap-3">
+              <BrandMark dark={isDark} />
+              <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-zinc-50">
+                CourseHub
+              </span>
+            </div>
+            <p className="mt-3 max-w-xs text-xs sm:text-sm leading-relaxed text-slate-500 dark:text-zinc-400">
+              The modern academic platform where focused learning and clean collaboration take shape.
+            </p>
+          </div>
+
+          {[
+            {
+              title: 'Platform',
+              links: ['Course Catalog', 'Assignments', 'Student Dashboard', 'Faculty Portal'],
+            },
+            {
+              title: 'Organization',
+              links: ['About CourseHub', 'For Educators', 'Administration', 'Security & Access'],
+            },
+            {
+              title: 'Account',
+              links: ['Sign In', 'Create Account', 'Help & Docs', 'Terms of Service'],
+            },
+          ].map((col) => (
+            <div key={col.title}>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-zinc-100">
+                {col.title}
+              </h4>
+              <ul className="mt-4 space-y-2.5">
+                {col.links.map((link) => (
+                  <li key={link}>
+                    <button
+                      onClick={() => to('/login')}
+                      className="text-xs text-slate-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer"
+                    >
+                      {link}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>
-      </div>
-    </div>
-  )
-}
 
-/* ============================================================
-   FEATURE CARD
-============================================================ */
-
-function FeatureCard({ number, title, text }) {
-  return (
-    <div className="hub-lift rounded-[24px] border border-black/8 bg-white p-5 shadow-sm">
-      <span className="text-xs font-black text-[#705cff]">{number}</span>
-      <h3 className="mt-3 text-lg font-extrabold tracking-[-.03em]">{title}</h3>
-      <p className="mt-2 text-sm leading-6 text-slate-500">{text}</p>
-    </div>
-  )
-}
-
-/* ============================================================
-   TINY METRIC
-============================================================ */
-
-function TinyMetric({ label, value, note, color }) {
-  return (
-    <div className={`rounded-2xl ${color} p-4`}>
-      <p className="text-[9px] font-black uppercase tracking-wider opacity-50">{label}</p>
-      <p className="mt-1 text-2xl font-extrabold">{value}</p>
-      <p className="mt-1 text-[10px] font-bold opacity-50">{note}</p>
-    </div>
-  )
-}
-
-/* ============================================================
-   TIMELINE
-============================================================ */
-
-function Timeline() {
-  const items = [
-    { time: '09:00', title: 'Data Structures', tag: 'Lecture', color: 'bg-[#DFFF63]' },
-    { time: '11:30', title: 'Web Systems Lab', tag: 'Lab', color: 'bg-[#A9E8D5]' },
-    { time: '14:00', title: 'Database Design', tag: 'Tutorial', color: 'bg-[#FFB39E]' },
-  ]
-
-  return (
-    <div className="rounded-[24px] bg-white p-5 shadow-sm border border-black/8">
-      <p className="text-[10px] font-black uppercase tracking-[.15em] text-black/40 mb-4">Today&apos;s timeline</p>
-      <div className="space-y-3">
-        {items.map((item) => (
-          <div key={item.title} className="flex items-center gap-4 rounded-xl bg-[#FAF8F3] p-3">
-            <span className="text-xs font-bold text-black/40 w-12">{item.time}</span>
-            <span className={`h-2 w-2 rounded-full ${item.color}`} />
-            <span className="text-sm font-bold flex-1">{item.title}</span>
-            <span className="text-[9px] font-black text-black/30 uppercase">{item.tag}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-/* ============================================================
-   NOTIFICATION CARD
-============================================================ */
-
-function Notification() {
-  return (
-    <div className="rounded-[24px] bg-white p-5 shadow-sm border border-black/8">
-      <p className="text-[10px] font-black uppercase tracking-[.15em] text-black/40 mb-3">Notifications</p>
-      <div className="space-y-2">
-        <div className="rounded-xl bg-[#FFF1ED] p-3">
-          <p className="text-xs font-bold text-[#B83D29]">Assignment due tomorrow</p>
-          <p className="text-[10px] text-[#B83D29]/60 mt-1">Database Design — ER Diagram</p>
-        </div>
-        <div className="rounded-xl bg-[#EDF9F5] p-3">
-          <p className="text-xs font-bold text-[#18765D]">New grade posted</p>
-          <p className="text-[10px] text-[#18765D]/60 mt-1">Web Systems — Quiz 3: 92%</p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/* ============================================================
-   FOCUS CARD
-============================================================ */
-
-function FocusCard() {
-  return (
-    <div className="rounded-[24px] bg-[#151515] p-5 text-white shadow-sm">
-      <p className="text-[10px] font-black uppercase tracking-[.15em] text-white/30">Focus mode</p>
-      <p className="mt-3 text-lg font-extrabold">2h 14m</p>
-      <p className="text-[10px] font-bold text-white/40 mt-1">Study session active</p>
-      <div className="mt-4 h-1.5 w-full rounded-full bg-white/10">
-        <div className="h-full w-[65%] rounded-full bg-[#DFFF63]" />
-      </div>
-    </div>
-  )
-}
-
-/* ============================================================
-   COURSE GALLERY
-============================================================ */
-
-function CourseGallery() {
-  return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      {courses.map((c) => (
-        <div key={c.code} className={`hub-lift rounded-[24px] ${c.accent} p-5`}>
-          <div className="flex items-center gap-3">
-            <Glyph name={c.icon} size={18} />
-            <span className={`text-[10px] font-black uppercase tracking-wider ${c.text}`}>{c.code}</span>
-          </div>
-          <h3 className={`mt-3 text-lg font-extrabold ${c.text}`}>{c.name}</h3>
-          <p className={`mt-1 text-xs font-bold ${c.text}/60`}>{c.lesson}</p>
-          <div className="mt-4 h-1.5 w-full rounded-full bg-black/10">
-            <div className="h-full rounded-full bg-black/20" style={{ width: `${c.progress}%` }} />
+        <div className="border-t border-slate-100 dark:border-zinc-800/80 py-5">
+          <div className="mx-auto flex max-w-7xl flex-wrap justify-between items-center gap-2 px-4 sm:px-8 text-xs text-slate-400 dark:text-zinc-500">
+            <span>© 2026 CourseHub. Built for modern academic communities.</span>
+            <div className="flex gap-4">
+              <span className="hover:text-slate-600 dark:hover:text-zinc-300 cursor-pointer">Privacy Policy</span>
+              <span className="hover:text-slate-600 dark:hover:text-zinc-300 cursor-pointer">Terms of Service</span>
+            </div>
           </div>
         </div>
-      ))}
-    </div>
-  )
-}
-
-/* ============================================================
-   ROLE TILE
-============================================================ */
-
-function RoleTile({ glyph, name, line }) {
-  return (
-    <div className="hub-lift rounded-2xl border border-white/10 bg-white/[0.05] p-4 text-center">
-      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
-        <Glyph name={glyph} size={20} />
-      </div>
-      <p className="mt-3 text-sm font-extrabold">{name}</p>
-      <p className="mt-1 text-[10px] text-white/40">{line}</p>
-    </div>
-  )
-}
-
-/* ============================================================
-   QUOTE
-============================================================ */
-
-function Quote({ name, course, quote, featured = false }) {
-  return (
-    <div
-      className={`hub-lift rounded-[24px] border p-6 ${
-        featured
-          ? 'border-[#705cff]/20 bg-[#705cff] text-white shadow-lg'
-          : 'border-black/8 bg-white shadow-sm'
-      }`}
-    >
-      <p className={`text-sm leading-6 ${featured ? 'text-white/80' : 'text-slate-600'}`}>
-        &ldquo;{quote}&rdquo;
-      </p>
-      <div className="mt-5">
-        <p className="text-sm font-extrabold">{name}</p>
-        <p className={`text-[10px] mt-0.5 ${featured ? 'text-white/50' : 'text-slate-400'}`}>{course}</p>
-      </div>
-    </div>
-  )
-}
-
-/* ============================================================
-   MARK (footer logo icon)
-============================================================ */
-
-function Mark() {
-  return (
-    <span className="relative flex h-8 w-8 items-center justify-center rounded-[10px] bg-[#705cff] text-white">
-      <span className="h-2.5 w-2.5 rounded-[3px] border-2 border-current" />
-      <span className="absolute h-1.5 w-1.5 translate-x-2 -translate-y-2 rounded-full bg-[#9df5d8]" />
-    </span>
-  )
-}
-
-/* ============================================================
-   FOOTER COLUMN
-============================================================ */
-
-function FooterColumn({
-  title,
-  items,
-}) {
-  return (
-    <div>
-
-      <h3 className="text-sm font-black">
-        {title}
-      </h3>
-
-      <ul className="mt-5 space-y-3">
-
-        {items.map((item) => (
-          <li key={item}>
-
-            <a
-              href="#home"
-              className="text-sm text-white/35 transition hover:text-[#DFFF63]"
-            >
-              {item}
-            </a>
-          </li>
-        ))}
-      </ul>
+      </footer>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authApi } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
@@ -27,6 +27,14 @@ const roles = [
   },
 ]
 
+const barData = [
+  { height: 28, color: 'bg-[#475569]' },
+  { height: 52, color: 'bg-[#475569]' },
+  { height: 38, color: 'bg-[#475569]' },
+  { height: 80, color: 'bg-[#475569]' },
+  { height: 58, color: 'bg-[#d7dfe9]' },
+]
+
 function Login() {
   const navigate = useNavigate()
   const { login } = useAuth()
@@ -39,6 +47,37 @@ function Login() {
   const [errors, setErrors] = useState({})
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Animated Data Visualization States
+  const [progress, setProgress] = useState(0)
+  const [count, setCount] = useState(0)
+  const [barsVisible, setBarsVisible] = useState(false)
+
+  useEffect(() => {
+    // Dynamic Progress Ring & Counter Animation
+    const timer = setTimeout(() => {
+      setProgress(74)
+      setBarsVisible(true)
+
+      const duration = 1500
+      const startTime = performance.now()
+
+      const animateCounter = (currentTime) => {
+        const elapsed = currentTime - startTime
+        const progressRatio = Math.min(elapsed / duration, 1)
+        const easeOut = 1 - Math.pow(1 - progressRatio, 3)
+        setCount(Math.round(easeOut * 74))
+
+        if (progressRatio < 1) {
+          requestAnimationFrame(animateCounter)
+        }
+      }
+
+      requestAnimationFrame(animateCounter)
+    }, 180)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -97,17 +136,19 @@ function Login() {
     }
   }
 
+  const selectedIndex = roles.findIndex((r) => r.id === selectedRole.id)
+
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen overflow-x-hidden bg-[#f8fafc]">
       <div className="grid min-h-screen lg:grid-cols-[0.9fr_1.1fr]">
         {/* =====================================================
-            LEFT BRAND PANEL (DARK NAVY)
+            LEFT BRAND PANEL (DARK NAVY - SPLIT REVEAL FROM LEFT)
         ====================================================== */}
         <aside className="animate-panel-left relative hidden flex-col justify-between bg-[#0b1329] p-8 xl:p-12 text-white lg:flex">
           {/* Top Logo */}
           <button
             onClick={() => navigate('/')}
-            className="flex w-fit items-center gap-3 transition-opacity hover:opacity-90"
+            className="flex w-fit items-center gap-3 transition-opacity duration-200 hover:opacity-90"
           >
             <BrandMark />
             <span className="text-xl font-bold tracking-tight text-white">CourseHub</span>
@@ -115,7 +156,8 @@ function Login() {
 
           {/* Middle Content */}
           <div className="max-w-lg py-4">
-            <h1 className="text-5xl font-extrabold leading-[1.08] tracking-tight text-white xl:text-[54px]">
+            {/* Staggered Heading */}
+            <h1 className="animate-heading text-5xl font-extrabold leading-[1.08] tracking-tight text-white xl:text-[54px]">
               Your learning
               <br />
               space is
@@ -123,12 +165,13 @@ function Login() {
               waiting.
             </h1>
 
-            <p className="mt-5 max-w-sm text-[15px] leading-relaxed text-slate-300">
+            {/* Staggered Sub-text */}
+            <p className="animate-subtext mt-5 max-w-sm text-[15px] leading-relaxed text-slate-300">
               Sign in to return to your courses, assignments, progress, and academic community.
             </p>
 
             {/* Weekly Progress Card */}
-            <div className="mt-9 w-full max-w-[390px] rounded-2xl bg-white p-5 text-slate-800 shadow-xl">
+            <div className="mt-9 w-full max-w-[390px] rounded-2xl bg-white p-5 text-slate-800 shadow-xl transition-all duration-300">
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
                 WEEKLY PROGRESS
               </p>
@@ -154,12 +197,15 @@ function Login() {
                         stroke="#1a6ef5"
                         strokeWidth="5.5"
                         strokeDasharray="188.5"
-                        strokeDashoffset={188.5 * (1 - 0.74)}
+                        strokeDashoffset={188.5 * (1 - progress / 100)}
                         strokeLinecap="round"
+                        style={{
+                          transition: 'stroke-dashoffset 1.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                        }}
                       />
                     </svg>
                     <span className="absolute text-xl font-bold tracking-tight text-slate-900">
-                      74%
+                      {count}%
                     </span>
                   </div>
                   <span className="mt-1.5 text-[11px] font-medium text-slate-500">
@@ -167,14 +213,22 @@ function Login() {
                   </span>
                 </div>
 
-                {/* Bar Chart */}
+                {/* Sequential Bar Chart */}
                 <div className="flex flex-1 flex-col items-end">
                   <div className="flex h-12 w-full items-end justify-end gap-2.5">
-                    <div className="h-[25%] w-8 rounded-t-sm bg-[#475569]" />
-                    <div className="h-[50%] w-8 rounded-t-sm bg-[#475569]" />
-                    <div className="h-[38%] w-8 rounded-t-sm bg-[#475569]" />
-                    <div className="h-[80%] w-8 rounded-t-sm bg-[#475569]" />
-                    <div className="h-[58%] w-8 rounded-t-sm bg-[#d7dfe9]" />
+                    {barData.map((bar, index) => (
+                      <div
+                        key={index}
+                        className={`w-8 rounded-t-sm ${bar.color}`}
+                        style={{
+                          height: barsVisible ? `${bar.height}%` : '0%',
+                          transitionProperty: 'height',
+                          transitionDuration: '750ms',
+                          transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+                          transitionDelay: `${index * 130}ms`,
+                        }}
+                      />
+                    ))}
                   </div>
                   <span className="mt-2 text-[11px] font-medium text-slate-500">
                     Goal completion
@@ -191,9 +245,9 @@ function Login() {
         </aside>
 
         {/* =====================================================
-            RIGHT LOGIN PANEL (LIGHT CANVAS)
+            RIGHT LOGIN PANEL (LIGHT CANVAS - SPLIT REVEAL FROM RIGHT)
         ====================================================== */}
-        <main className="animate-auth-fade flex min-h-screen items-center justify-center bg-[#f8fafc] px-4 py-8 sm:px-8 lg:px-12">
+        <main className="animate-panel-right flex min-h-screen items-center justify-center bg-[#f8fafc] px-4 py-8 sm:px-8 lg:px-12">
           <div className="w-full max-w-[460px]">
             {/* Mobile Logo */}
             <div className="mb-6 lg:hidden">
@@ -206,22 +260,22 @@ function Login() {
               </button>
             </div>
 
-            {/* Header */}
+            {/* Staggered Header */}
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
                 SIGN IN
               </p>
-              <h2 className="mt-1.5 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+              <h2 className="animate-heading mt-1.5 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
                 Welcome back.
               </h2>
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="animate-subtext mt-2 text-sm text-slate-500">
                 Choose your workspace and continue where you left off.
               </p>
             </div>
 
-            {/* Card Form */}
-            <div className="mt-6 rounded-[24px] border border-slate-200/80 bg-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.04)] sm:p-7">
-              {/* Workspace Selection */}
+            {/* Card Form with Soft Elevation & Bloom */}
+            <div className="animate-card-bloom mt-6 rounded-[24px] border border-slate-200/80 bg-white p-6 sm:p-7">
+              {/* Workspace Segmented Control with Smooth Sliding Pill */}
               <div>
                 <div className="mb-2.5 flex items-center justify-between">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-700">
@@ -232,7 +286,16 @@ function Login() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2.5">
+                <div className="relative grid grid-cols-3 gap-2.5">
+                  {/* Sliding Active Indicator Pill */}
+                  <div
+                    className="pointer-events-none absolute inset-y-0 rounded-2xl bg-[#48566a] shadow-sm transition-transform duration-300 ease-out"
+                    style={{
+                      width: 'calc((100% - 20px) / 3)',
+                      transform: `translateX(calc(${selectedIndex} * (100% + 10px)))`,
+                    }}
+                  />
+
                   {roles.map((role) => {
                     const isSelected = selectedRole.id === role.id
                     return (
@@ -244,14 +307,17 @@ function Login() {
                           setErrors({})
                           setMessage('')
                         }}
-                        className={`rounded-2xl p-3.5 text-left transition-all duration-150 ${
+                        className={`relative z-10 rounded-2xl p-3.5 text-left transition-colors duration-200 ${
                           isSelected
-                            ? 'bg-[#48566a] text-white shadow-sm'
+                            ? 'text-white'
                             : 'bg-[#f0f3f6] text-slate-800 hover:bg-[#e7ecf1]'
                         }`}
+                        style={{
+                          backgroundColor: isSelected ? 'transparent' : undefined,
+                        }}
                       >
                         <span
-                          className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
+                          className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-colors duration-200 ${
                             isSelected
                               ? 'bg-[#283444] text-white'
                               : 'bg-[#dce2e8] text-slate-500'
@@ -261,7 +327,7 @@ function Login() {
                         </span>
 
                         <span
-                          className={`mt-2.5 block text-xs font-bold ${
+                          className={`mt-2.5 block text-xs font-bold transition-colors duration-200 ${
                             isSelected ? 'text-white' : 'text-slate-800'
                           }`}
                         >
@@ -269,7 +335,7 @@ function Login() {
                         </span>
 
                         <span
-                          className={`mt-0.5 block text-[9px] leading-tight sm:text-[10px] ${
+                          className={`mt-0.5 block text-[9px] leading-tight transition-colors duration-200 sm:text-[10px] ${
                             isSelected ? 'text-slate-300' : 'text-slate-400'
                           }`}
                         >
@@ -290,7 +356,7 @@ function Login() {
 
               {/* Form Fields */}
               <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-                {/* Academic Email */}
+                {/* Academic Email with Smooth Focus Stroke */}
                 <div>
                   <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700">
                     ACADEMIC EMAIL
@@ -300,14 +366,14 @@ function Login() {
                     placeholder="shreetheja.vasala@gmail.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
+                    className="w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] focus:ring-4 focus:ring-blue-500/10"
                   />
                   {errors.email && (
                     <p className="mt-1 text-xs font-medium text-rose-600">{errors.email}</p>
                   )}
                 </div>
 
-                {/* Password */}
+                {/* Password with Smooth Focus Stroke */}
                 <div>
                   <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700">
                     PASSWORD
@@ -318,12 +384,12 @@ function Login() {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 pr-14 text-sm text-slate-800 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
+                      className="w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 pr-14 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] focus:ring-4 focus:ring-blue-500/10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 transition-colors hover:text-slate-800"
                     >
                       {showPassword ? 'Hide' : 'Show'}
                     </button>
@@ -333,7 +399,7 @@ function Login() {
                   )}
                 </div>
 
-                {/* Admin Access Code (shown only when Admin role is selected) */}
+                {/* Admin Access Code */}
                 {selectedRole.id === 'admin' && (
                   <div>
                     <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700">
@@ -344,7 +410,7 @@ function Login() {
                       placeholder="Enter secure access code"
                       value={secretCode}
                       onChange={(e) => setSecretCode(e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
+                      className="w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] focus:ring-4 focus:ring-blue-500/10"
                     />
                     {errors.secretCode && (
                       <p className="mt-1 text-xs font-medium text-rose-600">
@@ -361,21 +427,52 @@ function Login() {
                     onClick={() =>
                       setMessage('Password recovery will be available soon.')
                     }
-                    className="text-xs font-medium text-[#1a6ef5] hover:underline"
+                    className="text-xs font-medium text-[#1a6ef5] transition-colors hover:underline"
                   >
                     Forgot password?
                   </button>
                 </div>
 
-                {/* Submit Button */}
+                {/* Submit Button with Hover Scale, Dynamic CTA Text & Spinner */}
                 <button
                   type="submit"
                   disabled={loading}
-                  className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#1a6ef5] px-4 py-3.5 text-sm font-medium text-white shadow-sm transition-all duration-150 hover:bg-[#155bd5] active:scale-[0.99] disabled:opacity-50"
+                  className="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#1a6ef5] px-4 py-3.5 text-sm font-medium text-white shadow-sm transition-all duration-200 ease-out hover:scale-[1.02] hover:bg-[#155bd5] hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.99] disabled:opacity-50"
                 >
-                  {loading
-                    ? 'Signing you in…'
-                    : `Enter ${selectedRole.label} workspace →`}
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <svg
+                        className="h-4 w-4 animate-spin text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      <span>Signing you in…</span>
+                    </div>
+                  ) : (
+                    <div
+                      key={selectedRole.id}
+                      className="animate-cta-swap flex items-center gap-1.5"
+                    >
+                      <span>Enter {selectedRole.label} workspace</span>
+                      <span className="transition-transform duration-200 group-hover:translate-x-1">
+                        →
+                      </span>
+                    </div>
+                  )}
                 </button>
               </form>
             </div>
@@ -383,14 +480,14 @@ function Login() {
             {/* Bottom Links */}
             <p className="mt-5 text-center text-xs text-slate-600 sm:text-sm">
               New to CourseHub?{' '}
-              <Link to="/register" className="font-bold text-slate-900 hover:underline">
+              <Link to="/register" className="font-bold text-slate-900 transition-colors hover:underline">
                 Create your account
               </Link>
             </p>
 
             <button
               onClick={() => navigate('/')}
-              className="mt-3 mx-auto block text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors"
+              className="mt-3 mx-auto block text-xs font-medium text-slate-500 transition-colors hover:text-slate-800"
             >
               ← Back to home
             </button>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authApi } from '../../services/api'
 
@@ -15,6 +15,12 @@ const roles = [
     letter: 'F',
     description: 'Teach & assess',
   },
+]
+
+const highlights = [
+  { num: '01', text: 'Curated courses & interactive modules' },
+  { num: '02', text: 'Real-time assignment & quiz tracking' },
+  { num: '03', text: 'Collaborative academic community' },
 ]
 
 function Register() {
@@ -35,6 +41,16 @@ function Register() {
   const [message, setMessage] = useState('')
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  // Staggered highlights animation
+  const [highlightsVisible, setHighlightsVisible] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setHighlightsVisible(true)
+    }, 200)
+    return () => clearTimeout(timer)
+  }, [])
 
   const passwordStrength = getPasswordStrength(password)
 
@@ -122,41 +138,43 @@ function Register() {
     errs[key] = val
   }
 
+  const selectedIndex = roles.findIndex((r) => r.id === selectedRole.id)
+
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen overflow-x-hidden bg-[#f8fafc]">
       <div className="grid min-h-screen lg:grid-cols-[1.1fr_0.9fr]">
         {/* =====================================================
-            LEFT REGISTER PANEL (FORM ON LEFT SIDE)
+            LEFT REGISTER PANEL (FORM ON LEFT - SPLIT REVEAL)
         ====================================================== */}
-        <main className="animate-auth-fade flex min-h-screen items-center justify-center bg-[#f8fafc] px-4 py-8 sm:px-8 lg:px-12">
+        <main className="animate-panel-left flex min-h-screen items-center justify-center bg-[#f8fafc] px-4 py-8 sm:px-8 lg:px-12">
           <div className="w-full max-w-[500px]">
             {/* Mobile Logo */}
             <div className="mb-6 lg:hidden">
               <button
                 onClick={() => navigate('/')}
-                className="flex items-center gap-3"
+                className="flex items-center gap-3 transition-opacity duration-200 hover:opacity-90"
               >
                 <BrandMark darkBg />
                 <span className="text-xl font-bold text-slate-900">CourseHub</span>
               </button>
             </div>
 
-            {/* Header */}
+            {/* Staggered Header */}
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
                 GET STARTED
               </p>
-              <h2 className="mt-1.5 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+              <h2 className="animate-heading mt-1.5 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
                 Create account.
               </h2>
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="animate-subtext mt-2 text-sm text-slate-500">
                 Choose your workspace and start your academic journey.
               </p>
             </div>
 
-            {/* Card Form */}
-            <div className="mt-6 rounded-[24px] border border-slate-200/80 bg-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.04)] sm:p-7">
-              {/* Workspace Selection */}
+            {/* Card Form with Soft Elevation & Bloom */}
+            <div className="animate-card-bloom mt-6 rounded-[24px] border border-slate-200/80 bg-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.04)] sm:p-7">
+              {/* Workspace Segmented Control with Smooth Sliding Pill */}
               <div>
                 <div className="mb-2.5 flex items-center justify-between">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-700">
@@ -167,7 +185,16 @@ function Register() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="relative grid grid-cols-2 gap-2.5">
+                  {/* Sliding Active Indicator Pill */}
+                  <div
+                    className="pointer-events-none absolute inset-y-0 rounded-2xl bg-[#48566a] shadow-sm transition-transform duration-300 ease-out"
+                    style={{
+                      width: 'calc((100% - 10px) / 2)',
+                      transform: `translateX(calc(${selectedIndex} * (100% + 10px)))`,
+                    }}
+                  />
+
                   {roles.map((role) => {
                     const isSelected = selectedRole.id === role.id
                     return (
@@ -179,14 +206,17 @@ function Register() {
                           setErrors({})
                           setMessage('')
                         }}
-                        className={`rounded-2xl p-3.5 text-left transition-all duration-150 ${
+                        className={`relative z-10 rounded-2xl p-3.5 text-left transition-colors duration-200 ${
                           isSelected
-                            ? 'bg-[#48566a] text-white shadow-sm'
+                            ? 'text-white'
                             : 'bg-[#f0f3f6] text-slate-800 hover:bg-[#e7ecf1]'
                         }`}
+                        style={{
+                          backgroundColor: isSelected ? 'transparent' : undefined,
+                        }}
                       >
                         <span
-                          className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
+                          className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-colors duration-200 ${
                             isSelected
                               ? 'bg-[#283444] text-white'
                               : 'bg-[#dce2e8] text-slate-500'
@@ -196,7 +226,7 @@ function Register() {
                         </span>
 
                         <span
-                          className={`mt-2.5 block text-xs font-bold ${
+                          className={`mt-2.5 block text-xs font-bold transition-colors duration-200 ${
                             isSelected ? 'text-white' : 'text-slate-800'
                           }`}
                         >
@@ -204,7 +234,7 @@ function Register() {
                         </span>
 
                         <span
-                          className={`mt-0.5 block text-[9px] leading-tight sm:text-[10px] ${
+                          className={`mt-0.5 block text-[9px] leading-tight transition-colors duration-200 sm:text-[10px] ${
                             isSelected ? 'text-slate-300' : 'text-slate-400'
                           }`}
                         >
@@ -229,7 +259,7 @@ function Register() {
                 </div>
               )}
 
-              {/* Form Fields */}
+              {/* Form Fields with Smooth Focus Stroke */}
               <form onSubmit={handleSubmit} className="mt-5 space-y-4">
                 {/* Full Name */}
                 <div>
@@ -241,7 +271,7 @@ function Register() {
                     placeholder="John Doe"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
+                    className="w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] focus:ring-4 focus:ring-blue-500/10"
                   />
                   {errors.name && (
                     <p className="mt-1 text-xs font-medium text-rose-600">{errors.name}</p>
@@ -259,7 +289,7 @@ function Register() {
                       placeholder="you@college.edu"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
+                      className="w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] focus:ring-4 focus:ring-blue-500/10"
                     />
                     {errors.email && (
                       <p className="mt-1 text-xs font-medium text-rose-600">{errors.email}</p>
@@ -275,7 +305,7 @@ function Register() {
                       placeholder="9876543210"
                       value={mobileNumber}
                       onChange={(e) => setMobileNumber(e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
+                      className="w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] focus:ring-4 focus:ring-blue-500/10"
                     />
                     {errors.mobileNumber && (
                       <p className="mt-1 text-xs font-medium text-rose-600">{errors.mobileNumber}</p>
@@ -283,7 +313,7 @@ function Register() {
                   </div>
                 </div>
 
-                {/* Password */}
+                {/* Password with Smooth Focus Stroke */}
                 <div>
                   <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700">
                     PASSWORD
@@ -294,12 +324,12 @@ function Register() {
                       placeholder="At least 6 characters (e.g. Pass@123)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 pr-14 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
+                      className="w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 pr-14 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] focus:ring-4 focus:ring-blue-500/10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 transition-colors hover:text-slate-800"
                     >
                       {showPassword ? 'Hide' : 'Show'}
                     </button>
@@ -363,12 +393,12 @@ function Register() {
                       onCopy={(e) => e.preventDefault()}
                       onCut={(e) => e.preventDefault()}
                       onPaste={(e) => e.preventDefault()}
-                      className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 pr-14 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
+                      className="w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 pr-14 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] focus:ring-4 focus:ring-blue-500/10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 transition-colors hover:text-slate-800"
                     >
                       {showConfirmPassword ? 'Hide' : 'Show'}
                     </button>
@@ -382,7 +412,7 @@ function Register() {
 
                 {/* Terms of Service Checkbox */}
                 <div>
-                  <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+                  <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50/70 p-3 transition-colors hover:bg-slate-50">
                     <input
                       type="checkbox"
                       checked={acceptTerms}
@@ -400,15 +430,46 @@ function Register() {
                   )}
                 </div>
 
-                {/* Submit Button */}
+                {/* Submit Button with Hover Scale, Dynamic CTA Text & Spinner */}
                 <button
                   type="submit"
                   disabled={loading}
-                  className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#1a6ef5] px-4 py-3.5 text-sm font-medium text-white shadow-sm transition-all duration-150 hover:bg-[#155bd5] active:scale-[0.99] disabled:opacity-50"
+                  className="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#1a6ef5] px-4 py-3.5 text-sm font-medium text-white shadow-sm transition-all duration-200 ease-out hover:scale-[1.02] hover:bg-[#155bd5] hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.99] disabled:opacity-50"
                 >
-                  {loading
-                    ? 'Creating account…'
-                    : `Register as ${selectedRole.label} →`}
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <svg
+                        className="h-4 w-4 animate-spin text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      <span>Creating account…</span>
+                    </div>
+                  ) : (
+                    <div
+                      key={selectedRole.id}
+                      className="animate-cta-swap flex items-center gap-1.5"
+                    >
+                      <span>Register as {selectedRole.label}</span>
+                      <span className="transition-transform duration-200 group-hover:translate-x-1">
+                        →
+                      </span>
+                    </div>
+                  )}
                 </button>
               </form>
             </div>
@@ -416,14 +477,14 @@ function Register() {
             {/* Bottom Links */}
             <p className="mt-5 text-center text-xs text-slate-600 sm:text-sm">
               Already have an account?{' '}
-              <Link to="/login" className="font-bold text-slate-900 hover:underline">
+              <Link to="/login" className="font-bold text-slate-900 transition-colors hover:underline">
                 Sign in
               </Link>
             </p>
 
             <button
               onClick={() => navigate('/')}
-              className="mt-3 mx-auto block text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors"
+              className="mt-3 mx-auto block text-xs font-medium text-slate-500 transition-colors hover:text-slate-800"
             >
               ← Back to home
             </button>
@@ -431,13 +492,13 @@ function Register() {
         </main>
 
         {/* =====================================================
-            RIGHT BRAND PANEL (DARK NAVY ON RIGHT SIDE)
+            RIGHT BRAND PANEL (DARK NAVY - SPLIT REVEAL)
         ====================================================== */}
         <aside className="animate-panel-right relative hidden flex-col justify-between bg-[#0b1329] p-8 xl:p-12 text-white lg:flex">
           {/* Top Logo */}
           <button
             onClick={() => navigate('/')}
-            className="flex w-fit items-center gap-3 transition-opacity hover:opacity-90"
+            className="flex w-fit items-center gap-3 transition-opacity duration-200 hover:opacity-90"
           >
             <BrandMark />
             <span className="text-xl font-bold tracking-tight text-white">CourseHub</span>
@@ -445,7 +506,7 @@ function Register() {
 
           {/* Middle Content */}
           <div className="max-w-lg py-4">
-            <h1 className="text-5xl font-extrabold leading-[1.08] tracking-tight text-white xl:text-[54px]">
+            <h1 className="animate-heading text-5xl font-extrabold leading-[1.08] tracking-tight text-white xl:text-[54px]">
               Make space
               <br />
               for learning.
@@ -453,12 +514,12 @@ function Register() {
               Start today.
             </h1>
 
-            <p className="mt-5 max-w-sm text-[15px] leading-relaxed text-slate-300">
+            <p className="animate-subtext mt-5 max-w-sm text-[15px] leading-relaxed text-slate-300">
               Join CourseHub to access interactive courses, track your academic milestones, and connect with faculty.
             </p>
 
-            {/* Dashboard Highlights Card */}
-            <div className="mt-9 w-full max-w-[390px] rounded-2xl bg-white p-5 text-slate-800 shadow-xl">
+            {/* Dashboard Highlights Card with Sequential Entrance */}
+            <div className="mt-9 w-full max-w-[390px] rounded-2xl bg-white p-5 text-slate-800 shadow-xl transition-all duration-300">
               <div className="flex items-center justify-between">
                 <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
                   LEARNING DASHBOARD
@@ -469,14 +530,15 @@ function Register() {
               </div>
 
               <div className="mt-4 space-y-2.5">
-                {[
-                  { num: '01', text: 'Curated courses & interactive modules' },
-                  { num: '02', text: 'Real-time assignment & quiz tracking' },
-                  { num: '03', text: 'Collaborative academic community' },
-                ].map((item) => (
+                {highlights.map((item, index) => (
                   <div
                     key={item.num}
-                    className="flex items-center gap-3 rounded-xl bg-slate-50 px-3.5 py-2.5 border border-slate-100"
+                    className="flex items-center gap-3 rounded-xl bg-slate-50 px-3.5 py-2.5 border border-slate-100 transition-all duration-500 ease-out"
+                    style={{
+                      opacity: highlightsVisible ? 1 : 0,
+                      transform: highlightsVisible ? 'translateY(0)' : 'translateY(8px)',
+                      transitionDelay: `${index * 130}ms`,
+                    }}
                   >
                     <span className="text-[11px] font-bold text-[#1a6ef5]">
                       {item.num}
