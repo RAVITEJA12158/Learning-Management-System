@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import Button from '../../components/common/Button'
-import Input from '../../components/common/Input'
 import { authApi } from '../../services/api'
 
 const roles = [
@@ -9,13 +7,13 @@ const roles = [
     id: 'student',
     label: 'Student',
     letter: 'S',
-    description: 'Learn, take quizzes & track progress',
+    description: 'Learn & manage courses',
   },
   {
     id: 'faculty',
     label: 'Faculty',
     letter: 'F',
-    description: 'Create courses, modules & assignments',
+    description: 'Teach & assess',
   },
 ]
 
@@ -54,9 +52,9 @@ function Register() {
     }
 
     if (!email.trim()) {
-      newErrors.email = 'Email is required'
+      newErrors.email = 'Academic email is required'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      newErrors.email = 'Enter a valid email address'
+      nextErrorsOrNew('email', 'Enter a valid academic email address', newErrors)
     }
 
     const cleanedMobile = mobileNumber.replace(/[\s\-()]/g, '')
@@ -114,240 +112,318 @@ function Register() {
         navigate('/login')
       }, 1500)
     } catch (error) {
-      setMessage(error.message)
+      setMessage(error.message || 'Registration failed. Please check your information.')
     } finally {
       setLoading(false)
     }
   }
 
+  function nextErrorsOrNew(key, val, errs) {
+    errs[key] = val
+  }
+
   return (
-    <div className="min-h-screen bg-[#F6F2E9]">
-      <div className="grid min-h-screen lg:grid-cols-[1.08fr_.92fr]">
+    <div className="min-h-screen bg-[#f8fafc]">
+      <div className="grid min-h-screen lg:grid-cols-[1.1fr_0.9fr]">
         {/* =====================================================
-            REGISTER FORM
+            LEFT REGISTER PANEL (FORM ON LEFT SIDE)
         ====================================================== */}
-        <main className="order-2 flex items-center justify-center px-5 py-10 sm:px-8 lg:order-1 lg:px-14">
-          <div className="w-full max-w-[560px]">
-            <div className="mb-8 lg:hidden">
+        <main className="animate-auth-fade flex min-h-screen items-center justify-center bg-[#f8fafc] px-4 py-8 sm:px-8 lg:px-12">
+          <div className="w-full max-w-[500px]">
+            {/* Mobile Logo */}
+            <div className="mb-6 lg:hidden">
               <button
                 onClick={() => navigate('/')}
                 className="flex items-center gap-3"
               >
-                <BrandMark />
-                <span className="text-xl font-black">CourseHub</span>
+                <BrandMark darkBg />
+                <span className="text-xl font-bold text-slate-900">CourseHub</span>
               </button>
             </div>
 
-            <p className="text-xs font-black uppercase tracking-[.18em] text-[#E85B43]">
-              Get started
-            </p>
+            {/* Header */}
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                GET STARTED
+              </p>
+              <h2 className="mt-1.5 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+                Create account.
+              </h2>
+              <p className="mt-2 text-sm text-slate-500">
+                Choose your workspace and start your academic journey.
+              </p>
+            </div>
 
-            <h1 className="mt-3 text-5xl font-black tracking-[-.06em]">
-              Make space
-              <br />
-              for learning.
-            </h1>
-
-            <p className="mt-4 max-w-md text-sm leading-6 text-black/45">
-              Create your CourseHub account and bring your academic life into one focused workspace.
-            </p>
-
-            <div className="mt-8 rounded-[28px] border border-black/10 bg-white p-5 shadow-[0_25px_70px_rgba(21,21,21,.07)] sm:p-7">
-              {/* Workspace / Role Selector */}
-              <div className="mb-6">
-                <div className="mb-3 flex items-center justify-between">
-                  <p className="text-[10px] font-black uppercase tracking-[.15em] text-black/40">
-                    I want to register as
+            {/* Card Form */}
+            <div className="mt-6 rounded-[24px] border border-slate-200/80 bg-white p-6 shadow-[0_12px_40px_rgba(15,23,42,0.04)] sm:p-7">
+              {/* Workspace Selection */}
+              <div>
+                <div className="mb-2.5 flex items-center justify-between">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-700">
+                    SELECT WORKSPACE
                   </p>
-                  <span className="text-[9px] font-black text-black/25">ROLE</span>
+                  <span className="text-[10px] font-semibold tracking-wider text-slate-400">
+                    STEP 01
+                  </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  {roles.map((r) => (
-                    <button
-                      key={r.id}
-                      type="button"
-                      onClick={() => setSelectedRole(r)}
-                      className={`hub-lift rounded-2xl border p-3.5 text-left transition-all ${
-                        selectedRole.id === r.id
-                          ? 'border-[#151515] bg-[#151515] text-white shadow-md'
-                          : 'border-black/10 bg-[#FAF8F3] text-black/70 hover:border-black/25'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span
-                          className={`flex h-7 w-7 items-center justify-center rounded-xl text-[10px] font-black ${
-                            selectedRole.id === r.id
-                              ? 'bg-[#DFFF63] text-[#151515]'
-                              : 'bg-black/5 text-black/45'
-                          }`}
-                        >
-                          {r.letter}
-                        </span>
-                        <span className="text-xs font-black">{r.label}</span>
-                      </div>
-                      <p
-                        className={`mt-2 text-[9px] leading-3.5 ${
-                          selectedRole.id === r.id ? 'text-white/40' : 'text-black/35'
+                <div className="grid grid-cols-2 gap-2.5">
+                  {roles.map((role) => {
+                    const isSelected = selectedRole.id === role.id
+                    return (
+                      <button
+                        key={role.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedRole(role)
+                          setErrors({})
+                          setMessage('')
+                        }}
+                        className={`rounded-2xl p-3.5 text-left transition-all duration-150 ${
+                          isSelected
+                            ? 'bg-[#48566a] text-white shadow-sm'
+                            : 'bg-[#f0f3f6] text-slate-800 hover:bg-[#e7ecf1]'
                         }`}
                       >
-                        {r.description}
-                      </p>
-                    </button>
-                  ))}
+                        <span
+                          className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
+                            isSelected
+                              ? 'bg-[#283444] text-white'
+                              : 'bg-[#dce2e8] text-slate-500'
+                          }`}
+                        >
+                          {role.letter}
+                        </span>
+
+                        <span
+                          className={`mt-2.5 block text-xs font-bold ${
+                            isSelected ? 'text-white' : 'text-slate-800'
+                          }`}
+                        >
+                          {role.label}
+                        </span>
+
+                        <span
+                          className={`mt-0.5 block text-[9px] leading-tight sm:text-[10px] ${
+                            isSelected ? 'text-slate-300' : 'text-slate-400'
+                          }`}
+                        >
+                          {role.description}
+                        </span>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
+              {/* Status Message */}
               {message && (
                 <div
-                  className={`mb-5 rounded-2xl border p-4 text-xs font-bold leading-5 ${
+                  className={`mt-4 rounded-xl border p-3 text-xs font-medium ${
                     success
-                      ? 'border-[#B7E4D5] bg-[#EDF9F5] text-[#18765D]'
-                      : 'border-[#F2C7BC] bg-[#FFF1ED] text-[#B83D29]'
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                      : 'border-rose-200 bg-rose-50 text-rose-700'
                   }`}
                 >
                   {message}
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <Field label="Full name" error={errors.name}>
-                  <Input
-                    placeholder="e.g. John Doe"
+              {/* Form Fields */}
+              <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+                {/* Full Name */}
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700">
+                    FULL NAME
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="John Doe"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
                   />
-                </Field>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Academic email" error={errors.email}>
-                    <Input
-                      placeholder="you@college.edu"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </Field>
-
-                  <Field label="Mobile number" error={errors.mobileNumber}>
-                    <Input
-                      placeholder="9876543210"
-                      type="tel"
-                      value={mobileNumber}
-                      onChange={(e) => setMobileNumber(e.target.value)}
-                    />
-                  </Field>
+                  {errors.name && (
+                    <p className="mt-1 text-xs font-medium text-rose-600">{errors.name}</p>
+                  )}
                 </div>
 
-                <Field label="Password" error={errors.password}>
+                {/* Email and Mobile Number (2 columns on sm) */}
+                <div className="grid gap-3.5 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700">
+                      ACADEMIC EMAIL
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="you@college.edu"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
+                    />
+                    {errors.email && (
+                      <p className="mt-1 text-xs font-medium text-rose-600">{errors.email}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700">
+                      MOBILE NUMBER
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder="9876543210"
+                      value={mobileNumber}
+                      onChange={(e) => setMobileNumber(e.target.value)}
+                      className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
+                    />
+                    {errors.mobileNumber && (
+                      <p className="mt-1 text-xs font-medium text-rose-600">{errors.mobileNumber}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700">
+                    PASSWORD
+                  </label>
                   <div className="relative">
-                    <Input
-                      placeholder="At least 6 characters (e.g. Pass@123)"
+                    <input
                       type={showPassword ? 'text' : 'password'}
+                      placeholder="At least 6 characters (e.g. Pass@123)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 pr-14 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
                     />
-
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-[10px] font-black text-[#E85B43] hover:bg-[#FFF1ED]"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors"
                     >
                       {showPassword ? 'Hide' : 'Show'}
                     </button>
                   </div>
+                  {errors.password && (
+                    <p className="mt-1 text-xs font-medium text-rose-600">{errors.password}</p>
+                  )}
 
+                  {/* Minimalist Password Strength Meter */}
                   {password && (
-                    <div className="mt-2.5 rounded-xl bg-[#F7F4EE] p-2.5">
-                      <div className="flex gap-1.5">
-                        {[1, 2, 3, 4].map((level) => (
-                          <span
-                            key={level}
-                            className={`h-1.5 flex-1 rounded-full ${
-                              passwordStrength.score >= level
-                                ? level >= 3
-                                  ? 'bg-[#59BFA2]'
-                                  : 'bg-[#E8A13D]'
-                                : 'bg-black/10'
-                            }`}
-                          />
-                        ))}
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <div className="flex flex-1 items-center gap-1.5">
+                        {[1, 2, 3, 4].map((level) => {
+                          const active = passwordStrength.score >= level
+                          const color =
+                            passwordStrength.score <= 1
+                              ? 'bg-rose-500'
+                              : passwordStrength.score === 2
+                              ? 'bg-amber-500'
+                              : passwordStrength.score === 3
+                              ? 'bg-emerald-500'
+                              : 'bg-blue-600'
+                          return (
+                            <div
+                              key={level}
+                              className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                                active ? color : 'bg-slate-200'
+                              }`}
+                            />
+                          )
+                        })}
                       </div>
-
-                      <p className="mt-1.5 text-[10px] font-bold text-black/40">
-                        Strength:{' '}
-                        <span className="text-black/70">{passwordStrength.label}</span>
-                      </p>
+                      <span
+                        className={`text-[10px] font-semibold tracking-wider uppercase transition-colors duration-200 ${
+                          passwordStrength.score <= 1
+                            ? 'text-rose-600'
+                            : passwordStrength.score === 2
+                            ? 'text-amber-600'
+                            : passwordStrength.score === 3
+                            ? 'text-emerald-600'
+                            : 'text-blue-600'
+                        }`}
+                      >
+                        {passwordStrength.label}
+                      </span>
                     </div>
                   )}
-                </Field>
+                </div>
 
-                <Field label="Confirm password" error={errors.confirmPassword}>
+                {/* Confirm Password */}
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700">
+                    CONFIRM PASSWORD
+                  </label>
                   <div className="relative">
-                    <Input
-                      placeholder="Repeat your password"
+                    <input
                       type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder="Repeat your password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       onCopy={(e) => e.preventDefault()}
                       onCut={(e) => e.preventDefault()}
                       onPaste={(e) => e.preventDefault()}
+                      className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 pr-14 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
                     />
-
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-[10px] font-black text-[#E85B43] hover:bg-[#FFF1ED]"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors"
                     >
                       {showConfirmPassword ? 'Hide' : 'Show'}
                     </button>
                   </div>
-                </Field>
+                  {errors.confirmPassword && (
+                    <p className="mt-1 text-xs font-medium text-rose-600">
+                      {errors.confirmPassword}
+                    </p>
+                  )}
+                </div>
 
+                {/* Terms of Service Checkbox */}
                 <div>
-                  <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-black/8 bg-[#FAF8F3] p-3.5">
+                  <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50/70 p-3">
                     <input
                       type="checkbox"
                       checked={acceptTerms}
                       onChange={(e) => setAcceptTerms(e.target.checked)}
-                      className="mt-0.5 h-4 w-4 accent-[#151515]"
+                      className="mt-0.5 h-4 w-4 rounded accent-[#1a6ef5]"
                     />
-                    <span className="text-xs leading-5 text-black/55">
+                    <span className="text-[11px] leading-4 text-slate-600">
                       I agree to the LMS terms of service and acknowledge that my academic information will be securely managed.
                     </span>
                   </label>
-
                   {errors.terms && (
-                    <p className="mt-2 text-xs font-bold text-[#D64C36]">
+                    <p className="mt-1 text-xs font-medium text-rose-600">
                       {errors.terms}
                     </p>
                   )}
                 </div>
 
-                <Button disabled={loading}>
-                  {loading ? 'Creating account...' : `Register as ${selectedRole.label} →`}
-                </Button>
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#1a6ef5] px-4 py-3.5 text-sm font-medium text-white shadow-sm transition-all duration-150 hover:bg-[#155bd5] active:scale-[0.99] disabled:opacity-50"
+                >
+                  {loading
+                    ? 'Creating account…'
+                    : `Register as ${selectedRole.label} →`}
+                </button>
               </form>
-
-              <div className="my-6 flex items-center gap-3">
-                <span className="h-px flex-1 bg-black/8" />
-                <span className="text-[9px] font-black uppercase tracking-[.12em] text-black/25">
-                  Already registered
-                </span>
-                <span className="h-px flex-1 bg-black/8" />
-              </div>
-
-              <p className="text-center text-sm text-black/45">
-                Already have an account?{' '}
-                <Link to="/login" className="font-black text-[#E85B43]">
-                  Sign in
-                </Link>
-              </p>
             </div>
+
+            {/* Bottom Links */}
+            <p className="mt-5 text-center text-xs text-slate-600 sm:text-sm">
+              Already have an account?{' '}
+              <Link to="/login" className="font-bold text-slate-900 hover:underline">
+                Sign in
+              </Link>
+            </p>
 
             <button
               onClick={() => navigate('/')}
-              className="mx-auto mt-6 block text-xs font-bold text-black/30 hover:text-[#E85B43]"
+              className="mt-3 mx-auto block text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors"
             >
               ← Back to home
             </button>
@@ -355,122 +431,95 @@ function Register() {
         </main>
 
         {/* =====================================================
-            BRAND PANEL
+            RIGHT BRAND PANEL (DARK NAVY ON RIGHT SIDE)
         ====================================================== */}
-        <aside className="relative order-1 hidden overflow-hidden bg-[#DFFF63] lg:order-2 lg:flex">
-          <div className="absolute -right-32 -top-32 h-[500px] w-[500px] rounded-full bg-white/45 blur-[100px]" />
-          <div className="absolute -bottom-40 -left-40 h-[550px] w-[550px] rounded-full bg-[#A9E8D5]/35 blur-[110px]" />
+        <aside className="animate-panel-right relative hidden flex-col justify-between bg-[#0b1329] p-8 xl:p-12 text-white lg:flex">
+          {/* Top Logo */}
+          <button
+            onClick={() => navigate('/')}
+            className="flex w-fit items-center gap-3 transition-opacity hover:opacity-90"
+          >
+            <BrandMark />
+            <span className="text-xl font-bold tracking-tight text-white">CourseHub</span>
+          </button>
 
-          <div className="relative z-10 flex w-full flex-col justify-between p-10 xl:p-14">
-            <button
-              onClick={() => navigate('/')}
-              className="ml-auto flex items-center gap-3"
-            >
-              <span className="text-xl font-black tracking-[-.05em]">CourseHub</span>
-              <BrandMark />
-            </button>
+          {/* Middle Content */}
+          <div className="max-w-lg py-4">
+            <h1 className="text-5xl font-extrabold leading-[1.08] tracking-tight text-white xl:text-[54px]">
+              Make space
+              <br />
+              for learning.
+              <br />
+              Start today.
+            </h1>
 
-            <div className="max-w-xl">
-              <p className="text-xs font-black uppercase tracking-[.18em] text-[#344018]">
-                Built for your next chapter
-              </p>
+            <p className="mt-5 max-w-sm text-[15px] leading-relaxed text-slate-300">
+              Join CourseHub to access interactive courses, track your academic milestones, and connect with faculty.
+            </p>
 
-              <h2 className="mt-5 text-5xl font-black leading-[.94] tracking-[-.065em] xl:text-6xl">
-                One place.
-                <br />
-                Every part of
-                <br />
-                <span className="text-[#E85B43]">learning.</span>
-              </h2>
+            {/* Dashboard Highlights Card */}
+            <div className="mt-9 w-full max-w-[390px] rounded-2xl bg-white p-5 text-slate-800 shadow-xl">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                  LEARNING DASHBOARD
+                </p>
+                <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-[#1a6ef5]">
+                  READY
+                </span>
+              </div>
 
-              <p className="mt-7 max-w-md text-base leading-7 text-[#344018]/65">
-                Courses, assignments, resources, progress, and academic connections—all organized around the way you learn.
-              </p>
-
-              <div className="mt-9 space-y-3">
+              <div className="mt-4 space-y-2.5">
                 {[
-                  'Access your courses anytime',
-                  'Track your academic progress',
-                  'Manage assignments efficiently',
-                  'Learn from experienced faculty',
-                ].map((item, index) => (
+                  { num: '01', text: 'Curated courses & interactive modules' },
+                  { num: '02', text: 'Real-time assignment & quiz tracking' },
+                  { num: '03', text: 'Collaborative academic community' },
+                ].map((item) => (
                   <div
-                    key={item}
-                    className="flex items-center gap-3 rounded-2xl border border-black/10 bg-black/[0.04] px-4 py-3"
+                    key={item.num}
+                    className="flex items-center gap-3 rounded-xl bg-slate-50 px-3.5 py-2.5 border border-slate-100"
                   >
-                    <span className="text-[10px] font-black text-[#E85B43]">
-                      0{index + 1}
+                    <span className="text-[11px] font-bold text-[#1a6ef5]">
+                      {item.num}
                     </span>
-                    <span className="text-sm font-black">{item}</span>
+                    <span className="text-xs font-semibold text-slate-700">
+                      {item.text}
+                    </span>
                   </div>
                 ))}
               </div>
-
-              <div className="mt-10 rounded-[26px] bg-[#151515] p-5 text-white shadow-[0_25px_50px_rgba(21,21,21,.15)]">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[9px] font-black uppercase tracking-[.15em] text-white/30">
-                      Learning dashboard
-                    </p>
-                    <p className="mt-1 text-sm font-black">
-                      Everything in one rhythm.
-                    </p>
-                  </div>
-
-                  <span className="rounded-full bg-[#DFFF63] px-3 py-1.5 text-[9px] font-black text-black">
-                    READY
-                  </span>
-                </div>
-
-                <div className="mt-5 grid grid-cols-3 gap-2">
-                  <div className="rounded-xl bg-[#FF7659] p-3">
-                    <p className="text-[8px] font-black text-white/60">COURSES</p>
-                    <p className="mt-1 text-lg font-black">12</p>
-                  </div>
-
-                  <div className="rounded-xl bg-[#59BFA2] p-3 text-[#123029]">
-                    <p className="text-[8px] font-black text-black/40">PROGRESS</p>
-                    <p className="mt-1 text-lg font-black">78%</p>
-                  </div>
-
-                  <div className="rounded-xl bg-[#9CC5FF] p-3 text-[#102744]">
-                    <p className="text-[8px] font-black text-black/40">STREAK</p>
-                    <p className="mt-1 text-lg font-black">6d</p>
-                  </div>
-                </div>
-              </div>
             </div>
-
-            <p className="text-xs font-semibold text-[#344018]/40">
-              A calmer way to learn.
-            </p>
           </div>
+
+          {/* Bottom Security Note */}
+          <p className="text-xs text-slate-400">
+            Secure access for your academic community.
+          </p>
         </aside>
       </div>
     </div>
   )
 }
 
-function Field({ label, error, children }) {
+function BrandMark({ darkBg = false }) {
   return (
-    <div>
-      <label className="mb-2 block text-[10px] font-black uppercase tracking-[.12em] text-black/55">
-        {label}
-      </label>
-      {children}
-      {error && (
-        <p className="mt-1.5 text-xs font-bold text-[#D64C36]">{error}</p>
-      )}
+    <div
+      className={`flex h-9 w-9 items-center justify-center rounded-xl shadow-sm ${
+        darkBg ? 'bg-[#0b1329] text-white' : 'bg-white text-slate-900'
+      }`}
+    >
+      <svg
+        className="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="4" y="4" width="16" height="16" rx="4" />
+        <circle cx="12" cy="12" r="1.5" />
+      </svg>
     </div>
-  )
-}
-
-function BrandMark() {
-  return (
-    <span className="relative flex h-10 w-10 items-center justify-center rounded-[13px] bg-[#151515] text-white">
-      <span className="h-3.5 w-3.5 rounded-[4px] border-2 border-current" />
-      <span className="absolute h-1.5 w-1.5 translate-x-2.5 -translate-y-2.5 rounded-full bg-[#FF7659]" />
-    </span>
   )
 }
 
@@ -478,24 +527,26 @@ function getPasswordStrength(password) {
   if (!password) {
     return {
       score: 0,
-      label: 'Not set',
+      label: '',
     }
   }
 
   let score = 0
   if (password.length >= 6) score++
-  if (password.length >= 10) score++
-  if (/[A-Z]/.test(password)) score++
-  if (/[0-9]/.test(password)) score++
+  if (password.length >= 8) score++
+  if (/[A-Z]/.test(password) && /[0-9]/.test(password)) score++
   if (/[^A-Za-z0-9]/.test(password)) score++
 
   if (score <= 1) {
-    return { score, label: 'Weak' }
+    return { score: 1, label: 'Weak' }
   }
-  if (score <= 3) {
-    return { score, label: 'Good' }
+  if (score === 2) {
+    return { score: 2, label: 'Fair' }
   }
-  return { score, label: 'Strong' }
+  if (score === 3) {
+    return { score: 3, label: 'Good' }
+  }
+  return { score: 4, label: 'Strong' }
 }
 
 export default Register
