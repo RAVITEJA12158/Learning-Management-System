@@ -62,6 +62,17 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
+  /**
+   * Updates the current user state and synchronizes with localStorage.
+   */
+  function updateUser(updatedData) {
+    setUser((prev) => {
+      const nextUser = { ...prev, ...updatedData };
+      localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
+      return nextUser;
+    });
+  }
+
   const value = {
     user,
     loading,
@@ -69,6 +80,7 @@ export function AuthProvider({ children }) {
     accessToken: localStorage.getItem(TOKEN_KEY),
     login,
     logout,
+    updateUser,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

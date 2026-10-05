@@ -146,13 +146,19 @@ function DashboardLayout() {
                 onClick={() => setProfileOpen(!profileOpen)}
                 className="flex items-center gap-2.5 p-1 pr-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition cursor-pointer"
               >
-                <img
-                  src={user?.avatar || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80"}
-                  alt={user?.name || "Sarah Jensen"}
-                  className="h-8 w-8 rounded-full object-cover border border-slate-200 dark:border-zinc-700"
-                />
+                {user?.profileImage ? (
+                  <img
+                    src={user.profileImage}
+                    alt={user?.name || "User Avatar"}
+                    className="h-8 w-8 rounded-full object-cover border border-slate-200 dark:border-zinc-700"
+                  />
+                ) : (
+                  <span className="h-8 w-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-xs font-black select-none">
+                    {user?.name ? user.name.trim().charAt(0).toUpperCase() : 'U'}
+                  </span>
+                )}
                 <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                  {user?.name || 'Sarah Jensen'}
+                  {user?.name || 'User'}
                 </span>
                 <ChevronDownIcon className={`w-3.5 h-3.5 text-slate-500 dark:text-zinc-400 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
               </button>
