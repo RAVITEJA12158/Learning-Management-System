@@ -6,6 +6,7 @@ const courseRoutes = require('./courseRoutes');
 const moduleRoutes = require('./moduleRoutes');
 const progressRoutes = require('./progressRoutes');
 const assignmentRoutes = require('./assignmentRoutes');
+const userRoutes = require('./userRoutes');
 const { authenticate } = require('../Middleware/auth');
 const { apiLimiter } = require('../Middleware/rateLimiter');
 
@@ -17,6 +18,7 @@ router.use('/courses', courseRoutes);
 router.use('/modules', moduleRoutes);
 router.use('/progress', progressRoutes);
 router.use('/assignments', assignmentRoutes);
+router.use('/users', userRoutes);
 
 // Protected route for testing integration
 router.get('/protected', authenticate, (req, res) => {

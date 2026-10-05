@@ -61,7 +61,7 @@ const register = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
     );
 
-    return res.status(201).json({
+    const registerResponse = {
       message: "User registered successfully",
       token,
       userId: user.id,
@@ -115,14 +115,19 @@ const login = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
     );
 
-    return res.status(200).json({
+    const loginResponse = {
       message: "Login successful",
       token,
       userId: user.id,
       name: user.name,
       username: user.username,
       role: user.role,
-    });
+    };
+    if (user.profileImage) {
+      loginResponse.profileImage = user.profileImage;
+    }
+
+    return res.status(200).json(loginResponse);
   } catch (error) {
     console.error("Login error:", error);
     return res.status(500).json({ error: "Error logging in" });
