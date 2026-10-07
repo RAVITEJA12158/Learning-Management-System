@@ -1,11 +1,4 @@
-// ============================================================================
-// Learning Management System — Prisma Schema
-// PERN Stack (PostgreSQL + Prisma ORM)
-// Generated from: LMS Documentation, Section 2 (Database Design)
-// Covers every entity in 2.1–2.9, including tables marked for later phases
-// (DISCUSSIONS, ATTENDANCE, GRADE_COMPONENTS) so the schema doesn't need
-// re-migrating when those features are switched on.
-// ============================================================================
+
 
 generator client {
   provider      = "prisma-client-js"
