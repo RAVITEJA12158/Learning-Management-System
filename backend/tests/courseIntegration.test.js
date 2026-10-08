@@ -104,6 +104,7 @@ describe('Course & Enrollment Integration Flows (Sprint 2)', () => {
       expect(listRes.body).toHaveLength(1);
 
       // Enroll
+      prisma.course.findUnique.mockResolvedValue({ id: 'course-101' });
       prisma.courseEnrollment.findUnique.mockResolvedValue(null);
       prisma.courseEnrollment.create.mockResolvedValue({
         id: 'enroll-1',

@@ -73,18 +73,6 @@ exports.updateProfilePhoto = async (req, res) => {
       return res.status(404).json({ error: 'User not found.' });
     }
 
-    // If an existing Cloudinary picture is present, delete it first to conserve storage
-    if (currentUser.profileImage) {
-      const oldPublicId = extractCloudinaryPublicId(currentUser.profileImage);
-      if (oldPublicId) {
-        try {
-          await cloudinary.uploader.destroy(oldPublicId, { resource_type: 'image' });
-        } catch (cleanupErr) {
-          console.warn('Warning: Failed to delete previous Cloudinary image:', cleanupErr.message);
-        }
-      }
-    }
-
     // Upload new profile image to Cloudinary in the "lms/profiles" folder
     const uploadResult = await uploadBufferToCloudinary(req.file.buffer, {
       folder: 'lms/profiles',
@@ -104,6 +92,18 @@ exports.updateProfilePhoto = async (req, res) => {
         profileImage: true,
       },
     });
+
+    // Keep the old image available until the replacement is safely stored.
+    if (currentUser.profileImage) {
+      const oldPublicId = extractCloudinaryPublicId(currentUser.profileImage);
+      if (oldPublicId) {
+        try {
+          await cloudinary.uploader.destroy(oldPublicId, { resource_type: 'image' });
+        } catch (cleanupErr) {
+          console.warn('Warning: Failed to delete previous Cloudinary image:', cleanupErr.message);
+        }
+      }
+    }
 
     res.json({
       message: 'Profile photo updated successfully.',
@@ -134,19 +134,8 @@ exports.deleteProfilePhoto = async (req, res) => {
       return res.status(404).json({ error: 'User not found.' });
     }
 
-    // If an existing picture is on Cloudinary, delete it
-    if (currentUser.profileImage) {
-      const publicId = extractCloudinaryPublicId(currentUser.profileImage);
-      if (publicId) {
-        try {
-          await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
-        } catch (cleanupErr) {
-          console.warn('Warning: Failed to delete Cloudinary image:', cleanupErr.message);
-        }
-      }
-    }
-
-    // Set profileImage to null in DB
+    // Clear the database reference first so a Cloudinary failure cannot
+    // leave the profile pointing to an image that was already deleted.
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { profileImage: null },
@@ -159,6 +148,18 @@ exports.deleteProfilePhoto = async (req, res) => {
         profileImage: true,
       },
     });
+
+    // If an existing picture is on Cloudinary, delete it after the DB update.
+    if (currentUser.profileImage) {
+      const publicId = extractCloudinaryPublicId(currentUser.profileImage);
+      if (publicId) {
+        try {
+          await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+        } catch (cleanupErr) {
+          console.warn('Warning: Failed to delete Cloudinary image:', cleanupErr.message);
+        }
+      }
+    }
 
     res.json({
       message: 'Profile photo removed successfully.',

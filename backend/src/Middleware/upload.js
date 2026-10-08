@@ -27,7 +27,9 @@ function fileFilter(req, file, cb) {
   if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
     return cb(null, true);
   }
-  cb(new Error(`Unsupported file type: ${file.mimetype}`));
+  const error = new Error(`Unsupported file type: ${file.mimetype}`);
+  error.code = 'UNSUPPORTED_FILE_TYPE';
+  cb(error);
 }
 
 // Exposed as `upload.single('file')` on any route that accepts one file.
