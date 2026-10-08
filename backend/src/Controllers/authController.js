@@ -68,7 +68,10 @@ const register = async (req, res) => {
       name: user.name,
       username: user.username,
       role: user.role,
-    });
+    };
+
+    console.log("Register response:", registerResponse);
+    return res.status(200).json(registerResponse);
   } catch (error) {
     console.error("Register error:", error);
     return res.status(500).json({ error: "Error registering user" });

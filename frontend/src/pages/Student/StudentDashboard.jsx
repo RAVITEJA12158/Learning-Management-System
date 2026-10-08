@@ -46,7 +46,7 @@ function StudentDashboard() {
       {/* 3. WELCOME & GREETING */}
       <div className="flex items-center gap-4 mb-8">
         <img
-          src={user?.avatar || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80"}
+          src={user?.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80"}
           alt={user?.name || "Student"}
           className="h-16 w-16 rounded-full object-cover border-2 border-white dark:border-zinc-800 shadow-sm shrink-0"
         />
@@ -96,7 +96,7 @@ function StudentDashboard() {
 
       {/* 4 & 5. MAIN CONTENT AREA (2-COLUMN GRID) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* LEFT COLUMN: 4. MAIN CONTENT AREA (COURSE GRID) (2/3 width) */}
         <div className="lg:col-span-2 space-y-5">
           <div className="flex items-center justify-between">

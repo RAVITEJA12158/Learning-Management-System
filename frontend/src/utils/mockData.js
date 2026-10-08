@@ -169,3 +169,157 @@ export const MOCK_CATALOG_COURSES = [
     popularity: 90,
   },
 ];
+
+export const MOCK_COURSE_QUIZZES = [
+  {
+    id: 'quiz-1',
+    quizNumber: 'Quiz 1',
+    title: 'Control Flow & Loops Quiz',
+    questions: 10,
+    duration: '20 minuts',
+    attemptsAllowed: 3,
+    attemptsUsed: 0,
+    points: 16,
+    status: 'Active',
+    colorTheme: 'cyan',
+    buttonText: 'Start Attempt',
+  },
+  {
+    id: 'quiz-2',
+    quizNumber: 'Quiz 2',
+    title: 'Functions & Modules Assessment',
+    questions: 10,
+    duration: '30 minuts',
+    attemptsAllowed: 3,
+    attemptsUsed: 1,
+    points: 15,
+    status: 'Attempted',
+    colorTheme: 'amber',
+    buttonText: 'Continue Attempt',
+  },
+  {
+    id: 'quiz-3',
+    quizNumber: 'Quiz 3',
+    title: 'Data Structures Quiz',
+    questions: 10,
+    duration: '30 minuts',
+    attemptsAllowed: 3,
+    attemptsUsed: 3,
+    points: 16,
+    score: 15,
+    status: 'Completed',
+    colorTheme: 'emerald',
+    buttonText: 'View Results',
+  },
+];
+
+export const MOCK_QUIZ_QUESTIONS = [
+  {
+    id: 1,
+    question: 'What will be the output of iterating with "range(1, 5)" in Python?',
+    options: [
+      '1, 2, 3, 4',
+      '1, 2, 3, 4, 5',
+      '0, 1, 2, 3, 4',
+      'Error: StopIteration',
+    ],
+    correctIndex: 0,
+  },
+  {
+    id: 2,
+    question: 'Which statement immediately exits a loop regardless of the test condition?',
+    options: ['continue', 'break', 'pass', 'return'],
+    correctIndex: 1,
+  },
+  {
+    id: 3,
+    question: 'What is the time complexity of searching in a balanced Binary Search Tree?',
+    options: ['O(1)', 'O(n)', 'O(log n)', 'O(n log n)'],
+    correctIndex: 2,
+  },
+  {
+    id: 4,
+    question: 'In JavaScript, which operator checks both value and type equality?',
+    options: ['==', '===', '!=', 'equals()'],
+    correctIndex: 1,
+  },
+  {
+    id: 5,
+    question: 'Which data structure follows the First-In, First-Out (FIFO) principle?',
+    options: ['Stack', 'Queue', 'Array', 'Heap'],
+    correctIndex: 1,
+  },
+  {
+    id: 6,
+    question: 'What keyword defines an anonymous function in Python?',
+    options: ['def', 'lambda', 'func', 'anonymous'],
+    correctIndex: 1,
+  },
+  {
+    id: 7,
+    question: 'Which method adds one or more elements to the end of an array in JavaScript?',
+    options: ['push()', 'pop()', 'shift()', 'unshift()'],
+    correctIndex: 0,
+  },
+  {
+    id: 8,
+    question: 'What is the base case in a recursive function responsible for?',
+    options: [
+      'Initiating recursion',
+      'Preventing infinite loops by terminating',
+      'Optimizing memory allocation',
+      'Compiling the call stack',
+    ],
+    correctIndex: 1,
+  },
+  {
+    id: 9,
+    question: 'Which traversal visits nodes in: Left, Root, Right order?',
+    options: ['Pre-order', 'In-order', 'Post-order', 'Level-order'],
+    correctIndex: 1,
+  },
+  {
+    id: 10,
+    question: 'What is the default return value of a function that does not explicitly return in Python?',
+    options: ['0', 'False', 'None', 'undefined'],
+    correctIndex: 2,
+  },
+];
+
+export const MOCK_QUIZ_REVIEW_ITEMS = [
+  {
+    q: '1. What is the time complexity of searching in a balanced BST?',
+    userAns: 'O(log n)',
+    correctAns: 'O(log n)',
+    correct: true,
+    points: '1.6 / 1.6',
+  },
+  {
+    q: '2. Which statement immediately exits a loop regardless of the condition?',
+    userAns: 'break',
+    correctAns: 'break',
+    correct: true,
+    points: '1.6 / 1.6',
+  },
+  {
+    q: '3. What data structure follows the FIFO principle?',
+    userAns: 'Queue',
+    correctAns: 'Queue',
+    correct: true,
+    points: '1.6 / 1.6',
+  },
+  {
+    q: '4. What keyword defines an anonymous function in Python?',
+    userAns: 'func',
+    correctAns: 'lambda',
+    correct: false,
+    points: '0.0 / 1.6',
+  },
+  {
+    q: '5. Which traversal visits: Left, Root, Right order?',
+    userAns: 'In-order',
+    correctAns: 'In-order',
+    correct: true,
+    points: '1.6 / 1.6',
+  },
+];
