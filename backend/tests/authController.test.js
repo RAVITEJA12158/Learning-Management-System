@@ -57,6 +57,7 @@ describe("authController", () => {
           name: "Test User",
           username: "testuser",
           email: "test@example.com",
+          mobileNumber: "9876543210",
           passwordHash: "hashed-password",
           role: "STUDENT",
         },

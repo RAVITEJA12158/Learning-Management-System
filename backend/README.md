@@ -1,78 +1,40 @@
-# Prisma Scaffold — Supabase Postgres + Express
+# LMS backend
 
-## 1. Provision the Supabase Postgres database
+This directory contains the Express REST API and Prisma database layer for the Learning Management System. The API listens on port `5000` by default; the Vite frontend runs separately and proxies `/api` requests to it.
 
-I can't create the Supabase project for you (it needs your account), but here's exactly how:
+## Setup
 
-1. Go to https://supabase.com/dashboard and create a new project (pick a region close to your app).
-2. Wait for provisioning to finish (~2 min), then open **Project Settings → Database**.
-3. Under **Connection string**, copy two URIs:
-   - **Connection pooling** (Transaction mode, port `6543`) → this is your `DATABASE_URL`
-   - **Direct connection** (port `5432`) → this is your `DIRECT_URL`
-4. Set your database password (or reset it) in the same screen — it gets substituted into both URLs.
+1. Install dependencies with `npm install`.
+2. Copy `.env.example` to `.env` and configure `DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET`, and `ADMIN_SECRET_CODE`. Configure the Cloudinary values to enable uploads.
+3. Generate Prisma Client and apply migrations:
 
-## 2. Configure environment
+   ```sh
+   npm run prisma:generate
+   npm run prisma:migrate
+   ```
 
-```bash
-cp .env.example .env
+   For an existing deployment, use `npm run prisma:deploy` to apply checked-in migrations without creating a development shadow database.
+4. Start the API with `npm run dev` during development or `npm start` in production.
+
+The health endpoint is `GET /health`. It checks the PostgreSQL connection. API routes are mounted under `/api`; see the root [project README](../README.md) for the endpoint overview.
+
+## Environment
+
+- `DATABASE_URL`: application connection string, typically the pooled PostgreSQL URL.
+- `DIRECT_URL`: direct PostgreSQL connection used by Prisma migrations.
+- `PORT`: API port (defaults to `5000`).
+- `FRONTEND_ORIGINS`: comma-separated browser origins allowed by CORS. Local ports `3000` and `5173` are always allowed.
+- `JWT_SECRET` and optional `JWT_EXPIRES_IN`: JWT signing key and lifetime.
+- `ADMIN_SECRET_CODE`: required by admin login.
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`: media uploads.
+
+Keep `.env` out of source control and use a strong, unique JWT secret outside local development.
+
+## Checks
+
+```sh
+npm test -- --runInBand
+npx prisma validate
 ```
 
-Paste your two connection strings into `.env`. Keep `pgbouncer=true&connection_limit=1` on `DATABASE_URL` — it's required for Supabase's pooler to work correctly with Prisma.
-
-## 3. Install & generate
-
-```bash
-npm install
-npx prisma generate
-```
-
-## 4. Run the base migration
-
-This creates the `users` and `posts` tables from `prisma/schema.prisma` directly on your Supabase DB:
-
-```bash
-npx prisma migrate dev --name init
-```
-
-(Uses `DIRECT_URL` automatically since it's set in the datasource block.)
-
-## 5. Start the server
-
-```bash
-npm run dev      # nodemon, auto-reload
-# or
-npm start
-```
-
-Check the connection:
-
-```bash
-curl http://localhost:3000/health
-# {"status":"ok","db":"connected"}
-```
-
-## 6. Try the API
-
-```bash
-curl -X POST http://localhost:3000/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"email":"you@example.com","name":"You"}'
-
-curl http://localhost:3000/api/users
-```
-
-## Project layout
-
-```
-prisma/schema.prisma   → DB schema (User, Post models — extend as needed)
-src/lib/prisma.js      → Prisma client singleton
-src/routes/user.routes.js → example CRUD routes
-src/index.js           → Express app entry point + /health check
-.env.example            → connection string template
-```
-
-## Notes
-
-- `prisma migrate dev` is for local/dev use. In production/CI, use `npm run prisma:deploy` (`prisma migrate deploy`) instead — it doesn't try to create shadow databases.
-- Supabase's pooler (port 6543) doesn't support prepared statements well for long-lived connections outside serverless — that's why migrations use the direct URL (5432) instead.
-- To browse data visually: `npx prisma studio`.
+Prisma models and migration history are in `prisma/`. Controllers, middleware, route registration, and server startup are in `src/`.
