@@ -74,11 +74,11 @@ function DashboardLayout() {
       {/* 2. TOP FROSTED GLASS NAVIGATION BAR */}
       <header className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-white/5 bg-white/95 dark:bg-gray-950/60 backdrop-blur-lg shadow-xs dark:shadow-md dark:shadow-black/30 transition-colors duration-200">
         <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-4 sm:px-8">
-          
+
           {/* LEFT: BRAND & NAV LINKS */}
           <div className="flex items-center gap-8">
-            <button 
-              onClick={() => navigate('/')} 
+            <button
+              onClick={() => navigate('/')}
               className="hub-lift flex items-center gap-3 cursor-pointer"
             >
               <BrandMark dark={isDark} />
@@ -86,28 +86,26 @@ function DashboardLayout() {
                 CourseHub
               </span>
             </button>
-            
+
             <nav className="hidden items-center gap-6 lg:flex">
-              <button 
-                onClick={() => navigate(getDashboardPath())} 
-                className={`relative py-1 text-xs font-semibold transition cursor-pointer flex flex-col items-center ${
-                  isMyCourses
-                    ? 'text-blue-600 dark:text-cyan-400 font-bold'
-                    : 'text-slate-700 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white'
-                }`}
+              <button
+                onClick={() => navigate(getDashboardPath())}
+                className={`relative py-1 text-xs font-semibold transition cursor-pointer flex flex-col items-center ${isMyCourses
+                  ? 'text-blue-600 dark:text-cyan-400 font-bold'
+                  : 'text-slate-700 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white'
+                  }`}
               >
                 <span>My Courses</span>
                 {isMyCourses && (
                   <span className="hidden dark:block absolute -bottom-1.5 h-1 w-1 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.9)]" />
                 )}
               </button>
-              <button 
-                onClick={() => navigate('/courses')} 
-                className={`relative py-1 text-xs font-semibold transition cursor-pointer flex flex-col items-center ${
-                  isCatalog
-                    ? 'text-blue-600 dark:text-cyan-400 font-bold'
-                    : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
+              <button
+                onClick={() => navigate('/courses')}
+                className={`relative py-1 text-xs font-semibold transition cursor-pointer flex flex-col items-center ${isCatalog
+                  ? 'text-blue-600 dark:text-cyan-400 font-bold'
+                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
               >
                 <span>Catalog & Resources</span>
                 {isCatalog && (
@@ -148,7 +146,7 @@ function DashboardLayout() {
             </button>
 
             {/* Notification Bell with unread badge counter */}
-            <button 
+            <button
               className="relative p-2.5 text-slate-600 dark:text-gray-300 bg-slate-100/70 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 rounded-full hover:bg-slate-200/70 dark:hover:bg-white/[0.08] transition cursor-pointer"
               aria-label="Notifications"
             >
@@ -194,7 +192,7 @@ function DashboardLayout() {
                       {user?.role || 'Student'}
                     </span>
                   </div>
-                  
+
                   <div className="py-1">
                     <button
                       onClick={() => { setProfileOpen(false); navigate('/profile'); }}
@@ -265,7 +263,7 @@ function DashboardLayout() {
             </button>
           </div>
         </div>
-        
+
         {/* MOBILE MENU */}
         {menuOpen && (
           <div className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-4 sm:hidden space-y-3">
