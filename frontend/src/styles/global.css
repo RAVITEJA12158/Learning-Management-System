@@ -45,10 +45,10 @@ body {
   transition: background-color 200ms ease, color 200ms ease;
 }
 
-/* Neutral Zinc Dark Mode Canvas */
+/* Midnight Glassmorphism Void Canvas (#030712) */
 html.dark body {
-  background: #09090b;
-  color: #fafafa;
+  background: #030712;
+  color: #ffffff;
 }
 
 button,

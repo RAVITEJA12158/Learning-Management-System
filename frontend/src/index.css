@@ -46,23 +46,26 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Neutral Zinc Dark Mode Specifications */
+/* Midnight Glassmorphism Dark Mode Specifications (#030712) */
 :root[data-theme="dark"],
 .dark {
-  --background: #09090b; /* Base Canvas: bg-zinc-950 */
-  --surface: #18181b;    /* Surface Cards & Widgets: bg-zinc-900 */
-  --surface-muted: #27272a; /* Pill & Inputs: bg-zinc-800 */
+  --background: #030712; /* Base Void Canvas */
+  --surface: rgba(255, 255, 255, 0.02);    /* Glass Surface Cards */
+  --surface-muted: #111827; /* Inner Wells & Sleek Dark Wells */
 
-  --text-primary: #fafafa;   /* Primary Text: text-zinc-50 */
-  --text-secondary: #a1a1aa; /* Secondary Text: text-zinc-400 */
-  --text-muted: #71717a;     /* Muted Text: text-zinc-500 */
+  --text-primary: #ffffff;   /* Primary Headings: Pure White */
+  --text-secondary: #9ca3af; /* Descriptions: Gray 400 */
+  --text-muted: #6b7280;     /* Metadata / Muted: Gray 500 */
 
-  --border: #27272a;         /* Crisp 1px Borders: border-zinc-800 */
-  --border-focus: #2563eb;   /* Action Accent: blue-600 */
+  --border: rgba(255, 255, 255, 0.08); /* Faint Edge Borders: border-white/5 ~ border-white/10 */
+  --border-focus: #a855f7;   /* Electric Amethyst / Purple Accent */
 
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: none;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md:
+    0 4px 14px -1px rgba(0, 0, 0, 0.6),
+    0 2px 6px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg:
+    0 20px 45px -4px rgba(0, 0, 0, 0.7);
 }
 
 * {
@@ -108,8 +111,8 @@ a {
 }
 
 .dark ::selection {
-  background: #2563eb;
-  color: #fafafa;
+  background: #06b6d4;
+  color: #030712;
 }
 
 ::-webkit-scrollbar {
@@ -121,7 +124,7 @@ a {
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: #09090b;
+  background: #030712;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -130,7 +133,7 @@ a {
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: #1f2937;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -138,7 +141,7 @@ a {
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: #374151;
 }
 
 #root {
@@ -287,3 +290,26 @@ a {
 .animate-cta-swap {
   animation: ctaTextFlip 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+/* Spinning Gradient Ring for Avatar */
+@keyframes spinRing {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-ring {
+  animation: spinRing 6s linear infinite;
+}
+
+/* Midnight Glassmorphic Utilities */
+.dark .glass-surface {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+

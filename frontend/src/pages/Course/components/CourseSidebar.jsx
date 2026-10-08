@@ -20,9 +20,9 @@ export function CourseSidebar({
   onDropCourse,
 }) {
   return (
-    <aside className="hidden lg:flex w-[250px] shrink-0 flex-col bg-white dark:bg-zinc-900 border-r border-slate-200/80 dark:border-zinc-800 transition-colors duration-200">
+    <aside className="hidden lg:flex w-[250px] shrink-0 flex-col bg-white dark:bg-gray-950 border-r border-slate-200/80 dark:border-white/5 transition-colors duration-200">
       {/* Course Header */}
-      <div className="p-5 border-b border-slate-200/80 dark:border-zinc-800">
+      <div className="p-5 border-b border-slate-200/80 dark:border-white/5">
         <div className="flex items-center gap-3.5">
           {/* Progress Ring */}
           <div className="relative flex h-11 w-11 shrink-0 items-center justify-center">
@@ -34,7 +34,7 @@ export function CourseSidebar({
                 fill="transparent"
                 stroke="currentColor"
                 strokeWidth="3"
-                className="text-slate-200 dark:text-zinc-800 transition-colors"
+                className="text-slate-200 dark:text-gray-900 transition-colors"
               />
               <circle
                 cx="22"
@@ -46,18 +46,18 @@ export function CourseSidebar({
                 strokeDasharray={113.1}
                 strokeDashoffset={113.1 * (1 - overallCompletionPercent / 100)}
                 strokeLinecap="round"
-                className="text-blue-600 dark:text-blue-500 transition-all duration-700"
+                className="text-blue-600 dark:text-cyan-400 transition-all duration-700"
               />
             </svg>
-            <span className="absolute text-[9px] font-black text-slate-900 dark:text-zinc-50">
+            <span className="absolute text-[9px] font-black text-slate-900 dark:text-white">
               {overallCompletionPercent}%
             </span>
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-cyan-400">
               {courseCode}
             </p>
-            <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-50 leading-tight truncate">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white leading-tight truncate">
               {courseTitle}
             </h2>
           </div>
@@ -75,15 +75,15 @@ export function CourseSidebar({
               onClick={() => onSelectTab(tab.id)}
               className={`relative flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-left text-xs font-semibold transition-all duration-150 cursor-pointer ${
                 isActive
-                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-zinc-50 border-l-2 border-blue-600 dark:border-blue-500 pl-3 font-bold'
-                  : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-zinc-100'
+                  ? 'bg-blue-50 dark:bg-gradient-to-r dark:from-cyan-500/10 dark:to-transparent text-blue-700 dark:text-cyan-300 border-l-2 border-blue-600 dark:border-cyan-400 pl-3 font-bold shadow-xs'
+                  : 'text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/[0.03] hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <TabIcon
                 className={`h-4 w-4 shrink-0 transition-colors ${
                   isActive
-                    ? 'text-blue-600 dark:text-blue-400'
-                    : 'text-slate-400 dark:text-zinc-500'
+                    ? 'text-blue-600 dark:text-cyan-400'
+                    : 'text-slate-400 dark:text-gray-500'
                 }`}
               />
               {tab.label}
@@ -94,11 +94,11 @@ export function CourseSidebar({
 
       {/* Sidebar Footer */}
       {isEnrolled && (
-        <div className="mt-auto border-t border-slate-200/80 dark:border-zinc-800 p-4">
+        <div className="mt-auto border-t border-slate-200/80 dark:border-white/5 p-4">
           <button
             onClick={onDropCourse}
             disabled={enrolling}
-            className="w-full text-left text-[11px] font-semibold text-red-600/70 hover:text-red-600 dark:text-red-400/60 dark:hover:text-red-400 transition-colors cursor-pointer disabled:opacity-50"
+            className="w-full text-left text-[11px] font-semibold text-red-600/70 hover:text-red-600 dark:text-rose-400/70 dark:hover:text-rose-400 transition-colors cursor-pointer disabled:opacity-50"
           >
             {enrolling ? 'Processing…' : 'Drop Course'}
           </button>

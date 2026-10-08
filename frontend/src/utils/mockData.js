@@ -323,3 +323,36 @@ export const MOCK_QUIZ_REVIEW_ITEMS = [
     points: '1.6 / 1.6',
   },
 ];
+
+export const MOCK_EXAM_INSTRUCTIONS = [
+  {
+    id: 'inst-1',
+    title: 'Fullscreen Exam Environment',
+    desc: 'This assessment is conducted in full screen mode to minimize distractions. Please stay on this screen until you finish.',
+    icon: 'fullscreen',
+  },
+  {
+    id: 'inst-2',
+    title: 'Timed Assessment',
+    desc: 'The countdown timer starts as soon as you enter the exam. The assessment will automatically submit when time expires.',
+    icon: 'timer',
+  },
+  {
+    id: 'inst-3',
+    title: 'Question Palette & Flagging',
+    desc: 'Use the interactive question palette on the right to jump between questions. You can mark challenging questions for review.',
+    icon: 'palette',
+  },
+  {
+    id: 'inst-4',
+    title: 'Submission Review Prompt',
+    desc: 'Before final submission, a confirmation dialog will display a summary of your attempted, unattempted, and flagged questions.',
+    icon: 'checklist',
+  },
+  {
+    id: 'inst-5',
+    title: 'Academic Integrity',
+    desc: 'All submitted responses must be your individual work. Unauthorized aids, secondary devices, or browser tab switching are monitored.',
+    icon: 'shield',
+  },
+];

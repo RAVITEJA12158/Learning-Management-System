@@ -96,7 +96,7 @@ export function QuizzesTab({ courseId: _courseId, isCreatorOrStaff, isEnrolled =
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 transition-colors duration-200">
       {/* 1. TOP HEADER BAR: "Course Quizzes" + Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-zinc-50">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
           Course Quizzes
         </h1>
 
@@ -104,7 +104,7 @@ export function QuizzesTab({ courseId: _courseId, isCreatorOrStaff, isEnrolled =
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {/* Top Compact Search */}
           <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-zinc-500">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-gray-500">
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -115,7 +115,7 @@ export function QuizzesTab({ courseId: _courseId, isCreatorOrStaff, isEnrolled =
               placeholder="Search"
               value={topSearch}
               onChange={(e) => setTopSearch(e.target.value)}
-              className="w-32 sm:w-44 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-white dark:bg-[#151d2a] border border-slate-200/90 dark:border-[#223044] text-slate-800 dark:text-zinc-200 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 transition-colors"
+              className="w-32 sm:w-44 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-white dark:bg-white/[0.03] border border-slate-200/90 dark:border-white/10 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 transition-colors"
             />
           </div>
 
@@ -126,7 +126,7 @@ export function QuizzesTab({ courseId: _courseId, isCreatorOrStaff, isEnrolled =
               setFilterTab((prev) => (prev === 'All' ? 'Active' : prev === 'Active' ? 'Completed' : 'All'));
             }}
             title="Filter Quizzes"
-            className="h-8 w-8 flex items-center justify-center rounded-xl bg-white dark:bg-[#151d2a] border border-slate-200/90 dark:border-[#223044] text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#1c2738] transition cursor-pointer shadow-2xs"
+            className="h-8 w-8 flex items-center justify-center rounded-xl bg-white dark:bg-white/[0.03] border border-slate-200/90 dark:border-white/10 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.08] transition cursor-pointer shadow-2xs"
           >
             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
@@ -134,15 +134,15 @@ export function QuizzesTab({ courseId: _courseId, isCreatorOrStaff, isEnrolled =
           </button>
 
           {/* Profile Button */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#151d2a] border border-slate-200/90 dark:border-[#223044] text-slate-700 dark:text-zinc-300 text-xs font-semibold shadow-2xs">
-            <svg className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-white/[0.03] border border-slate-200/90 dark:border-white/10 text-slate-700 dark:text-gray-300 text-xs font-semibold shadow-2xs">
+            <svg className="w-3.5 h-3.5 text-slate-500 dark:text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
               <circle cx="8.5" cy="7" r="4" />
               <line x1="20" y1="8" x2="20" y2="14" />
               <line x1="23" y1="11" x2="17" y2="11" />
             </svg>
             <span>Profile</span>
-            <svg className="w-3 h-3 text-slate-400 dark:text-zinc-500 ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg className="w-3 h-3 text-slate-400 dark:text-gray-500 ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </div>
@@ -151,7 +151,7 @@ export function QuizzesTab({ courseId: _courseId, isCreatorOrStaff, isEnrolled =
           {isCreatorOrStaff && (
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 dark:bg-[#0066FF] dark:hover:bg-[#0052cc] text-white text-xs font-bold shadow-xs dark:shadow-[0_0_15px_rgba(0,102,255,0.4)] transition cursor-pointer"
             >
               <span className="text-sm leading-none">+</span>
               <span>New Quiz</span>
@@ -169,12 +169,12 @@ export function QuizzesTab({ courseId: _courseId, isCreatorOrStaff, isEnrolled =
             placeholder="Search quizz..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl bg-white dark:bg-[#131b26] border border-slate-200/90 dark:border-[#1e293b] text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 shadow-2xs transition-colors"
+            className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl bg-white dark:bg-white/[0.03] border border-slate-200/90 dark:border-white/10 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 shadow-2xs transition-colors"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
             >
               ✕
             </button>
@@ -182,7 +182,7 @@ export function QuizzesTab({ courseId: _courseId, isCreatorOrStaff, isEnrolled =
         </div>
 
         {/* Filter Tabs: All, Active, Completed */}
-        <div className="flex items-center gap-1 self-start sm:self-center p-1 rounded-xl bg-slate-100 dark:bg-[#131b26] border border-slate-200/80 dark:border-[#1e293b]">
+        <div className="flex items-center gap-1 self-start sm:self-center p-1 rounded-xl bg-slate-100 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10">
           {['All', 'Active', 'Completed'].map((tab) => {
             const isActive = filterTab === tab;
             return (
@@ -191,8 +191,8 @@ export function QuizzesTab({ courseId: _courseId, isCreatorOrStaff, isEnrolled =
                 onClick={() => setFilterTab(tab)}
                 className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
                   isActive
-                    ? 'bg-slate-900 dark:bg-[#223044] text-white shadow-xs'
-                    : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-200/60 dark:hover:bg-[#1a2536]'
+                    ? 'bg-slate-900 dark:bg-white/10 text-white shadow-xs border border-transparent dark:border-white/15'
+                    : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/[0.05]'
                 }`}
               >
                 {tab}
@@ -205,10 +205,10 @@ export function QuizzesTab({ courseId: _courseId, isCreatorOrStaff, isEnrolled =
       {/* 3. SECTION LABEL: "List Cards" */}
       <div className="pt-2">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-semibold text-slate-400 dark:text-zinc-400 tracking-wide">
+          <span className="text-xs font-semibold text-slate-500 dark:text-[#A0AAB4] tracking-wide">
             List Cards
           </span>
-          <span className="text-[11px] font-medium text-slate-400 dark:text-zinc-500">
+          <span className="text-[11px] font-medium text-slate-400 dark:text-slate-400">
             {filteredQuizzes.length} {filteredQuizzes.length === 1 ? 'quiz' : 'quizzes'}
           </span>
         </div>

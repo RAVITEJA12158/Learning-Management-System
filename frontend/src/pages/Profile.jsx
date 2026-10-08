@@ -130,74 +130,76 @@ function Profile() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-6 sm:p-8 shadow-xs space-y-8 transition-colors">
+      <div className="bg-white dark:bg-white/[0.02] backdrop-blur-xl rounded-2xl border border-slate-200/80 dark:border-white/5 p-6 sm:p-8 shadow-xs dark:shadow-md dark:shadow-black/40 space-y-8 transition-colors">
         {/* AVATAR + BASIC INFO HEADER */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-6 pb-8 border-b border-slate-100 dark:border-zinc-800">
-          {/* Interactive Profile Picture Container */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-6 pb-8 border-b border-slate-100 dark:border-white/5">
+          {/* Interactive Profile Picture Container with Spinning Gradient Ring */}
           <div className="relative group shrink-0">
-            <div
-              onClick={handleAvatarClick}
-              title="Click to change profile photo"
-              className="relative h-24 w-24 sm:h-28 sm:w-28 rounded-full overflow-hidden border-2 border-slate-200 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-800 cursor-pointer shadow-sm group-hover:border-blue-500 transition duration-200"
-            >
-              {hasCustomPhoto ? (
-                <img
-                  src={user.profileImage}
-                  alt={user?.name || 'User Avatar'}
-                  className="h-full w-full object-cover transition duration-200 group-hover:scale-105"
-                />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-600 text-white text-3xl sm:text-4xl font-black select-none">
-                  {userInitial}
-                </div>
-              )}
+            <div className="relative p-[2.5px] rounded-full dark:bg-gradient-to-r dark:from-cyan-400 dark:via-blue-500 dark:to-purple-600 dark:animate-spin-ring">
+              <div
+                onClick={handleAvatarClick}
+                title="Click to change profile photo"
+                className="relative h-24 w-24 sm:h-28 sm:w-28 rounded-full overflow-hidden border-2 border-slate-200 dark:border-transparent bg-slate-100 dark:bg-gray-950 cursor-pointer shadow-sm group-hover:border-cyan-400 transition duration-200"
+              >
+                {hasCustomPhoto ? (
+                  <img
+                    src={user.profileImage}
+                    alt={user?.name || 'User Avatar'}
+                    className="h-full w-full object-cover transition duration-200 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-cyan-500 to-purple-600 text-white text-3xl sm:text-4xl font-black select-none">
+                    {userInitial}
+                  </div>
+                )}
 
-              {/* Hover Overlay */}
-              <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white p-2 text-center select-none">
-                <svg
-                  className="w-5 h-5 mb-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
-                  <circle cx="12" cy="13" r="4" />
-                </svg>
-                <span className="text-[10px] font-bold uppercase tracking-wider">
-                  Change Photo
-                </span>
-              </div>
-
-              {/* Loading / Uploading Spinner Overlay */}
-              {(uploading || deleting) && (
-                <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center text-white z-10">
+                {/* Hover Overlay */}
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white p-2 text-center select-none">
                   <svg
-                    className="w-6 h-6 animate-spin text-blue-400 mb-1"
+                    className="w-5 h-5 mb-1"
                     fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
+                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                    <circle cx="12" cy="13" r="4" />
                   </svg>
-                  <span className="text-[9px] font-bold">
-                    {uploading ? 'Uploading…' : 'Deleting…'}
+                  <span className="text-[10px] font-bold uppercase tracking-wider">
+                    Change Photo
                   </span>
                 </div>
-              )}
+
+                {/* Loading / Uploading Spinner Overlay */}
+                {(uploading || deleting) && (
+                  <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center text-white z-10">
+                    <svg
+                      className="w-6 h-6 animate-spin text-cyan-400 mb-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    <span className="text-[9px] font-bold">
+                      {uploading ? 'Uploading…' : 'Deleting…'}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Hidden native file input */}
@@ -213,14 +215,14 @@ function Profile() {
           {/* User Details & Direct Action Controls */}
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-50 tracking-tight truncate">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight truncate">
                 {user?.name || 'User'}
               </h2>
-              <span className="inline-block rounded-md bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider border border-blue-200/60 dark:border-blue-800/40">
+              <span className="inline-block rounded-md bg-blue-50 dark:bg-purple-950/60 px-2.5 py-0.5 text-xs font-bold text-blue-600 dark:text-cyan-400 uppercase tracking-wider border border-blue-200/60 dark:border-purple-800/40">
                 {user?.role || 'Student'}
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-gray-400 mt-1">
               {user?.email || 'email@example.com'}
             </p>
 
@@ -230,7 +232,7 @@ function Profile() {
                 type="button"
                 onClick={handleAvatarClick}
                 disabled={uploading || deleting}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition cursor-pointer disabled:opacity-50 shadow-xs"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 dark:bg-[#0066FF] text-white hover:bg-blue-700 dark:hover:bg-[#0052cc] transition cursor-pointer disabled:opacity-50 shadow-xs dark:shadow-[0_0_15px_rgba(0,102,255,0.4)]"
               >
                 <svg
                   className="w-3.5 h-3.5"
@@ -253,7 +255,7 @@ function Profile() {
                   type="button"
                   onClick={handleDeletePhoto}
                   disabled={uploading || deleting}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/60 hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 dark:text-rose-400 border border-red-200 dark:border-rose-800/60 hover:bg-red-50 dark:hover:bg-rose-950/40 transition cursor-pointer disabled:opacity-50"
                 >
                   <svg
                     className="w-3.5 h-3.5"
@@ -271,60 +273,60 @@ function Profile() {
                 </button>
               )}
             </div>
-            <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-2">
+            <p className="text-[11px] text-slate-400 dark:text-gray-500 mt-2">
               Hover over or click your avatar to upload a photo from your computer. Removing reverts to your name initial.
             </p>
           </div>
         </div>
 
-        {/* ACCOUNT DETAILS GRID */}
+        {/* ACCOUNT DETAILS GRID (HOLLOW GLASS INPUTS) */}
         <div>
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 mb-4">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-gray-300 mb-4">
             Account Information
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 mb-2">
                 Full Name
               </label>
               <input
                 type="text"
                 readOnly
                 value={user?.name || ''}
-                className="w-full rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-zinc-100"
+                className="w-full rounded-lg border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 mb-2">
                 Email Address
               </label>
               <input
                 type="email"
                 readOnly
                 value={user?.email || ''}
-                className="w-full rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-zinc-100"
+                className="w-full rounded-lg border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 mb-2">
                 Username
               </label>
               <input
                 type="text"
                 readOnly
                 value={user?.username || ''}
-                className="w-full rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-zinc-100"
+                className="w-full rounded-lg border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 mb-2">
                 Account Role
               </label>
               <input
                 type="text"
                 readOnly
                 value={user?.role || 'STUDENT'}
-                className="w-full rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-zinc-100"
+                className="w-full rounded-lg border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition"
               />
             </div>
           </div>
