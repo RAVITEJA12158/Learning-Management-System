@@ -9,10 +9,11 @@ import React, { useState, useRef } from 'react';
 export function SpotlightCard({
   children,
   className = '',
-  spotlightColor = 'rgba(34, 211, 238, 0.12)', // Electric Cyan spotlight
+  spotlightColor = 'rgba(34, 211, 238, 0.14)', // Electric Cyan spotlight
   size = 400,
   as: Component = 'div',
   onClick,
+  alwaysDark = false,
   ...props
 }) {
   const cardRef = useRef(null);
@@ -28,6 +29,10 @@ export function SpotlightCard({
     });
   };
 
+  const baseThemeClasses = alwaysDark
+    ? 'bg-white/[0.03] border border-white/10 hover:border-white/25 text-white shadow-2xl backdrop-blur-xl'
+    : 'bg-white dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/5 dark:hover:border-white/20 backdrop-blur-xl shadow-xs dark:shadow-md dark:shadow-black/40';
+
   return (
     <Component
       ref={cardRef}
@@ -35,12 +40,14 @@ export function SpotlightCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={onClick}
-      className={`group relative overflow-hidden rounded-2xl bg-white dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/5 dark:hover:border-white/20 backdrop-blur-xl transition-all duration-300 shadow-xs dark:shadow-md dark:shadow-black/40 ${className}`}
+      className={`group relative overflow-hidden rounded-2xl transition-all duration-300 ${baseThemeClasses} ${className}`}
       {...props}
     >
-      {/* Dynamic Cursor Spotlight Layer (Only in Dark Mode for Midnight Glassmorphism) */}
+      {/* Dynamic Cursor Spotlight Layer */}
       <div
-        className="pointer-events-none absolute -inset-px rounded-2xl transition-opacity duration-300 opacity-0 dark:group-hover:opacity-100 z-0"
+        className={`pointer-events-none absolute -inset-px rounded-2xl transition-opacity duration-300 z-0 ${
+          alwaysDark ? 'opacity-0 group-hover:opacity-100' : 'opacity-0 dark:group-hover:opacity-100'
+        }`}
         style={{
           background: isHovered
             ? `radial-gradient(${size}px circle at ${pos.x}px ${pos.y}px, ${spotlightColor}, transparent 80%)`
