@@ -1,6 +1,5 @@
 import React from 'react';
 
-exports.USER_ROLES = exports.SUBMISSION_STATUS = exports.SORT_OPTIONS = exports.SEMESTERS = exports.QUESTION_TYPES = exports.ENROLLMENT_STATUS = exports.DEFAULT_GRADE_COMPONENTS = exports.COURSE_CATEGORIES = exports.CONTENT_TYPES = exports.ATTENDANCE_STATUS = void 0;
 /**
  * Application Constants & Database Schema Enums (PERN LMS Specification)
  */

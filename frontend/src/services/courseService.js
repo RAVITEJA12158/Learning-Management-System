@@ -3,7 +3,6 @@ import { api } from './api';
 import { MOCK_STUDENT_COURSES, MOCK_CATALOG_COURSES, DEFAULT_MODULES_TEMPLATE, MOCK_ASSIGNMENTS_BY_COURSE, MOCK_ATTENDANCE_SESSIONS, MOCK_DISCUSSIONS, MOCK_ANNOUNCEMENTS, MOCK_NOTIFICATIONS, MOCK_USERS } from '../utils/mockData';
 import { DEFAULT_GRADE_COMPONENTS } from '../utils/constants';
 
-exports.progressService = exports.notificationService = exports.moduleService = exports.gradeService = exports.discussionService = exports.courseService = exports.attendanceService = exports.assignmentService = exports.announcementService = exports.adminService = void 0;
 const STORAGE_KEYS = {
   COURSES: 'lms_store_courses_v2',
   ENROLLED_IDS: 'lms_store_enrolled_ids_v2',

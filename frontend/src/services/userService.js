@@ -1,7 +1,6 @@
 import React from 'react';
 import { api } from './api';
 
-exports.userService = exports.default = void 0;
 const userService = {
   async getProfile() {
     try {

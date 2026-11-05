@@ -1,6 +1,5 @@
 import React from 'react';
 
-exports.authApi = exports.api = void 0;
 const API_BASE_URL = {}.VITE_API_URL || '/api';
 async function apiRequest(endpoint, options = {}) {
   let token = null;

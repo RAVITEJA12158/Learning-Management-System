@@ -1,6 +1,5 @@
 import React from 'react';
 
-exports.MOCK_USERS = exports.MOCK_STUDENT_COURSES = exports.MOCK_QUIZ_REVIEW_ITEMS = exports.MOCK_QUIZ_QUESTIONS = exports.MOCK_NOTIFICATIONS = exports.MOCK_EXAM_INSTRUCTIONS = exports.MOCK_DISCUSSIONS = exports.MOCK_COURSE_QUIZZES = exports.MOCK_CATALOG_COURSES = exports.MOCK_ATTENDANCE_SESSIONS = exports.MOCK_ASSIGNMENTS_BY_COURSE = exports.MOCK_ANNOUNCEMENTS = exports.DEFAULT_MODULES_TEMPLATE = void 0;
 /**
  * Shared relational mock data used as fallback when backend records are empty or during standalone frontend usage.
  * Covers all LMS entities from the PERN Stack Database Design:
