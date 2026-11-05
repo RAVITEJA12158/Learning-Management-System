@@ -71,7 +71,8 @@ const register = async (req, res) => {
       role: user.role,
     };
 
-    return res.status(201).json(registerResponse);
+    console.log("Register response:", registerResponse);
+    return res.status(200).json(registerResponse);
   } catch (error) {
     console.error("Register error:", error);
     return res.status(500).json({ error: "Error registering user" });

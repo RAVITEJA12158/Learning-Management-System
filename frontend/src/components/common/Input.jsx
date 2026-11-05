@@ -1,3 +1,11 @@
+import React from 'react';
+
+/**
+ * Reusable Hollow Glass Input
+ * "Midnight Glassmorphism" Spec:
+ * - Idle: bg-transparent border border-gray-800 rounded-xl text-white
+ * - Focus: focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50
+ */
 function Input({
   placeholder,
   type = 'text',
@@ -7,6 +15,8 @@ function Input({
   onCopy,
   onCut,
   onPaste,
+  className = '',
+  ...props
 }) {
   return (
     <input
@@ -18,9 +28,10 @@ function Input({
       onCopy={onCopy}
       onCut={onCut}
       onPaste={onPaste}
-      className="w-full rounded-2xl border border-[#DDD7CE] bg-[#FFFEFB] px-4 py-3.5 text-sm font-medium text-[#151515] shadow-[0_3px_10px_rgba(21,21,21,.025)] outline-none transition-all duration-200 placeholder:text-[#AAA39A] hover:border-[#BEB6AA] focus:border-[#151515] focus:ring-4 focus:ring-black/[0.05] disabled:cursor-not-allowed disabled:bg-[#F3EFE8]"
+      className={`w-full rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-transparent px-4 py-3 text-sm font-medium text-slate-800 dark:text-white shadow-xs outline-none transition-all duration-200 placeholder:text-slate-400 dark:placeholder-gray-500 hover:border-slate-300 dark:hover:border-gray-700 focus:border-blue-600 dark:focus:border-purple-500 focus:ring-1 focus:ring-blue-500/20 dark:focus:ring-purple-500/50 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      {...props}
     />
-  )
+  );
 }
 
-export default Input
+export default Input;

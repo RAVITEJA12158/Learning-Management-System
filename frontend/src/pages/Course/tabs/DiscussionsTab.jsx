@@ -54,17 +54,17 @@ export function DiscussionsTab({ isEnrolled, user }) {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 p-6 shadow-xs transition-colors">
+      <div className="rounded-2xl bg-white dark:bg-white/[0.02] backdrop-blur-xl border border-slate-200/80 dark:border-white/10 p-6 shadow-xs transition-colors">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-zinc-50">Class Discussion Forum</h2>
-            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">Class Discussion Forum</h2>
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">
               Ask questions, discuss topics, and collaborate with your peers and instructors.
             </p>
           </div>
           <button
             onClick={() => setIsStartingThread(!isStartingThread)}
-            className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+            className="text-xs font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
           >
             {isStartingThread ? 'Cancel' : '+ New Thread'}
           </button>
@@ -73,16 +73,16 @@ export function DiscussionsTab({ isEnrolled, user }) {
         {isStartingThread && (
           <form
             onSubmit={handleCreateThread}
-            className="mb-6 p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-700 space-y-3"
+            className="mb-6 p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10 space-y-3"
           >
-            <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-50">Start a New Discussion</h3>
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white">Start a New Discussion</h3>
             <input
               type="text"
               required
               placeholder="Thread Title or Question"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-xs font-medium text-slate-900 dark:text-zinc-50 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#030712] px-3 py-2 text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 focus:outline-none"
             />
             <textarea
               rows={3}
@@ -90,19 +90,19 @@ export function DiscussionsTab({ isEnrolled, user }) {
               placeholder="What would you like to discuss?"
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-3 text-xs font-medium text-slate-900 dark:text-zinc-50 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#030712] p-3 text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 focus:outline-none"
             />
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setIsStartingThread(false)}
-                className="px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100"
+                className="px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-blue-700 transition"
+                className="rounded-lg bg-[#0066FF] hover:bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-[0_0_15px_rgba(0,102,255,0.4)] transition"
               >
                 Post Thread
               </button>
@@ -114,20 +114,20 @@ export function DiscussionsTab({ isEnrolled, user }) {
           {threads.map((t) => (
             <div
               key={t.id}
-              className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/60 dark:border-zinc-800/80 transition-colors hover:border-slate-300 dark:hover:border-zinc-700"
+              className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 transition-all hover:dark:border-white/15"
             >
               <div className="flex items-center justify-between gap-3">
-                <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100">{t.title}</h3>
-                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium shrink-0">
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white">{t.title}</h3>
+                <span className="text-[10px] text-slate-400 dark:text-gray-500 font-medium shrink-0">
                   {t.time}
                 </span>
               </div>
-              <p className="text-xs text-slate-600 dark:text-zinc-300 mt-1 leading-relaxed">{t.content}</p>
-              <div className="flex items-center justify-between mt-3 text-[11px] text-slate-400 dark:text-zinc-500">
+              <p className="text-xs text-slate-600 dark:text-gray-300 mt-1 leading-relaxed">{t.content}</p>
+              <div className="flex items-center justify-between mt-3 text-[11px] text-slate-400 dark:text-gray-500">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-slate-700 dark:text-zinc-300">{t.author}</span>
+                  <span className="font-semibold text-slate-700 dark:text-gray-200">{t.author}</span>
                   <span>·</span>
-                  <span className="text-[10px] bg-slate-200/70 dark:bg-zinc-700 px-1.5 py-0.5 rounded text-slate-700 dark:text-zinc-300">
+                  <span className="text-[10px] bg-slate-200/70 dark:bg-white/10 px-1.5 py-0.5 rounded text-slate-700 dark:text-gray-300">
                     {t.authorRole}
                   </span>
                 </div>

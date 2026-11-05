@@ -14,15 +14,15 @@ function Button({
 
   const variants = {
     primary:
-      'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 shadow-xs',
+      'bg-[#0066FF] hover:bg-blue-600 text-white focus:ring-blue-500 shadow-[0_0_15px_rgba(0,102,255,0.4)]',
     secondary:
-      'bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-100 focus:ring-zinc-600',
+      'bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white focus:ring-cyan-400',
     outline:
-      'bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 focus:ring-zinc-600',
+      'bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-gray-200 focus:ring-cyan-400',
     danger:
       'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500',
     ghost:
-      'bg-transparent hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-300 focus:ring-zinc-600',
+      'bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-300 focus:ring-cyan-400',
   };
 
   const sizes = {

@@ -29,15 +29,15 @@ function Settings() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-6 sm:p-8 shadow-xs space-y-6 transition-colors duration-200">
+      <div className="bg-white dark:bg-white/[0.02] backdrop-blur-xl rounded-2xl border border-slate-200/80 dark:border-white/5 p-6 sm:p-8 shadow-xs dark:shadow-md dark:shadow-black/40 space-y-6 transition-colors duration-200">
         
         {/* Email Notifications */}
-        <div className="flex items-center justify-between pb-6 border-b border-slate-100 dark:border-zinc-800 transition-colors">
+        <div className="flex items-center justify-between pb-6 border-b border-slate-100 dark:border-white/5 transition-colors">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-50 transition-colors">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white transition-colors">
               Email Notifications
             </h3>
-            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5 transition-colors">
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5 transition-colors">
               Receive updates on course assignments, quizzes, and grade publications
             </p>
           </div>
@@ -48,18 +48,18 @@ function Settings() {
               onChange={(e) => setEmailNotifs(e.target.checked)}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-blue-600"></div>
+            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-gray-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-700 peer-checked:bg-blue-600 dark:peer-checked:bg-gradient-to-r dark:peer-checked:from-cyan-500 dark:peer-checked:to-blue-600"></div>
           </label>
         </div>
 
         {/* Appearance Mode (Light & Dark Theme Toggle) */}
-        <div className="flex items-center justify-between pb-6 border-b border-slate-100 dark:border-zinc-800 transition-colors">
+        <div className="flex items-center justify-between pb-6 border-b border-slate-100 dark:border-white/5 transition-colors">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-50 transition-colors">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white transition-colors">
               Appearance Mode
             </h3>
-            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5 transition-colors">
-              Toggle between light theme and Neutral Zinc dark mode
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5 transition-colors">
+              Toggle between clean light mode and Midnight Glassmorphism dark mode
             </p>
           </div>
 
@@ -69,15 +69,15 @@ function Settings() {
               onClick={toggleTheme}
               className={`flex items-center gap-2.5 px-4 py-2 text-xs font-bold rounded-xl border transition-all shadow-xs cursor-pointer ${
                 isDark
-                  ? 'border-blue-500/40 bg-zinc-800 text-blue-400 hover:bg-zinc-700'
+                  ? 'border-cyan-500/40 bg-white/[0.04] text-cyan-400 hover:bg-white/[0.08]'
                   : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
               }`}
               title="Click to toggle theme"
             >
               {isDark ? (
                 <>
-                  <MoonIcon className="w-4 h-4 text-blue-400" />
-                  <span>🌙 Dark Mode (Zinc)</span>
+                  <MoonIcon className="w-4 h-4 text-cyan-400" />
+                  <span>🌙 Dark Mode (Midnight Glass)</span>
                 </>
               ) : (
                 <>
@@ -92,7 +92,7 @@ function Settings() {
         <div className="pt-2">
           <button
             onClick={handleSave}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-6 py-3 rounded-xl transition shadow-xs cursor-pointer"
+            className="bg-blue-600 dark:bg-[#0066FF] hover:bg-blue-700 dark:hover:bg-[#0052cc] text-white font-bold text-xs px-6 py-3 rounded-xl transition shadow-xs dark:shadow-[0_0_15px_rgba(0,102,255,0.4)] cursor-pointer"
           >
             Save Preferences
           </button>

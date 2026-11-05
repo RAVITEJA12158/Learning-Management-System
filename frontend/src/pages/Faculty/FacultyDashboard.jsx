@@ -32,10 +32,10 @@ function FacultyDashboard() {
           <Badge variant="warning" className="mb-2">
             Faculty Workspace
           </Badge>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-zinc-50 tracking-tight transition-colors">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight transition-colors">
             Courses You Teach
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-gray-400 mt-1">
             Manage your course curriculums, student assignments, and class materials.
           </p>
         </div>
@@ -50,7 +50,7 @@ function FacultyDashboard() {
       </div>
 
       {loading ? (
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-8 text-center text-xs font-bold text-slate-400 dark:text-zinc-500">
+        <div className="bg-white dark:bg-white/[0.02] backdrop-blur-xl rounded-2xl border border-slate-200/80 dark:border-white/10 p-8 text-center text-xs font-bold text-slate-400 dark:text-gray-400">
           Loading your courses...
         </div>
       ) : createdCourses.length > 0 ? (
@@ -58,35 +58,35 @@ function FacultyDashboard() {
           {createdCourses.map((course) => (
             <div
               key={course.id}
-              className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-6 shadow-xs hover:shadow-md transition flex flex-col justify-between"
+              className="bg-white dark:bg-white/[0.02] backdrop-blur-xl rounded-2xl border border-slate-200/80 dark:border-white/10 p-6 shadow-xs hover:shadow-md transition flex flex-col justify-between hover:dark:border-white/20"
             >
               <div>
                 <div className="flex items-start justify-between gap-2">
                   <Badge variant="active">
                     {course.courseCode || 'CS101'}
                   </Badge>
-                  <span className="text-[11px] font-bold text-slate-400 dark:text-zinc-500">
+                  <span className="text-[11px] font-bold text-slate-400 dark:text-gray-500">
                     Sem {course.semester || 1}
                   </span>
                 </div>
-                <h3 className="mt-4 text-base font-bold text-slate-900 dark:text-zinc-50 line-clamp-1">
+                <h3 className="mt-4 text-base font-bold text-slate-900 dark:text-white line-clamp-1">
                   {course.title}
                 </h3>
-                <p className="mt-2 text-xs text-slate-500 dark:text-zinc-400 line-clamp-3 leading-relaxed">
+                <p className="mt-2 text-xs text-slate-500 dark:text-gray-400 line-clamp-3 leading-relaxed">
                   {course.description || 'No description provided.'}
                 </p>
               </div>
 
-              <div className="mt-6 flex gap-3 border-t border-slate-100 dark:border-zinc-800 pt-4">
+              <div className="mt-6 flex gap-3 border-t border-slate-100 dark:border-white/5 pt-4">
                 <Link
                   to={`/courses/${course.id}`}
-                  className="flex-1 text-center py-2 text-xs font-bold text-slate-700 dark:text-zinc-200 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded-xl transition cursor-pointer"
+                  className="flex-1 text-center py-2 text-xs font-bold text-slate-700 dark:text-gray-200 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl transition cursor-pointer"
                 >
                   View
                 </Link>
                 <Link
                   to={`/faculty/courses/${course.id}/edit`}
-                  className="flex-1 text-center py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition cursor-pointer"
+                  className="flex-1 text-center py-2 text-xs font-bold text-white bg-[#0066FF] hover:bg-blue-600 shadow-[0_0_15px_rgba(0,102,255,0.4)] rounded-xl transition cursor-pointer"
                 >
                   Edit
                 </Link>
@@ -95,9 +95,9 @@ function FacultyDashboard() {
           ))}
         </div>
       ) : (
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-12 text-center shadow-xs">
-          <p className="text-base font-bold text-slate-900 dark:text-zinc-50">You haven't created any courses yet.</p>
-          <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400 mb-6">Start structuring your curriculum and sharing your knowledge.</p>
+        <div className="bg-white dark:bg-white/[0.02] backdrop-blur-xl rounded-2xl border border-slate-200/80 dark:border-white/10 p-12 text-center shadow-xs">
+          <p className="text-base font-bold text-slate-900 dark:text-white">You haven't created any courses yet.</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-gray-400 mb-6">Start structuring your curriculum and sharing your knowledge.</p>
           <Button
             onClick={() => navigate('/faculty/courses/new')}
             className="inline-flex items-center gap-2"

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authApi } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
+import SpotlightCard from '../../components/common/SpotlightCard'
 
 const roles = [
   {
@@ -28,11 +29,11 @@ const roles = [
 ]
 
 const barData = [
-  { height: 28, color: 'bg-[#475569]' },
-  { height: 52, color: 'bg-[#475569]' },
-  { height: 38, color: 'bg-[#475569]' },
-  { height: 80, color: 'bg-[#475569]' },
-  { height: 58, color: 'bg-[#d7dfe9]' },
+  { height: 28, color: 'bg-cyan-500/80 shadow-[0_0_8px_rgba(6,182,212,0.4)]' },
+  { height: 52, color: 'bg-blue-500/80 shadow-[0_0_8px_rgba(59,130,246,0.4)]' },
+  { height: 38, color: 'bg-indigo-500/80 shadow-[0_0_8px_rgba(99,102,241,0.4)]' },
+  { height: 80, color: 'bg-purple-500/80 shadow-[0_0_8px_rgba(168,85,247,0.4)]' },
+  { height: 58, color: 'bg-gradient-to-t from-cyan-400 to-purple-500 shadow-[0_0_12px_rgba(6,182,212,0.6)]' },
 ]
 
 function Login() {
@@ -139,40 +140,49 @@ function Login() {
   const selectedIndex = roles.findIndex((r) => r.id === selectedRole.id)
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#f8fafc]">
+    <div className="min-h-screen overflow-x-hidden bg-[#f8fafc] dark:bg-[#030712] transition-colors">
       <div className="grid min-h-screen lg:grid-cols-[0.9fr_1.1fr]">
         {/* =====================================================
-            LEFT BRAND PANEL (DARK NAVY - SPLIT REVEAL FROM LEFT)
+            LEFT BRAND PANEL (MIDNIGHT GLASSMORPHISM VOID)
         ====================================================== */}
-        <aside className="animate-panel-left relative hidden flex-col justify-between bg-[#0b1329] p-8 xl:p-12 text-white lg:flex">
+        <aside className="animate-panel-left relative hidden flex-col justify-between overflow-hidden bg-[#030712] p-8 xl:p-12 text-white lg:flex border-r border-white/5">
+          {/* Ambient Cyan & Purple Glowing Blur Orbs */}
+          <div className="pointer-events-none absolute -left-20 top-1/4 h-80 w-80 rounded-full bg-cyan-500/10 blur-[120px]" />
+          <div className="pointer-events-none absolute -right-20 bottom-1/4 h-80 w-80 rounded-full bg-purple-600/10 blur-[120px]" />
+
           {/* Top Logo */}
           <button
             onClick={() => navigate('/')}
-            className="flex w-fit items-center gap-3 transition-opacity duration-200 hover:opacity-90"
+            className="flex w-fit items-center gap-3 transition-opacity duration-200 hover:opacity-90 relative z-10 cursor-pointer"
           >
-            <BrandMark />
+            <BrandMark darkBg />
             <span className="text-xl font-bold tracking-tight text-white">CourseHub</span>
           </button>
 
           {/* Middle Content */}
-          <div className="max-w-lg py-4">
-            {/* Staggered Heading */}
+          <div className="max-w-lg py-4 relative z-10">
+            {/* Staggered Heading with Electric Gradient Accent */}
             <h1 className="animate-heading text-5xl font-extrabold leading-[1.08] tracking-tight text-white xl:text-[54px]">
               Your learning
               <br />
               space is
               <br />
-              waiting.
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500">
+                waiting.
+              </span>
             </h1>
 
             {/* Staggered Sub-text */}
-            <p className="animate-subtext mt-5 max-w-sm text-[15px] leading-relaxed text-slate-300">
+            <p className="animate-subtext mt-5 max-w-sm text-[15px] leading-relaxed text-gray-400">
               Sign in to return to your courses, assignments, progress, and academic community.
             </p>
 
-            {/* Weekly Progress Card */}
-            <div className="mt-9 w-full max-w-[390px] rounded-2xl bg-white p-5 text-slate-800 shadow-xl transition-all duration-300">
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+            {/* Weekly Progress Card with Midnight Glassmorphism & Hover Spotlight Gradient */}
+            <SpotlightCard
+              alwaysDark
+              className="mt-9 w-full max-w-[390px] p-5 shadow-2xl transition-all duration-300"
+            >
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-400">
                 WEEKLY PROGRESS
               </p>
 
@@ -180,13 +190,20 @@ function Login() {
                 {/* Circular Gauge */}
                 <div className="flex flex-col items-center">
                   <div className="relative flex h-[70px] w-[70px] items-center justify-center">
-                    <svg className="h-full w-full -rotate-90" viewBox="0 0 76 76">
+                    <svg className="h-full w-full -rotate-90 drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]" viewBox="0 0 76 76">
+                      <defs>
+                        <linearGradient id="loginGaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#22d3ee" />
+                          <stop offset="50%" stopColor="#3b82f6" />
+                          <stop offset="100%" stopColor="#a855f7" />
+                        </linearGradient>
+                      </defs>
                       <circle
                         cx="38"
                         cy="38"
                         r="30"
                         fill="transparent"
-                        stroke="#e2e8f0"
+                        stroke="rgba(255, 255, 255, 0.08)"
                         strokeWidth="5.5"
                       />
                       <circle
@@ -194,7 +211,7 @@ function Login() {
                         cy="38"
                         r="30"
                         fill="transparent"
-                        stroke="#1a6ef5"
+                        stroke="url(#loginGaugeGradient)"
                         strokeWidth="5.5"
                         strokeDasharray="188.5"
                         strokeDashoffset={188.5 * (1 - progress / 100)}
@@ -204,11 +221,11 @@ function Login() {
                         }}
                       />
                     </svg>
-                    <span className="absolute text-xl font-bold tracking-tight text-slate-900">
+                    <span className="absolute text-xl font-black tracking-tight text-white">
                       {count}%
                     </span>
                   </div>
-                  <span className="mt-1.5 text-[11px] font-medium text-slate-500">
+                  <span className="mt-1.5 text-[11px] font-medium text-gray-400">
                     This week
                   </span>
                 </div>
@@ -230,58 +247,59 @@ function Login() {
                       />
                     ))}
                   </div>
-                  <span className="mt-2 text-[11px] font-medium text-slate-500">
+                  <span className="mt-2 text-[11px] font-medium text-gray-400">
                     Goal completion
                   </span>
                 </div>
               </div>
-            </div>
+            </SpotlightCard>
           </div>
 
           {/* Bottom Security Note */}
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-gray-500 relative z-10 flex items-center gap-2">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
             Secure access for your academic community.
           </p>
         </aside>
 
         {/* =====================================================
-            RIGHT LOGIN PANEL (LIGHT CANVAS - SPLIT REVEAL FROM RIGHT)
+            RIGHT LOGIN PANEL (LIGHT / DARK CANVAS - SPLIT REVEAL FROM RIGHT)
         ====================================================== */}
-        <main className="animate-panel-right flex min-h-screen items-center justify-center bg-[#f8fafc] px-4 py-8 sm:px-8 lg:px-12">
+        <main className="animate-panel-right flex min-h-screen items-center justify-center bg-[#f8fafc] dark:bg-[#030712] px-4 py-8 sm:px-8 lg:px-12 transition-colors">
           <div className="w-full max-w-[460px]">
             {/* Mobile Logo */}
             <div className="mb-6 lg:hidden">
               <button
                 onClick={() => navigate('/')}
-                className="flex items-center gap-3"
+                className="flex items-center gap-3 cursor-pointer"
               >
                 <BrandMark darkBg />
-                <span className="text-xl font-bold text-slate-900">CourseHub</span>
+                <span className="text-xl font-bold text-slate-900 dark:text-white">CourseHub</span>
               </button>
             </div>
 
             {/* Staggered Header */}
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-cyan-400">
                 SIGN IN
               </p>
-              <h2 className="animate-heading mt-1.5 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+              <h2 className="animate-heading mt-1.5 text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl">
                 Welcome back.
               </h2>
-              <p className="animate-subtext mt-2 text-sm text-slate-500">
+              <p className="animate-subtext mt-2 text-sm text-slate-500 dark:text-gray-400">
                 Choose your workspace and continue where you left off.
               </p>
             </div>
 
             {/* Card Form with Soft Elevation & Bloom */}
-            <div className="animate-card-bloom mt-6 rounded-[24px] border border-slate-200/80 bg-white p-6 sm:p-7">
+            <div className="animate-card-bloom mt-6 rounded-[24px] border border-slate-200/80 dark:border-white/10 bg-white dark:bg-white/[0.02] dark:backdrop-blur-xl p-6 sm:p-7 shadow-xs dark:shadow-2xl dark:shadow-black/50 transition-colors">
               {/* Workspace Segmented Control with Smooth Sliding Pill */}
               <div>
                 <div className="mb-2.5 flex items-center justify-between">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-700">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-gray-300">
                     SELECT WORKSPACE
                   </p>
-                  <span className="text-[10px] font-semibold tracking-wider text-slate-400">
+                  <span className="text-[10px] font-semibold tracking-wider text-slate-400 dark:text-gray-500">
                     STEP 01
                   </span>
                 </div>
@@ -289,7 +307,7 @@ function Login() {
                 <div className="relative grid grid-cols-3 gap-2.5">
                   {/* Sliding Active Indicator Pill */}
                   <div
-                    className="pointer-events-none absolute inset-y-0 rounded-2xl bg-[#48566a] shadow-sm transition-transform duration-300 ease-out"
+                    className="pointer-events-none absolute inset-y-0 rounded-2xl bg-[#48566a] dark:bg-cyan-500/20 dark:border dark:border-cyan-500/40 shadow-sm transition-transform duration-300 ease-out"
                     style={{
                       width: 'calc((100% - 20px) / 3)',
                       transform: `translateX(calc(${selectedIndex} * (100% + 10px)))`,
@@ -307,10 +325,10 @@ function Login() {
                           setErrors({})
                           setMessage('')
                         }}
-                        className={`relative z-10 rounded-2xl p-3.5 text-left transition-colors duration-200 ${
+                        className={`relative z-10 rounded-2xl p-3.5 text-left transition-colors duration-200 cursor-pointer ${
                           isSelected
                             ? 'text-white'
-                            : 'bg-[#f0f3f6] text-slate-800 hover:bg-[#e7ecf1]'
+                            : 'bg-[#f0f3f6] dark:bg-white/5 text-slate-800 dark:text-gray-300 hover:bg-[#e7ecf1] dark:hover:bg-white/10'
                         }`}
                         style={{
                           backgroundColor: isSelected ? 'transparent' : undefined,
@@ -319,8 +337,8 @@ function Login() {
                         <span
                           className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-colors duration-200 ${
                             isSelected
-                              ? 'bg-[#283444] text-white'
-                              : 'bg-[#dce2e8] text-slate-500'
+                              ? 'bg-[#283444] dark:bg-cyan-500 text-white'
+                              : 'bg-[#dce2e8] dark:bg-white/10 text-slate-500 dark:text-gray-400'
                           }`}
                         >
                           {role.letter}
@@ -328,7 +346,7 @@ function Login() {
 
                         <span
                           className={`mt-2.5 block text-xs font-bold transition-colors duration-200 ${
-                            isSelected ? 'text-white' : 'text-slate-800'
+                            isSelected ? 'text-white' : 'text-slate-800 dark:text-gray-200'
                           }`}
                         >
                           {role.label}
@@ -336,7 +354,7 @@ function Login() {
 
                         <span
                           className={`mt-0.5 block text-[9px] leading-tight transition-colors duration-200 sm:text-[10px] ${
-                            isSelected ? 'text-slate-300' : 'text-slate-400'
+                            isSelected ? 'text-slate-300 dark:text-gray-300' : 'text-slate-400 dark:text-gray-500'
                           }`}
                         >
                           {role.description}
@@ -349,7 +367,7 @@ function Login() {
 
               {/* Error Message */}
               {message && (
-                <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700">
+                <div className="mt-4 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 p-3 text-xs font-medium text-rose-700 dark:text-rose-400">
                   {message}
                 </div>
               )}
@@ -358,7 +376,7 @@ function Login() {
               <form onSubmit={handleSubmit} className="mt-5 space-y-4">
                 {/* Academic Email with Smooth Focus Stroke */}
                 <div>
-                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700">
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-gray-300">
                     ACADEMIC EMAIL
                   </label>
                   <input
@@ -366,16 +384,16 @@ function Login() {
                     placeholder="shreetheja.vasala@gmail.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] focus:ring-4 focus:ring-blue-500/10"
+                    className="w-full rounded-xl border-2 border-slate-200 dark:border-white/10 bg-white dark:bg-[#030712] px-3.5 py-2.5 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] dark:focus:border-cyan-400 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-cyan-500/10"
                   />
                   {errors.email && (
-                    <p className="mt-1 text-xs font-medium text-rose-600">{errors.email}</p>
+                    <p className="mt-1 text-xs font-medium text-rose-600 dark:text-rose-400">{errors.email}</p>
                   )}
                 </div>
 
                 {/* Password with Smooth Focus Stroke */}
                 <div>
-                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700">
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-gray-300">
                     PASSWORD
                   </label>
                   <div className="relative">
@@ -384,25 +402,25 @@ function Login() {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 pr-14 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] focus:ring-4 focus:ring-blue-500/10"
+                      className="w-full rounded-xl border-2 border-slate-200 dark:border-white/10 bg-white dark:bg-[#030712] px-3.5 py-2.5 pr-14 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] dark:focus:border-cyan-400 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-cyan-500/10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 transition-colors hover:text-slate-800"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 dark:text-gray-400 transition-colors hover:text-slate-800 dark:hover:text-white cursor-pointer"
                     >
                       {showPassword ? 'Hide' : 'Show'}
                     </button>
                   </div>
                   {errors.password && (
-                    <p className="mt-1 text-xs font-medium text-rose-600">{errors.password}</p>
+                    <p className="mt-1 text-xs font-medium text-rose-600 dark:text-rose-400">{errors.password}</p>
                   )}
                 </div>
 
                 {/* Admin Access Code */}
                 {selectedRole.id === 'admin' && (
                   <div>
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700">
+                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-gray-300">
                       ADMINISTRATOR ACCESS CODE
                     </label>
                     <input
@@ -410,10 +428,10 @@ function Login() {
                       placeholder="Enter secure access code"
                       value={secretCode}
                       onChange={(e) => setSecretCode(e.target.value)}
-                      className="w-full rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] focus:ring-4 focus:ring-blue-500/10"
+                      className="w-full rounded-xl border-2 border-slate-200 dark:border-white/10 bg-white dark:bg-[#030712] px-3.5 py-2.5 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] dark:focus:border-cyan-400 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-cyan-500/10"
                     />
                     {errors.secretCode && (
-                      <p className="mt-1 text-xs font-medium text-rose-600">
+                      <p className="mt-1 text-xs font-medium text-rose-600 dark:text-rose-400">
                         {errors.secretCode}
                       </p>
                     )}
@@ -427,7 +445,7 @@ function Login() {
                     onClick={() =>
                       setMessage('Password recovery will be available soon.')
                     }
-                    className="text-xs font-medium text-[#1a6ef5] transition-colors hover:underline"
+                    className="text-xs font-medium text-[#1a6ef5] dark:text-cyan-400 transition-colors hover:underline cursor-pointer"
                   >
                     Forgot password?
                   </button>
@@ -437,7 +455,7 @@ function Login() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#1a6ef5] px-4 py-3.5 text-sm font-medium text-white shadow-sm transition-all duration-200 ease-out hover:scale-[1.02] hover:bg-[#155bd5] hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.99] disabled:opacity-50"
+                  className="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#1a6ef5] dark:bg-[#0066FF] px-4 py-3.5 text-sm font-medium text-white shadow-sm dark:shadow-[0_0_15px_rgba(0,102,255,0.4)] transition-all duration-200 ease-out hover:scale-[1.02] hover:bg-[#155bd5] dark:hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.99] disabled:opacity-50 cursor-pointer"
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">
@@ -478,16 +496,16 @@ function Login() {
             </div>
 
             {/* Bottom Links */}
-            <p className="mt-5 text-center text-xs text-slate-600 sm:text-sm">
+            <p className="mt-5 text-center text-xs text-slate-600 dark:text-gray-400 sm:text-sm">
               New to CourseHub?{' '}
-              <Link to="/register" className="font-bold text-slate-900 transition-colors hover:underline">
+              <Link to="/register" className="font-bold text-slate-900 dark:text-cyan-400 transition-colors hover:underline">
                 Create your account
               </Link>
             </p>
 
             <button
               onClick={() => navigate('/')}
-              className="mt-3 mx-auto block text-xs font-medium text-slate-500 transition-colors hover:text-slate-800"
+              className="mt-3 mx-auto block text-xs font-medium text-slate-500 dark:text-gray-500 transition-colors hover:text-slate-800 dark:hover:text-gray-300 cursor-pointer"
             >
               ← Back to home
             </button>
@@ -502,7 +520,9 @@ function BrandMark({ darkBg = false }) {
   return (
     <div
       className={`flex h-9 w-9 items-center justify-center rounded-xl shadow-sm ${
-        darkBg ? 'bg-[#0b1329] text-white' : 'bg-white text-slate-900'
+        darkBg
+          ? 'bg-white/10 backdrop-blur-md border border-white/10 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.3)]'
+          : 'bg-white text-slate-900 border border-slate-200'
       }`}
     >
       <svg

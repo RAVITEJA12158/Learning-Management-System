@@ -95,18 +95,18 @@ function CourseAssignmentsManager({ courseId, canManage = false, isEnrolled = fa
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h3 className="text-2xl font-black tracking-[-.04em] text-[#151515]">
+          <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
             Assignments & Assessments
           </h3>
-          <p className="text-xs text-[#151515]/60 mt-1">
-            Submit your coursework and track grades and instructor feedback.
+          <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
+            Submit coursework and track real-time grading, instructor feedback, and milestones.
           </p>
         </div>
 
         {canManage && (
           <button
             onClick={() => setIsCreating(!isCreating)}
-            className="hub-lift inline-flex items-center gap-2 rounded-full bg-[#151515] px-5 py-2.5 text-xs font-black text-white hover:bg-[#292929]"
+            className="hub-lift inline-flex items-center gap-2 rounded-full bg-slate-900 dark:bg-white/[0.05] dark:border dark:border-white/10 dark:hover:bg-white/[0.1] px-5 py-2.5 text-xs font-black text-white hover:bg-slate-800 transition cursor-pointer"
           >
             {isCreating ? 'Cancel' : '+ New Assignment'}
           </button>
@@ -117,21 +117,21 @@ function CourseAssignmentsManager({ courseId, canManage = false, isEnrolled = fa
       {isCreating && (
         <form
           onSubmit={handleCreateAssignment}
-          className="rounded-[24px] border border-black/15 bg-white p-6 shadow-md space-y-4 animate-fade-in"
+          className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] dark:backdrop-blur-xl p-6 shadow-md space-y-4 animate-fade-in"
         >
-          <h4 className="text-sm font-black uppercase tracking-wider text-[#151515]">
+          <h4 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white">
             Create Assignment
           </h4>
 
           {formError && (
-            <div className="rounded-xl border border-[#F2C7BC] bg-[#FFF1ED] p-3 text-xs font-bold text-[#B83D29]">
+            <div className="rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 p-3 text-xs font-bold text-red-600 dark:text-red-400">
               {formError}
             </div>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-black uppercase tracking-wider text-[#151515]/60 mb-1">
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-500 dark:text-gray-400 mb-1">
                 Assignment Title *
               </label>
               <input
@@ -140,12 +140,12 @@ function CourseAssignmentsManager({ courseId, canManage = false, isEnrolled = fa
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Project 1: Database Schema & Indexing"
-                className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm font-medium focus:border-black focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 focus:outline-none transition"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-black uppercase tracking-wider text-[#151515]/60 mb-1">
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-500 dark:text-gray-400 mb-1">
                 Max Marks *
               </label>
               <input
@@ -153,14 +153,14 @@ function CourseAssignmentsManager({ courseId, canManage = false, isEnrolled = fa
                 required
                 value={maxMarks}
                 onChange={(e) => setMaxMarks(e.target.value)}
-                className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm font-medium focus:border-black focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 focus:outline-none transition"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-black uppercase tracking-wider text-[#151515]/60 mb-1">
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-500 dark:text-gray-400 mb-1">
                 Due Date & Time *
               </label>
               <input
@@ -168,7 +168,7 @@ function CourseAssignmentsManager({ courseId, canManage = false, isEnrolled = fa
                 required
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm font-medium focus:border-black focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 focus:outline-none transition"
               />
             </div>
 
@@ -178,16 +178,16 @@ function CourseAssignmentsManager({ courseId, canManage = false, isEnrolled = fa
                 id="allowLate"
                 checked={allowLateSubmission}
                 onChange={(e) => setAllowLateSubmission(e.target.checked)}
-                className="h-4 w-4 rounded border-black/20 text-[#151515]"
+                className="h-4 w-4 rounded border-slate-300 dark:border-gray-700 text-purple-600 focus:ring-purple-500"
               />
-              <label htmlFor="allowLate" className="text-xs font-bold text-[#151515]">
+              <label htmlFor="allowLate" className="text-xs font-bold text-slate-700 dark:text-gray-300">
                 Allow late submissions (marked with LATE status)
               </label>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-black uppercase tracking-wider text-[#151515]/60 mb-1">
+            <label className="block text-xs font-black uppercase tracking-wider text-slate-500 dark:text-gray-400 mb-1">
               Instructions & Problem Statement
             </label>
             <textarea
@@ -195,7 +195,7 @@ function CourseAssignmentsManager({ courseId, canManage = false, isEnrolled = fa
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Provide assignment guidelines, deliverables, and requirements..."
-              className="w-full rounded-xl border border-black/15 bg-white p-3 text-xs font-medium focus:border-black focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-transparent p-3 text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 focus:outline-none transition"
             />
           </div>
 
@@ -203,14 +203,14 @@ function CourseAssignmentsManager({ courseId, canManage = false, isEnrolled = fa
             <button
               type="button"
               onClick={() => setIsCreating(false)}
-              className="rounded-full border border-black/10 px-4 py-2 text-xs font-black text-[#151515]"
+              className="rounded-full border border-slate-200 dark:border-gray-700 px-4 py-2 text-xs font-black text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.05]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={formLoading}
-              className="hub-lift rounded-full bg-[#151515] px-6 py-2 text-xs font-black text-white disabled:opacity-50"
+              className="hub-lift rounded-full bg-blue-600 dark:bg-[#0066FF] hover:bg-blue-700 dark:hover:bg-blue-500 shadow-[0_0_15px_rgba(0,102,255,0.4)] px-6 py-2 text-xs font-black text-white disabled:opacity-50 transition"
             >
               {formLoading ? 'Publishing...' : 'Publish Assignment'}
             </button>
@@ -220,7 +220,7 @@ function CourseAssignmentsManager({ courseId, canManage = false, isEnrolled = fa
 
       {/* Assignment List */}
       {loading ? (
-        <p className="text-xs font-bold text-[#151515]/50">Loading assignments...</p>
+        <p className="text-xs font-bold text-slate-400 dark:text-gray-500">Loading assignments...</p>
       ) : assignments.length > 0 ? (
         <div className="grid gap-4">
           {assignments.map((assignment) => {
@@ -231,39 +231,39 @@ function CourseAssignmentsManager({ courseId, canManage = false, isEnrolled = fa
             return (
               <div
                 key={assignment.id}
-                className="rounded-[24px] border border-black/10 bg-white p-6 shadow-sm transition hover:shadow-md"
+                className="rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 p-6 shadow-sm transition hover:border-cyan-500/40 dark:hover:border-cyan-500/40"
               >
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <span className="rounded-full bg-[#151515] px-3 py-1 text-[10px] font-black uppercase text-white">
+                      <span className="rounded-full bg-slate-900 dark:bg-white/10 border border-transparent dark:border-white/10 px-3 py-1 text-[10px] font-black uppercase text-white">
                         {assignment.maxMarks} Points
                       </span>
                       <span
                         className={`rounded-full px-3 py-1 text-[10px] font-black uppercase ${
                           isPastDue
-                            ? 'bg-[#FFF1ED] text-[#B83D29] border border-[#F2C7BC]'
-                            : 'bg-[#DFFF63] text-[#151515]'
+                            ? 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50'
+                            : 'bg-emerald-50 dark:bg-cyan-950/40 text-emerald-700 dark:text-cyan-300 border border-emerald-200 dark:border-cyan-800/40'
                         }`}
                       >
                         ⏱ {countdown}
                       </span>
                       {assignment.allowLateSubmission && (
-                        <span className="rounded-full bg-[#FAF8F5] border border-black/10 px-2.5 py-0.5 text-[9px] font-bold text-[#151515]/70">
+                        <span className="rounded-full bg-slate-100 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 px-2.5 py-0.5 text-[9px] font-bold text-slate-600 dark:text-gray-400">
                           Late Submissions OK
                         </span>
                       )}
                     </div>
 
-                    <h4 className="text-xl font-black tracking-[-.03em] text-[#151515]">
+                    <h4 className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
                       {assignment.title}
                     </h4>
                     {assignment.description && (
-                      <p className="mt-2 text-xs leading-5 text-[#151515]/70 max-w-2xl">
+                      <p className="mt-2 text-xs leading-5 text-slate-600 dark:text-gray-400 max-w-2xl">
                         {assignment.description}
                       </p>
                     )}
-                    <p className="mt-3 text-[11px] font-bold text-[#151515]/50">
+                    <p className="mt-3 text-[11px] font-bold text-slate-400 dark:text-gray-500">
                       Due: {new Date(assignment.dueDate).toLocaleString()}
                     </p>
                   </div>
@@ -274,13 +274,13 @@ function CourseAssignmentsManager({ courseId, canManage = false, isEnrolled = fa
                       <>
                         <button
                           onClick={() => setGradingAssignment(assignment)}
-                          className="hub-lift inline-flex items-center gap-2 rounded-full bg-[#151515] px-4 py-2 text-xs font-black text-white hover:bg-[#292929]"
+                          className="hub-lift inline-flex items-center gap-2 rounded-xl bg-slate-900 dark:bg-white/10 dark:border dark:border-white/10 px-4 py-2 text-xs font-black text-white hover:bg-slate-800 dark:hover:bg-white/20 transition cursor-pointer"
                         >
                           Review Submissions ({assignment._count?.submissions || 0})
                         </button>
                         <button
                           onClick={() => handleDeleteAssignment(assignment.id)}
-                          className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-[#B83D29] hover:bg-[#FFF1ED]"
+                          className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer"
                           title="Delete Assignment"
                         >
                           🗑
@@ -293,20 +293,20 @@ function CourseAssignmentsManager({ courseId, canManage = false, isEnrolled = fa
                             <span
                               className={`inline-block rounded-full px-3 py-1 text-[10px] font-black uppercase ${
                                 mySubmission.status === 'LATE'
-                                  ? 'bg-[#FFF1ED] text-[#B83D29]'
-                                  : 'bg-[#EDF9F5] text-[#18765D]'
+                                  ? 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/40'
+                                  : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40'
                               }`}
                             >
                               ✓ {mySubmission.status}
                             </span>
                             {mySubmission.marks !== null && mySubmission.marks !== undefined && (
-                              <p className="text-xs font-black text-[#151515]">
+                              <p className="text-xs font-black text-slate-900 dark:text-white">
                                 Grade: {mySubmission.marks} / {assignment.maxMarks}
                               </p>
                             )}
                             <button
                               onClick={() => setSubmittingAssignment(assignment)}
-                              className="block text-xs font-bold text-[#151515] underline hover:text-[#E85B43]"
+                              className="block text-xs font-bold text-cyan-500 hover:text-cyan-400 underline cursor-pointer"
                             >
                               View / Resubmit
                             </button>
@@ -314,7 +314,7 @@ function CourseAssignmentsManager({ courseId, canManage = false, isEnrolled = fa
                         ) : (
                           <button
                             onClick={() => setSubmittingAssignment(assignment)}
-                            className="hub-lift inline-flex items-center gap-2 rounded-full bg-[#151515] px-5 py-2.5 text-xs font-black text-white hover:bg-[#292929]"
+                            className="hub-lift inline-flex items-center gap-2 rounded-xl bg-blue-600 dark:bg-[#0066FF] px-5 py-2.5 text-xs font-black text-white hover:bg-blue-700 dark:hover:bg-blue-500 shadow-[0_0_15px_rgba(0,102,255,0.4)] transition cursor-pointer"
                           >
                             Submit Assignment →
                           </button>
@@ -328,7 +328,7 @@ function CourseAssignmentsManager({ courseId, canManage = false, isEnrolled = fa
           })}
         </div>
       ) : (
-        <div className="rounded-[24px] border border-black/10 bg-white p-8 text-center text-sm font-bold text-[#151515]/50">
+        <div className="rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 p-8 text-center text-sm font-bold text-slate-400 dark:text-gray-500">
           No assignments scheduled for this course yet.
         </div>
       )}
