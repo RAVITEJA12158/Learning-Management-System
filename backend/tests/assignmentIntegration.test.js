@@ -20,6 +20,9 @@ jest.mock('../src/lib/prisma', () => ({
   course: {
     findUnique: jest.fn(),
   },
+  courseEnrollment: {
+    findUnique: jest.fn(),
+  },
 }));
 
 describe('Assignment & Submission Integration Flow (Sprint 4)', () => {
@@ -73,9 +76,11 @@ describe('Assignment & Submission Integration Flow (Sprint 4)', () => {
     // 2. Student submits assignment
     prisma.assignment.findUnique.mockResolvedValue({
       id: 'assign-20',
+      courseId: 'course-20',
       dueDate: new Date(Date.now() + 86400000),
       allowLateSubmission: true,
     });
+    prisma.courseEnrollment.findUnique.mockResolvedValue({ status: 'ACTIVE' });
     prisma.assignmentSubmission.upsert.mockResolvedValue({
       id: 'sub-20',
       assignmentId: 'assign-20',

@@ -211,6 +211,7 @@ describe('Course & Enrollment Controller (Sprint 2)', () => {
 
   describe('enrollStudent & unenrollStudent', () => {
     it('enrolls student successfully', async () => {
+      prisma.course.findUnique.mockResolvedValue({ id: 'c1' });
       prisma.courseEnrollment.findUnique.mockResolvedValue(null);
       prisma.courseEnrollment.create.mockResolvedValue({ id: 'e1', courseId: 'c1', studentId: 'student-1', status: 'ACTIVE' });
 
@@ -226,7 +227,8 @@ describe('Course & Enrollment Controller (Sprint 2)', () => {
     });
 
     it('rejects duplicate enrollment (400)', async () => {
-      prisma.courseEnrollment.findUnique.mockResolvedValue({ id: 'existing' });
+      prisma.course.findUnique.mockResolvedValue({ id: 'c1' });
+      prisma.courseEnrollment.findUnique.mockResolvedValue({ id: 'existing', status: 'ACTIVE' });
 
       const req = { params: { id: 'c1' }, user: { userId: 'student-1' } };
       const res = mockResponse();
@@ -235,6 +237,23 @@ describe('Course & Enrollment Controller (Sprint 2)', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({ error: 'Already enrolled in this course.' });
+    });
+
+    it('reactivates a dropped enrollment', async () => {
+      prisma.course.findUnique.mockResolvedValue({ id: 'c1' });
+      prisma.courseEnrollment.findUnique.mockResolvedValue({ id: 'existing', status: 'DROPPED' });
+      prisma.courseEnrollment.update.mockResolvedValue({ id: 'existing', status: 'ACTIVE' });
+
+      const req = { params: { id: 'c1' }, user: { userId: 'student-1' } };
+      const res = mockResponse();
+
+      await courseController.enrollStudent(req, res);
+
+      expect(prisma.courseEnrollment.update).toHaveBeenCalledWith(expect.objectContaining({
+        where: { courseId_studentId: { courseId: 'c1', studentId: 'student-1' } },
+        data: expect.objectContaining({ status: 'ACTIVE' }),
+      }));
+      expect(res.status).toHaveBeenCalledWith(200);
     });
 
     it('drops enrollment successfully', async () => {

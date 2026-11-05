@@ -45,11 +45,11 @@ exports.updateModule = async (req, res) => {
     const updated = await prisma.module.update({
       where: { id },
       data: {
-        title,
-        description,
-        position,
-        isPublished,
-        releaseAt: releaseAt ? new Date(releaseAt) : null,
+        ...(title !== undefined && { title }),
+        ...(description !== undefined && { description }),
+        ...(position !== undefined && { position }),
+        ...(isPublished !== undefined && { isPublished }),
+        ...(releaseAt !== undefined && { releaseAt: releaseAt ? new Date(releaseAt) : null }),
       }
     });
 

@@ -116,12 +116,23 @@ exports.enrollStudent = async (req, res) => {
     const { id } = req.params;
     const studentId = req.user.userId;
 
+    const course = await prisma.course.findUnique({ where: { id }, select: { id: true } });
+    if (!course) return res.status(404).json({ error: 'Course not found.' });
+
     const existingEnrollment = await prisma.courseEnrollment.findUnique({
       where: { courseId_studentId: { courseId: id, studentId } },
     });
 
     if (existingEnrollment) {
-      return res.status(400).json({ error: 'Already enrolled in this course.' });
+      if (existingEnrollment.status === 'ACTIVE') {
+        return res.status(400).json({ error: 'Already enrolled in this course.' });
+      }
+
+      const reactivated = await prisma.courseEnrollment.update({
+        where: { courseId_studentId: { courseId: id, studentId } },
+        data: { status: 'ACTIVE', enrolledAt: new Date() },
+      });
+      return res.status(200).json(reactivated);
     }
 
     const enrollment = await prisma.courseEnrollment.create({

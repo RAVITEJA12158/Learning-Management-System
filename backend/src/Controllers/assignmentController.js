@@ -1,6 +1,25 @@
 const prisma = require('../lib/prisma');
 const { uploadBufferToCloudinary } = require('../Middleware/upload');
 
+function isCourseStaff(course, user) {
+  return user.role === 'ADMIN' ||
+    course.createdById === user.userId ||
+    course.instructors?.some((instructor) => instructor.facultyId === user.userId);
+}
+
+async function isEnrolledStudent(courseId, studentId) {
+  const enrollment = await prisma.courseEnrollment.findUnique({
+    where: { courseId_studentId: { courseId, studentId } },
+    select: { status: true },
+  });
+  return enrollment?.status === 'ACTIVE';
+}
+
+async function canAccessCourse(course, user) {
+  if (isCourseStaff(course, user)) return true;
+  return user.role === 'STUDENT' && isEnrolledStudent(course.id, user.userId);
+}
+
 // === Assignment CRUD ===
 
 // Create an assignment (Faculty/Admin)
@@ -8,8 +27,17 @@ exports.createAssignment = async (req, res) => {
   try {
     const { courseId, title, description, maxMarks, dueDate, allowLateSubmission } = req.body;
 
-    if (!courseId || !title || !dueDate || maxMarks === undefined) {
+    if (!courseId || typeof title !== 'string' || !title.trim() || !dueDate || maxMarks === undefined) {
       return res.status(400).json({ error: 'courseId, title, maxMarks, and dueDate are required.' });
+    }
+
+    const numericMaxMarks = Number(maxMarks);
+    const parsedDueDate = new Date(dueDate);
+    if (!Number.isFinite(numericMaxMarks) || numericMaxMarks <= 0 || Number.isNaN(parsedDueDate.getTime())) {
+      return res.status(400).json({ error: 'maxMarks must be positive and dueDate must be a valid date.' });
+    }
+    if (allowLateSubmission !== undefined && typeof allowLateSubmission !== 'boolean') {
+      return res.status(400).json({ error: 'allowLateSubmission must be a boolean.' });
     }
 
     // Verify course ownership or instructor role
@@ -19,23 +47,18 @@ exports.createAssignment = async (req, res) => {
     });
     if (!course) return res.status(404).json({ error: 'Course not found.' });
 
-    const isInstructor =
-      course.createdById === req.user.userId ||
-      course.instructors.some((inst) => inst.facultyId === req.user.userId) ||
-      req.user.role === 'ADMIN';
-
-    if (!isInstructor) {
+    if (!isCourseStaff(course, req.user)) {
       return res.status(403).json({ error: 'Not authorized to create assignments for this course.' });
     }
 
     const assignment = await prisma.assignment.create({
       data: {
         courseId,
-        title,
+        title: title.trim(),
         description,
-        maxMarks: parseFloat(maxMarks),
-        dueDate: new Date(dueDate),
-        allowLateSubmission: Boolean(allowLateSubmission),
+        maxMarks: numericMaxMarks,
+        dueDate: parsedDueDate,
+        allowLateSubmission: allowLateSubmission ?? false,
         createdById: req.user.userId,
       },
     });
@@ -53,6 +76,15 @@ exports.getAssignmentsByCourse = async (req, res) => {
     const { courseId } = req.params;
     const userId = req.user.userId;
     const isStudent = req.user.role === 'STUDENT';
+
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      include: { instructors: true },
+    });
+    if (!course) return res.status(404).json({ error: 'Course not found.' });
+    if (!(await canAccessCourse(course, req.user))) {
+      return res.status(403).json({ error: 'Not authorized to view assignments for this course.' });
+    }
 
     const assignments = await prisma.assignment.findMany({
       where: { courseId },
@@ -96,7 +128,15 @@ exports.getAssignmentById = async (req, res) => {
     const assignment = await prisma.assignment.findUnique({
       where: { id },
       include: {
-        course: { select: { id: true, title: true, courseCode: true, createdById: true } },
+        course: {
+          select: {
+            id: true,
+            title: true,
+            courseCode: true,
+            createdById: true,
+            instructors: { select: { facultyId: true } },
+          },
+        },
         createdBy: { select: { name: true } },
         submissions: isStudent
           ? {
@@ -114,6 +154,10 @@ exports.getAssignmentById = async (req, res) => {
 
     if (!assignment) return res.status(404).json({ error: 'Assignment not found.' });
 
+    if (!(await canAccessCourse(assignment.course, req.user))) {
+      return res.status(403).json({ error: 'Not authorized to view this assignment.' });
+    }
+
     res.json(assignment);
   } catch (err) {
     console.error(err);
@@ -129,26 +173,35 @@ exports.updateAssignment = async (req, res) => {
 
     const assignment = await prisma.assignment.findUnique({
       where: { id },
-      include: { course: true },
+      include: { course: { include: { instructors: true } } },
     });
     if (!assignment) return res.status(404).json({ error: 'Assignment not found.' });
 
-    if (
-      assignment.createdById !== req.user.userId &&
-      assignment.course.createdById !== req.user.userId &&
-      req.user.role !== 'ADMIN'
-    ) {
+    if (!isCourseStaff(assignment.course, req.user) && assignment.createdById !== req.user.userId) {
       return res.status(403).json({ error: 'Not authorized to update this assignment.' });
+    }
+
+    if (title !== undefined && (typeof title !== 'string' || !title.trim())) {
+      return res.status(400).json({ error: 'title must be a non-empty string.' });
+    }
+    if (maxMarks !== undefined && (!Number.isFinite(Number(maxMarks)) || Number(maxMarks) <= 0)) {
+      return res.status(400).json({ error: 'maxMarks must be a positive number.' });
+    }
+    if (dueDate !== undefined && Number.isNaN(new Date(dueDate).getTime())) {
+      return res.status(400).json({ error: 'dueDate must be a valid date.' });
+    }
+    if (allowLateSubmission !== undefined && typeof allowLateSubmission !== 'boolean') {
+      return res.status(400).json({ error: 'allowLateSubmission must be a boolean.' });
     }
 
     const updated = await prisma.assignment.update({
       where: { id },
       data: {
-        ...(title && { title }),
+        ...(title !== undefined && { title: title.trim() }),
         ...(description !== undefined && { description }),
-        ...(maxMarks !== undefined && { maxMarks: parseFloat(maxMarks) }),
-        ...(dueDate && { dueDate: new Date(dueDate) }),
-        ...(allowLateSubmission !== undefined && { allowLateSubmission: Boolean(allowLateSubmission) }),
+        ...(maxMarks !== undefined && { maxMarks: Number(maxMarks) }),
+        ...(dueDate !== undefined && { dueDate: new Date(dueDate) }),
+        ...(allowLateSubmission !== undefined && { allowLateSubmission }),
       },
     });
 
@@ -166,15 +219,11 @@ exports.deleteAssignment = async (req, res) => {
 
     const assignment = await prisma.assignment.findUnique({
       where: { id },
-      include: { course: true },
+      include: { course: { include: { instructors: true } } },
     });
     if (!assignment) return res.status(404).json({ error: 'Assignment not found.' });
 
-    if (
-      assignment.createdById !== req.user.userId &&
-      assignment.course.createdById !== req.user.userId &&
-      req.user.role !== 'ADMIN'
-    ) {
+    if (!isCourseStaff(assignment.course, req.user) && assignment.createdById !== req.user.userId) {
       return res.status(403).json({ error: 'Not authorized to delete this assignment.' });
     }
 
@@ -197,6 +246,10 @@ exports.submitAssignment = async (req, res) => {
 
     const assignment = await prisma.assignment.findUnique({ where: { id } });
     if (!assignment) return res.status(404).json({ error: 'Assignment not found.' });
+
+    if (!(await isEnrolledStudent(assignment.courseId, studentId))) {
+      return res.status(403).json({ error: 'You must be actively enrolled in this course to submit work.' });
+    }
 
     // Handle multipart file upload to Cloudinary if file buffer present
     if (req.file) {
@@ -229,6 +282,10 @@ exports.submitAssignment = async (req, res) => {
         fileUrl,
         submittedAt: now,
         status: submissionStatus,
+        marks: null,
+        feedback: null,
+        gradedById: null,
+        gradedAt: null,
       },
       create: {
         assignmentId: id,
@@ -253,15 +310,11 @@ exports.getSubmissionsForAssignment = async (req, res) => {
 
     const assignment = await prisma.assignment.findUnique({
       where: { id },
-      include: { course: true },
+      include: { course: { include: { instructors: true } } },
     });
     if (!assignment) return res.status(404).json({ error: 'Assignment not found.' });
 
-    if (
-      assignment.createdById !== req.user.userId &&
-      assignment.course.createdById !== req.user.userId &&
-      req.user.role !== 'ADMIN'
-    ) {
+    if (!isCourseStaff(assignment.course, req.user) && assignment.createdById !== req.user.userId) {
       return res.status(403).json({ error: 'Not authorized to view submissions.' });
     }
 
@@ -293,23 +346,21 @@ exports.gradeSubmission = async (req, res) => {
 
     const submission = await prisma.assignmentSubmission.findUnique({
       where: { id: submissionId },
-      include: { assignment: { include: { course: true } } },
+      include: { assignment: { include: { course: { include: { instructors: true } } } } },
     });
     if (!submission) return res.status(404).json({ error: 'Submission not found.' });
 
-    const isAuthorized =
-      submission.assignment.createdById === req.user.userId ||
-      submission.assignment.course.createdById === req.user.userId ||
-      req.user.role === 'ADMIN';
+    const isAuthorized = isCourseStaff(submission.assignment.course, req.user) ||
+      submission.assignment.createdById === req.user.userId;
 
     if (!isAuthorized) {
       return res.status(403).json({ error: 'Not authorized to grade this submission.' });
     }
 
-    const awardedMarks = parseFloat(marks);
-    const maxMarks = parseFloat(submission.assignment.maxMarks);
+    const awardedMarks = Number(marks);
+    const maxMarks = Number(submission.assignment.maxMarks);
 
-    if (awardedMarks < 0 || awardedMarks > maxMarks) {
+    if (!Number.isFinite(awardedMarks) || awardedMarks < 0 || awardedMarks > maxMarks) {
       return res.status(400).json({
         error: `Marks must be between 0 and maximum marks allowed (${maxMarks}).`,
       });

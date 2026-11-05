@@ -27,7 +27,10 @@ app.get('/health', async (req, res) => {
     await prisma.$queryRaw`SELECT 1`;
     res.json({ status: 'ok', db: 'connected' });
   } catch (err) {
-    res.status(500).json({ status: 'error', db: 'disconnected', message: err.message });
+    console.error('Health check database query failed:', err);
+    const response = { status: 'error', db: 'disconnected' };
+    if (process.env.NODE_ENV !== 'production') response.message = err.message;
+    res.status(500).json(response);
   }
 });
 
@@ -38,6 +41,21 @@ app.use((req, res) => res.status(404).json({ error: 'Not found' }));
 // Global error handler — never leak stack traces in production
 app.use((err, req, res, _next) => {
   console.error(err);
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Invalid JSON request body.' });
+  }
+  if (err.type === 'entity.too.large' || err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'Request or upload exceeds the allowed size.' });
+  }
+  if (typeof err.code === 'string' && err.code.startsWith('LIMIT_')) {
+    return res.status(400).json({ error: 'Invalid file upload.' });
+  }
+  if (err.code === 'UNSUPPORTED_FILE_TYPE') {
+    return res.status(400).json({ error: err.message });
+  }
+  if (err.code === 'CORS_DENIED') {
+    return res.status(403).json({ error: 'Origin is not allowed.' });
+  }
   const message =
     process.env.NODE_ENV === 'production'
       ? 'Internal server error'

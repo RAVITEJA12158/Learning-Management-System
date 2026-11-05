@@ -15,6 +15,9 @@ jest.mock('../src/lib/prisma', () => ({
   course: {
     findUnique: jest.fn(),
   },
+  courseEnrollment: {
+    findUnique: jest.fn(),
+  },
 }));
 
 jest.mock('../src/Middleware/upload', () => ({
@@ -35,6 +38,37 @@ const mockResponse = () => {
 describe('Assignment & Submission Controller (Sprint 4)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('course access checks', () => {
+    it('blocks assignment listing for a student who is not enrolled', async () => {
+      prisma.course.findUnique.mockResolvedValue({ id: 'c1', createdById: 'faculty-1', instructors: [] });
+      prisma.courseEnrollment.findUnique.mockResolvedValue(null);
+
+      const res = mockResponse();
+      await assignmentController.getAssignmentsByCourse({
+        params: { courseId: 'c1' },
+        user: { userId: 'student-1', role: 'STUDENT' },
+      }, res);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(prisma.assignment.findMany).not.toHaveBeenCalled();
+    });
+
+    it('blocks assignment submission from a student who is not enrolled', async () => {
+      prisma.assignment.findUnique.mockResolvedValue({ id: 'a1', courseId: 'c1', dueDate: new Date(Date.now() + 100000) });
+      prisma.courseEnrollment.findUnique.mockResolvedValue(null);
+
+      const res = mockResponse();
+      await assignmentController.submitAssignment({
+        params: { id: 'a1' },
+        body: { fileUrl: 'https://files.example/submission.pdf' },
+        user: { userId: 'student-1', role: 'STUDENT' },
+      }, res);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(prisma.assignmentSubmission.upsert).not.toHaveBeenCalled();
+    });
   });
 
   describe('createAssignment', () => {
@@ -115,6 +149,7 @@ describe('Assignment & Submission Controller (Sprint 4)', () => {
         user: { userId: 'student-1' },
       };
       const res = mockResponse();
+      prisma.courseEnrollment.findUnique.mockResolvedValue({ status: 'ACTIVE' });
 
       await assignmentController.submitAssignment(req, res);
 
@@ -144,6 +179,7 @@ describe('Assignment & Submission Controller (Sprint 4)', () => {
         user: { userId: 'student-1' },
       };
       const res = mockResponse();
+      prisma.courseEnrollment.findUnique.mockResolvedValue({ status: 'ACTIVE' });
 
       await assignmentController.submitAssignment(req, res);
 
@@ -169,6 +205,7 @@ describe('Assignment & Submission Controller (Sprint 4)', () => {
         user: { userId: 'student-1' },
       };
       const res = mockResponse();
+      prisma.courseEnrollment.findUnique.mockResolvedValue({ status: 'ACTIVE' });
 
       await assignmentController.submitAssignment(req, res);
 
@@ -237,6 +274,29 @@ describe('Assignment & Submission Controller (Sprint 4)', () => {
       expect(res.json).toHaveBeenCalledWith({
         error: 'Marks must be between 0 and maximum marks allowed (50).',
       });
+    });
+
+    it('rejects non-numeric marks instead of sending NaN to Prisma', async () => {
+      prisma.assignmentSubmission.findUnique.mockResolvedValue({
+        id: 'sub-1',
+        assignment: {
+          maxMarks: 50,
+          createdById: 'faculty-1',
+          course: { createdById: 'faculty-1' },
+        },
+      });
+
+      const req = {
+        params: { submissionId: 'sub-1' },
+        body: { marks: 'not-a-number' },
+        user: { userId: 'faculty-1', role: 'FACULTY' },
+      };
+      const res = mockResponse();
+
+      await assignmentController.gradeSubmission(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(prisma.assignmentSubmission.update).not.toHaveBeenCalled();
     });
   });
 });

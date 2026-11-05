@@ -1,9 +1,14 @@
 // Whitelist of origins allowed to call the API.
 // In production, replace with your actual deployment URL(s).
-const whitelist = [
+const localOrigins = [
   'http://localhost:3000',  // Vite dev server
   'http://localhost:5173',  // Vite default port (fallback)
 ];
+const configuredOrigins = (process.env.FRONTEND_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const whitelist = [...new Set([...localOrigins, ...configuredOrigins])];
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -11,7 +16,9 @@ const corsOptions = {
     if (!origin || whitelist.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      const error = new Error('Not allowed by CORS');
+      error.code = 'CORS_DENIED';
+      callback(error);
     }
   },
   credentials: true,

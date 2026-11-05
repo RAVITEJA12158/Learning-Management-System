@@ -49,6 +49,7 @@ const register = async (req, res) => {
         name: cleanName,
         username: cleanUsername,
         email: cleanEmail,
+        mobileNumber: cleanedMobile,
         passwordHash: hashedPassword,
         role: ROLE_VALUES[requestedRole],
       },
