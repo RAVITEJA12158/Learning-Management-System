@@ -72,7 +72,7 @@ const register = async (req, res) => {
     };
 
     console.log("Register response:", registerResponse);
-    return res.status(200).json(registerResponse);
+    return res.status(201).json(registerResponse);
   } catch (error) {
     console.error("Register error:", error);
     return res.status(500).json({ error: "Error registering user" });

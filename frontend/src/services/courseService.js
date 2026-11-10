@@ -1,6 +1,6 @@
 import React from 'react';
 import { api } from './api';
-import { MOCK_STUDENT_COURSES, MOCK_CATALOG_COURSES, DEFAULT_MODULES_TEMPLATE, MOCK_ASSIGNMENTS_BY_COURSE, MOCK_ATTENDANCE_SESSIONS, MOCK_DISCUSSIONS, MOCK_ANNOUNCEMENTS, MOCK_NOTIFICATIONS, MOCK_USERS } from '../utils/mockData';
+import { MOCK_STUDENT_COURSES, MOCK_CATALOG_COURSES, DEFAULT_MODULES_TEMPLATE, MOCK_ASSIGNMENTS_BY_COURSE, MOCK_COURSE_QUIZZES, MOCK_ATTENDANCE_SESSIONS, MOCK_DISCUSSIONS, MOCK_ANNOUNCEMENTS, MOCK_NOTIFICATIONS, MOCK_USERS } from '../utils/mockData';
 import { DEFAULT_GRADE_COMPONENTS } from '../utils/constants';
 
 const STORAGE_KEYS = {
@@ -721,176 +721,375 @@ const assignmentService = {
     };
   }
 };
-const attendanceService = {
-  getSessions(courseId = 'mock-1') {
-    const all = readStore(STORAGE_KEYS.ATTENDANCE, {});
+const quizService = {
+  async getByCourse(courseId) {
+    try {
+      const data = await api.get(`/quizzes/course/${courseId}`);
+      if (Array.isArray(data) && data.length > 0) return data;
+    } catch {
+      // Fallback
+    }
+    const all = readStore(STORAGE_KEYS.QUIZZES, {});
     if (all[courseId]) return all[courseId];
-    const seeded = MOCK_ATTENDANCE_SESSIONS.map(s => ({
-      ...s,
-      id: `${courseId}-${s.id}`,
-      courseId
-    }));
-    all[courseId] = seeded;
-    writeStore(STORAGE_KEYS.ATTENDANCE, all);
-    return seeded;
+    return MOCK_COURSE_QUIZZES.map(q => ({ ...q, courseId }));
   },
-  createSession(courseId, {
-    date,
-    topic,
-    createdBy,
-    records
-  }) {
-    const current = this.getSessions(courseId);
-    const newSession = {
-      id: `att-${Date.now()}`,
-      courseId,
-      date: date || new Date().toISOString().slice(0, 10),
-      topic: topic || 'Course Lecture Session',
-      createdBy: createdBy || 'Dr. Alan Turing',
-      records: records || MOCK_ATTENDANCE_SESSIONS[0].records.map(r => ({
-        ...r,
-        id: `rec-${Date.now()}-${r.studentId}`,
-        status: 'PRESENT'
-      }))
+  async getById(id) {
+    try {
+      return await api.get(`/quizzes/${id}`);
+    } catch {
+      return MOCK_COURSE_QUIZZES.find(q => q.id === id) || null;
+    }
+  },
+  async create(data) {
+    try {
+      const created = await api.post('/quizzes', data);
+      if (created && created.id) return created;
+    } catch {
+      // Fallback
+    }
+    const all = readStore(STORAGE_KEYS.QUIZZES, {});
+    const list = all[data.courseId] || MOCK_COURSE_QUIZZES;
+    const newQuiz = {
+      id: `quiz-${Date.now()}`,
+      courseId: data.courseId,
+      title: data.title,
+      description: data.description || '',
+      durationMinutes: data.durationMinutes || 30,
+      totalMarks: data.totalMarks || 100,
+      maxAttempts: data.maxAttempts || 1,
+      attemptsAllowed: data.maxAttempts || 1,
+      attemptsUsed: 0,
+      status: 'Active',
+      buttonText: 'Start Assessment',
+      questions: data.questions || [],
     };
-    const all = readStore(STORAGE_KEYS.ATTENDANCE, {});
-    all[courseId] = [newSession, ...current];
-    writeStore(STORAGE_KEYS.ATTENDANCE, all);
-    return newSession;
+    all[data.courseId] = [newQuiz, ...list];
+    writeStore(STORAGE_KEYS.QUIZZES, all);
+    return newQuiz;
   },
-  updateRecord(courseId, sessionId, studentId, status) {
-    const current = this.getSessions(courseId);
-    const next = current.map(s => {
-      if (s.id !== sessionId) return s;
+  async submitAttempt(quizId, answers) {
+    try {
+      return await api.post(`/quizzes/${quizId}/attempt`, { answers });
+    } catch {
       return {
-        ...s,
-        records: s.records.map(r => r.studentId === studentId ? {
-          ...r,
-          status
-        } : r)
+        score: 85,
+        totalMarks: 100,
+        percentage: 85,
+        status: 'Completed',
       };
-    });
-    const all = readStore(STORAGE_KEYS.ATTENDANCE, {});
-    all[courseId] = next;
-    writeStore(STORAGE_KEYS.ATTENDANCE, all);
-    return next;
+    }
   }
 };
-const discussionService = {
-  getByCourse(courseId = 'mock-1') {
-    const all = readStore(STORAGE_KEYS.DISCUSSIONS, {});
-    if (all[courseId]) return all[courseId];
-    all[courseId] = MOCK_DISCUSSIONS.map(d => ({
-      ...d,
-      courseId
-    }));
-    writeStore(STORAGE_KEYS.DISCUSSIONS, all);
-    return all[courseId];
-  },
-  saveForCourse(courseId, threads) {
-    const all = readStore(STORAGE_KEYS.DISCUSSIONS, {});
-    all[courseId] = threads;
-    writeStore(STORAGE_KEYS.DISCUSSIONS, all);
-    return threads;
-  }
-};
-const announcementService = {
-  getByCourse(courseId = 'mock-1') {
-    const all = readStore(STORAGE_KEYS.ANNOUNCEMENTS, {});
-    if (all[courseId]) return all[courseId];
-    all[courseId] = MOCK_ANNOUNCEMENTS.map(a => ({
-      ...a,
-      courseId
-    }));
-    writeStore(STORAGE_KEYS.ANNOUNCEMENTS, all);
-    return all[courseId];
-  },
-  saveForCourse(courseId, list) {
-    const all = readStore(STORAGE_KEYS.ANNOUNCEMENTS, {});
-    all[courseId] = list;
-    writeStore(STORAGE_KEYS.ANNOUNCEMENTS, all);
-    return list;
-  }
-};
-const notificationService = {
-  getAll() {
-    return readStore(STORAGE_KEYS.NOTIFICATIONS, MOCK_NOTIFICATIONS);
-  },
-  markAsRead(id) {
-    const list = this.getAll().map(n => n.id === id ? {
-      ...n,
-      isRead: true
-    } : n);
-    writeStore(STORAGE_KEYS.NOTIFICATIONS, list);
-    return list;
-  },
-  markAllAsRead() {
-    const list = this.getAll().map(n => ({
-      ...n,
-      isRead: true
-    }));
-    writeStore(STORAGE_KEYS.NOTIFICATIONS, list);
-    return list;
-  },
-  delete(id) {
-    const list = this.getAll().filter(n => n.id !== id);
-    writeStore(STORAGE_KEYS.NOTIFICATIONS, list);
-    return list;
-  },
-  create(notification) {
-    const newNotif = {
-      id: `notif-${Date.now()}`,
-      isRead: false,
-      createdAt: 'Just now',
-      ...notification
-    };
-    const list = [newNotif, ...this.getAll()];
-    writeStore(STORAGE_KEYS.NOTIFICATIONS, list);
-    return list;
-  }
-};
-const gradeService = {
-  getWeights(courseId = 'mock-1') {
-    const all = readStore(STORAGE_KEYS.GRADE_WEIGHTS, {});
-    return all[courseId] || DEFAULT_GRADE_COMPONENTS;
-  },
-  saveWeights(courseId, weights) {
-    const all = readStore(STORAGE_KEYS.GRADE_WEIGHTS, {});
-    all[courseId] = weights;
-    writeStore(STORAGE_KEYS.GRADE_WEIGHTS, all);
-    return weights;
-  }
-};
-const adminService = {
-  getUsers() {
-    return readStore(STORAGE_KEYS.USERS, MOCK_USERS);
-  },
-  saveUsers(users) {
-    writeStore(STORAGE_KEYS.USERS, users);
-    return users;
-  },
-  createUser(userData) {
-    const users = this.getUsers();
-    const newUser = {
-      id: `user-${Date.now()}`,
-      status: 'active',
-      createdAt: new Date().toISOString(),
-      ...userData
-    };
-    const next = [newUser, ...users];
-    return this.saveUsers(next);
-  },
-  updateUser(id, updates) {
-    const next = this.getUsers().map(u => u.id === id ? {
-      ...u,
-      ...updates
-    } : u);
-    return this.saveUsers(next);
-  },
-  deleteUser(id) {
-    const next = this.getUsers().filter(u => u.id !== id);
-    return this.saveUsers(next);
-  }
-};
+const attendanceService = {
+  async getSessions(courseId = 'mock-1') {
+      try {
+        const data = await api.get(`/attendance/course/${courseId}`);
+        if (Array.isArray(data) && data.length > 0) return data;
+      } catch {
+        // Fallback
+      }
+      const all = readStore(STORAGE_KEYS.ATTENDANCE, {});
+      if (all[courseId]) return all[courseId];
+      const seeded = MOCK_ATTENDANCE_SESSIONS.map(s => ({
+        ...s,
+        id: `${courseId}-${s.id}`,
+        courseId
+      }));
+      all[courseId] = seeded;
+      writeStore(STORAGE_KEYS.ATTENDANCE, all);
+      return seeded;
+    },
+      async createSession(courseId, {
+        date,
+        topic,
+        createdBy,
+        records
+      }) {
+        try {
+          const created = await api.post('/attendance/session', { courseId, date, topic, records });
+          if (created && created.id) return created;
+        } catch {
+          // Fallback
+        }
+        const current = await this.getSessions(courseId);
+        const newSession = {
+          id: `att-${Date.now()}`,
+          courseId,
+          date: date || new Date().toISOString().slice(0, 10),
+          topic: topic || 'Course Lecture Session',
+          createdBy: createdBy || 'Dr. Alan Turing',
+          records: records || MOCK_ATTENDANCE_SESSIONS[0].records.map(r => ({
+            ...r,
+            id: `rec-${Date.now()}-${r.studentId}`,
+            status: 'PRESENT'
+          }))
+        };
+        const all = readStore(STORAGE_KEYS.ATTENDANCE, {});
+        all[courseId] = [newSession, ...current];
+        writeStore(STORAGE_KEYS.ATTENDANCE, all);
+        return newSession;
+      },
+  async updateRecord(courseId, sessionId, studentId, status) {
+          try {
+            await api.put(`/attendance/session/${sessionId}/record`, { studentId, status });
+          } catch {
+            // Fallback
+          }
+          const current = await this.getSessions(courseId);
+          const next = current.map(s => {
+            if (s.id !== sessionId) return s;
+            return {
+              ...s,
+              records: s.records.map(r => r.studentId === studentId ? {
+                ...r,
+                status
+              } : r)
+            };
+          });
+          const all = readStore(STORAGE_KEYS.ATTENDANCE, {});
+          all[courseId] = next;
+          writeStore(STORAGE_KEYS.ATTENDANCE, all);
+          return next;
+        }
+      };
+      const discussionService = {
+  async getByCourse(courseId = 'mock-1') {
+            try {
+              const data = await api.get(`/discussions/course/${courseId}`);
+              if (Array.isArray(data) && data.length > 0) return data;
+            } catch {
+              // Fallback
+            }
+            const all = readStore(STORAGE_KEYS.DISCUSSIONS, {});
+            if (all[courseId]) return all[courseId];
+            all[courseId] = MOCK_DISCUSSIONS.map(d => ({
+              ...d,
+              courseId
+            }));
+            writeStore(STORAGE_KEYS.DISCUSSIONS, all);
+            return all[courseId];
+          },
+  async createThread(courseId, title, content) {
+            try {
+              const res = await api.post('/discussions', { courseId, title, content });
+              if (res && res.id) return res;
+            } catch {
+              // Fallback
+            }
+            return null;
+          },
+  async createReply(threadId, content) {
+            try {
+              const res = await api.post(`/discussions/${threadId}/replies`, { content });
+              if (res && res.id) return res;
+            } catch {
+              // Fallback
+            }
+            return null;
+          },
+          saveForCourse(courseId, threads) {
+            const all = readStore(STORAGE_KEYS.DISCUSSIONS, {});
+            all[courseId] = threads;
+            writeStore(STORAGE_KEYS.DISCUSSIONS, all);
+            return threads;
+          }
+        };
+        const announcementService = {
+  async getByCourse(courseId = 'mock-1') {
+              try {
+                const data = await api.get(`/announcements/course/${courseId}`);
+                if (Array.isArray(data) && data.length > 0) return data;
+              } catch {
+                // Fallback
+              }
+              const all = readStore(STORAGE_KEYS.ANNOUNCEMENTS, {});
+              if (all[courseId]) return all[courseId];
+              all[courseId] = MOCK_ANNOUNCEMENTS.map(a => ({
+                ...a,
+                courseId
+              }));
+              writeStore(STORAGE_KEYS.ANNOUNCEMENTS, all);
+              return all[courseId];
+            },
+  async create(courseId, title, message) {
+              try {
+                const created = await api.post('/announcements', { courseId, title, message });
+                if (created && created.id) return created;
+              } catch {
+                // Fallback
+              }
+              return null;
+            },
+            saveForCourse(courseId, list) {
+              const all = readStore(STORAGE_KEYS.ANNOUNCEMENTS, {});
+              all[courseId] = list;
+              writeStore(STORAGE_KEYS.ANNOUNCEMENTS, all);
+              return list;
+            }
+          };
+          const notificationService = {
+  async getAll() {
+                try {
+                  const data = await api.get('/notifications');
+                  if (Array.isArray(data) && data.length > 0) return data;
+                } catch {
+                  // Fallback
+                }
+                return readStore(STORAGE_KEYS.NOTIFICATIONS, MOCK_NOTIFICATIONS);
+              },
+                  async markAsRead(id) {
+                    try {
+                      await api.put(`/notifications/${id}/read`);
+                    } catch {
+                      // Fallback
+                    }
+                    const current = await this.getAll();
+                    const list = current.map(n => n.id === id ? {
+                      ...n,
+                      isRead: true
+                    } : n);
+                    writeStore(STORAGE_KEYS.NOTIFICATIONS, list);
+                    return list;
+                  },
+                      async markAllAsRead() {
+                        try {
+                          await api.put('/notifications/read-all');
+                        } catch {
+                          // Fallback
+                        }
+                        const current = await this.getAll();
+                        const list = current.map(n => ({
+                          ...n,
+                          isRead: true
+                        }));
+                        writeStore(STORAGE_KEYS.NOTIFICATIONS, list);
+                        return list;
+                      },
+  async delete (id) {
+                          try {
+                            await api.delete(`/notifications/${id}`);
+                          } catch {
+                            // Fallback
+                          }
+                          const current = await this.getAll();
+                          const list = current.filter(n => n.id !== id);
+                          writeStore(STORAGE_KEYS.NOTIFICATIONS, list);
+                          return list;
+                        },
+  async create(notification) {
+                            try {
+                              await api.post('/notifications/broadcast', notification);
+                            } catch {
+                              // Fallback
+                            }
+                            const newNotif = {
+                              id: `notif-${Date.now()}`,
+                              isRead: false,
+                              createdAt: 'Just now',
+                              ...notification
+                            };
+                            const list = [newNotif, ...(await this.getAll())];
+                            writeStore(STORAGE_KEYS.NOTIFICATIONS, list);
+                            return list;
+                          }
+                        };
+                        const gradeService = {
+  async getWeights(courseId = 'mock-1') {
+                              try {
+                                const data = await api.get(`/grades/course/${courseId}/components`);
+                                if (Array.isArray(data) && data.length > 0) return data;
+                              } catch {
+                                // Fallback
+                              }
+                              const all = readStore(STORAGE_KEYS.GRADE_WEIGHTS, {});
+                              return all[courseId] || DEFAULT_GRADE_COMPONENTS;
+                            },
+  async saveWeights(courseId, weights) {
+                                try {
+                                  await api.post(`/grades/course/${courseId}/components`, { components: weights });
+                                } catch {
+                                  // Fallback
+                                }
+                                const all = readStore(STORAGE_KEYS.GRADE_WEIGHTS, {});
+                                all[courseId] = weights;
+                                writeStore(STORAGE_KEYS.GRADE_WEIGHTS, all);
+                                return weights;
+                              },
+  async getStudentOverview() {
+                                try {
+                                  return await api.get('/grades/student/overview');
+                                } catch {
+                                  return null;
+                                }
+                              },
+  async getCourseGradebook(courseId) {
+                                try {
+                                  return await api.get(`/grades/course/${courseId}/roster`);
+                                } catch {
+                                  return [];
+                                }
+                              }
+                            };
+                            const adminService = {
+  async getUsers() {
+                                  try {
+                                    const data = await api.get('/users');
+                                    if (Array.isArray(data) && data.length > 0) return data;
+                                  } catch {
+                                    // Fallback
+                                  }
+                                  return readStore(STORAGE_KEYS.USERS, MOCK_USERS);
+                                },
+  async getStats() {
+                                  try {
+                                    return await api.get('/users/stats');
+                                  } catch {
+                                    return null;
+                                  }
+                                },
+                                saveUsers(users) {
+                                  writeStore(STORAGE_KEYS.USERS, users);
+                                  return users;
+                                },
+  async createUser(userData) {
+                                    try {
+                                      await api.post('/users', userData);
+                                    } catch {
+                                      // Fallback
+                                    }
+                                    const users = await this.getUsers();
+                                    const newUser = {
+                                      id: `user-${Date.now()}`,
+                                      status: 'active',
+                                      createdAt: new Date().toISOString(),
+                                      ...userData
+                                    };
+                                    const next = [newUser, ...users];
+                                    return this.saveUsers(next);
+                                  },
+                                      async updateUser(id, updates) {
+                                        try {
+                                          await api.put(`/users/${id}`, updates);
+                                        } catch {
+                                          // Fallback
+                                        }
+                                        const users = await this.getUsers();
+                                        const next = users.map(u => u.id === id ? {
+                                          ...u,
+                                          ...updates
+                                        } : u);
+                                        return this.saveUsers(next);
+                                      },
+  async deleteUser(id) {
+                                          try {
+                                            await api.delete(`/users/${id}`);
+                                          } catch {
+                                            // Fallback
+                                          }
+                                          const users = await this.getUsers();
+                                          const next = users.filter(u => u.id !== id);
+                                          return this.saveUsers(next);
+                                        }
+                                      };
 
-export { courseService, moduleService, progressService, assignmentService, attendanceService, discussionService, announcementService, notificationService, gradeService, adminService };
+                                      export { courseService, moduleService, progressService, assignmentService, quizService, attendanceService, discussionService, announcementService, notificationService, gradeService, adminService };

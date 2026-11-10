@@ -6,7 +6,14 @@ const courseRoutes = require('./courseRoutes');
 const moduleRoutes = require('./moduleRoutes');
 const progressRoutes = require('./progressRoutes');
 const assignmentRoutes = require('./assignmentRoutes');
+const quizRoutes = require('./quizRoutes');
+const announcementRoutes = require('./announcementRoutes');
+const discussionRoutes = require('./discussionRoutes');
+const attendanceRoutes = require('./attendanceRoutes');
+const gradeRoutes = require('./gradeRoutes');
+const notificationRoutes = require('./notificationRoutes');
 const userRoutes = require('./userRoutes');
+
 const { authenticate } = require('../Middleware/auth');
 const { apiLimiter } = require('../Middleware/rateLimiter');
 
@@ -18,6 +25,12 @@ router.use('/courses', courseRoutes);
 router.use('/modules', moduleRoutes);
 router.use('/progress', progressRoutes);
 router.use('/assignments', assignmentRoutes);
+router.use('/quizzes', quizRoutes);
+router.use('/announcements', announcementRoutes);
+router.use('/discussions', discussionRoutes);
+router.use('/attendance', attendanceRoutes);
+router.use('/grades', gradeRoutes);
+router.use('/notifications', notificationRoutes);
 router.use('/users', userRoutes);
 
 // Protected route for testing integration
