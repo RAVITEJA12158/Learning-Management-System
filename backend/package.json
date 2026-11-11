@@ -5,7 +5,10 @@
   "main": "src/server.js",
   "type": "commonjs",
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand",
+    "test:unit": "jest --runInBand --testPathIgnorePatterns=Integration",
+    "test:integration": "jest --runInBand tests/authIntegration.test.js tests/courseIntegration.test.js tests/moduleIntegration.test.js tests/assignmentIntegration.test.js tests/apiSafetyIntegration.test.js",
+    "test:coverage": "jest --runInBand --coverage",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "prisma:generate": "prisma generate",
@@ -17,6 +20,20 @@
   },
   "prisma": {
     "seed": "node prisma/seed.js"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html", "json-summary"],
+    "collectCoverageFrom": [
+      "src/Controllers/**/*.js",
+      "src/Middleware/**/*.js",
+      "src/routes/**/*.js",
+      "src/server.js",
+      "!src/lib/**",
+      "!src/config/**"
+    ],
+    "testPathIgnorePatterns": ["/node_modules/"]
   },
   "dependencies": {
     "@emailjs/nodejs": "^5.0.2",

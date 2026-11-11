@@ -329,6 +329,7 @@ async function main() {
   const MOD_1_ID = 'm0000000-0000-4000-8000-000000000001';
   const MOD_2_ID = 'm0000000-0000-4000-8000-000000000002';
   const MOD_3_ID = 'm0000000-0000-4000-8000-000000000003';
+  const MOD_WEB_1_ID = 'm0000000-0000-4000-8000-000000000004';
 
   const modules = [
     {
@@ -358,6 +359,15 @@ async function main() {
       isPublished: true,
       releaseAt: new Date('2026-10-01T08:00:00Z'),
     },
+    {
+      id: MOD_WEB_1_ID,
+      courseId: COURSE_WEB_ID,
+      title: 'Building a Full-Stack Web Application',
+      description: 'A hands-on introduction to REST APIs, React clients, and secure application design.',
+      position: 1,
+      isPublished: true,
+      releaseAt: new Date('2026-09-01T08:00:00Z'),
+    },
   ];
 
   for (const m of modules) {
@@ -381,6 +391,10 @@ async function main() {
   const CNT_203_ID = 'cnt00000-0000-4000-8000-000000000203';
   const CNT_301_ID = 'cnt00000-0000-4000-8000-000000000301';
   const CNT_302_ID = 'cnt00000-0000-4000-8000-000000000302';
+  const CNT_204_ID = 'cnt00000-0000-4000-8000-000000000204';
+  const CNT_303_ID = 'cnt00000-0000-4000-8000-000000000303';
+  const CNT_WEB_101_ID = 'cnt00000-0000-4000-8000-000000000401';
+  const CNT_WEB_102_ID = 'cnt00000-0000-4000-8000-000000000402';
 
   const contents = [
     {
@@ -450,6 +464,17 @@ async function main() {
       createdById: FACULTY_TURING_ID,
     },
     {
+      id: CNT_204_ID,
+      moduleId: MOD_2_ID,
+      title: 'Video Lecture: Gradient Descent and Regression',
+      type: 'VIDEO',
+      description: 'A short walkthrough of the regression cost function and gradient descent updates.',
+      contentUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+      position: 4,
+      isPublished: true,
+      createdById: FACULTY_TURING_ID,
+    },
+    {
       id: CNT_301_ID,
       moduleId: MOD_3_ID,
       title: 'Backpropagation & Computational Graphs.pdf',
@@ -470,6 +495,39 @@ async function main() {
       position: 2,
       isPublished: true,
       createdById: FACULTY_TURING_ID,
+    },
+    {
+      id: CNT_303_ID,
+      moduleId: MOD_3_ID,
+      title: 'Video Lecture: Neural Networks and Backpropagation',
+      type: 'VIDEO',
+      description: 'An introductory recorded lesson for the neural network module.',
+      contentUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+      position: 3,
+      isPublished: true,
+      createdById: FACULTY_TURING_ID,
+    },
+    {
+      id: CNT_WEB_101_ID,
+      moduleId: MOD_WEB_1_ID,
+      title: 'Video Lecture: Designing a REST API',
+      type: 'VIDEO',
+      description: 'A sample recorded lesson on routes, resources, and HTTP methods.',
+      contentUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+      position: 1,
+      isPublished: true,
+      createdById: FACULTY_TIM_ID,
+    },
+    {
+      id: CNT_WEB_102_ID,
+      moduleId: MOD_WEB_1_ID,
+      title: 'React Client and API Integration Notes',
+      type: 'TEXT',
+      description: 'Use a shared API client, handle loading and error states, and keep credentials out of source code.',
+      contentUrl: 'A React client sends HTTP requests to the Express API. Validate input on the server, return useful status codes, and protect private routes with authentication middleware.',
+      position: 2,
+      isPublished: true,
+      createdById: FACULTY_TIM_ID,
     },
   ];
 
@@ -731,6 +789,93 @@ async function main() {
   ];
 
   for (const qData of quiz1Questions) {
+    const { options, ...qFields } = qData;
+    await prisma.question.upsert({
+      where: { id: qFields.id },
+      update: {
+        questionText: qFields.questionText,
+        questionType: qFields.questionType,
+        marks: qFields.marks,
+        position: qFields.position,
+      },
+      create: qFields,
+    });
+
+    for (const opt of options) {
+      await prisma.questionOption.upsert({
+        where: { id: opt.id },
+        update: {
+          optionText: opt.optionText,
+          isCorrect: opt.isCorrect,
+        },
+        create: {
+          id: opt.id,
+          questionId: qFields.id,
+          optionText: opt.optionText,
+          isCorrect: opt.isCorrect,
+        },
+      });
+    }
+  }
+
+  const quiz2Questions = [
+    {
+      id: 'qu000000-0000-4000-8000-000000000011',
+      quizId: QUIZ_2_ID,
+      questionText: 'In ordinary least squares regression, what does the model minimize?',
+      questionType: 'MCQ',
+      marks: 5,
+      position: 1,
+      options: [
+        { id: 'opt00000-0000-4000-8000-000000000041', optionText: 'The sum of squared prediction errors', isCorrect: true },
+        { id: 'opt00000-0000-4000-8000-000000000042', optionText: 'The number of input features', isCorrect: false },
+        { id: 'opt00000-0000-4000-8000-000000000043', optionText: 'The largest target value', isCorrect: false },
+        { id: 'opt00000-0000-4000-8000-000000000044', optionText: 'The learning rate', isCorrect: false },
+      ],
+    },
+    {
+      id: 'qu000000-0000-4000-8000-000000000012',
+      quizId: QUIZ_2_ID,
+      questionText: 'Which update direction does gradient descent follow to reduce a differentiable loss?',
+      questionType: 'MCQ',
+      marks: 5,
+      position: 2,
+      options: [
+        { id: 'opt00000-0000-4000-8000-000000000045', optionText: 'The negative gradient', isCorrect: true },
+        { id: 'opt00000-0000-4000-8000-000000000046', optionText: 'The positive gradient', isCorrect: false },
+        { id: 'opt00000-0000-4000-8000-000000000047', optionText: 'A random direction at every step', isCorrect: false },
+        { id: 'opt00000-0000-4000-8000-000000000048', optionText: 'The largest model coefficient', isCorrect: false },
+      ],
+    },
+    {
+      id: 'qu000000-0000-4000-8000-000000000013',
+      quizId: QUIZ_2_ID,
+      questionText: 'Ridge regression uses an L2 penalty to discourage very large coefficients.',
+      questionType: 'TRUE_FALSE',
+      marks: 5,
+      position: 3,
+      options: [
+        { id: 'opt00000-0000-4000-8000-000000000049', optionText: 'True', isCorrect: true },
+        { id: 'opt00000-0000-4000-8000-000000000050', optionText: 'False', isCorrect: false },
+      ],
+    },
+    {
+      id: 'qu000000-0000-4000-8000-000000000014',
+      quizId: QUIZ_2_ID,
+      questionText: 'What is a common effect of L1 regularization (Lasso) on model coefficients?',
+      questionType: 'MCQ',
+      marks: 5,
+      position: 4,
+      options: [
+        { id: 'opt00000-0000-4000-8000-000000000051', optionText: 'It can drive some coefficients exactly to zero', isCorrect: true },
+        { id: 'opt00000-0000-4000-8000-000000000052', optionText: 'It always increases the number of features', isCorrect: false },
+        { id: 'opt00000-0000-4000-8000-000000000053', optionText: 'It removes the need for training data', isCorrect: false },
+        { id: 'opt00000-0000-4000-8000-000000000054', optionText: 'It guarantees zero training error', isCorrect: false },
+      ],
+    },
+  ];
+
+  for (const qData of quiz2Questions) {
     const { options, ...qFields } = qData;
     await prisma.question.upsert({
       where: { id: qFields.id },
