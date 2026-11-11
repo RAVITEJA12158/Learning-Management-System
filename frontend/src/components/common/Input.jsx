@@ -28,7 +28,7 @@ function Input({
       onCopy={onCopy}
       onCut={onCut}
       onPaste={onPaste}
-      className={`w-full rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-transparent px-4 py-3 text-sm font-medium text-slate-800 dark:text-white shadow-xs outline-none transition-all duration-200 placeholder:text-slate-400 dark:placeholder-gray-500 hover:border-slate-300 dark:hover:border-gray-700 focus:border-blue-600 dark:focus:border-purple-500 focus:ring-1 focus:ring-blue-500/20 dark:focus:ring-purple-500/50 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      className={`w-full min-h-[44px] rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-transparent px-4 py-3 text-base sm:text-sm font-medium text-slate-800 dark:text-white shadow-xs outline-none transition-all duration-200 placeholder:text-slate-400 dark:placeholder-gray-500 hover:border-slate-300 dark:hover:border-gray-700 focus:border-blue-600 dark:focus:border-purple-500 focus:ring-1 focus:ring-blue-500/20 dark:focus:ring-purple-500/50 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
       {...props}
     />
   );

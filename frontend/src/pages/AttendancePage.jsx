@@ -8,7 +8,7 @@ import Badge from '../components/common/Badge';
 function AttendancePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const isStaff = user?.role === 'faculty' || user?.role === 'admin';
+  const isStaff = user?.role?.toLowerCase() === 'faculty' || user?.role?.toLowerCase() === 'admin';
   const [courses, setCourses] = useState([]);
   const [selectedCourseId, setSelectedCourseId] = useState('');
 
@@ -39,10 +39,10 @@ function AttendancePage() {
   }, [isStaff]);
 
   return (
-    <main className="mx-auto max-w-[1440px] px-4 py-8 sm:px-8 lg:py-10 w-full font-sans transition-colors duration-200">
+    <main className="mx-auto max-w-[1440px] px-4 py-6 sm:px-8 lg:py-10 w-full overflow-x-hidden font-sans transition-colors duration-200">
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <Badge variant="active" className="mb-2">Attendance Tracking (ATTENDANCE_SESSIONS & ATTENDANCE_RECORDS)</Badge>
+          <Badge variant="active" className="mb-2">Attendance Tracking</Badge>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">Academic Attendance Center</h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-gray-400 mt-1">Select a course below to inspect derived attendance percentages or record a live roll-call session.</p>
         </div>
@@ -53,7 +53,11 @@ function AttendancePage() {
             <button
               key={c.id}
               onClick={() => setSelectedCourseId(c.id)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${selectedCourseId === c.id ? 'bg-[#0066FF] text-white shadow-[0_0_15px_rgba(0,102,255,0.4)]' : 'bg-white dark:bg-white/[0.03] text-slate-600 dark:text-gray-400 border border-slate-200/80 dark:border-white/10 hover:text-slate-900 dark:hover:text-white'}`}
+              className={`min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                selectedCourseId === c.id
+                  ? 'bg-[#0066FF] text-white shadow-[0_0_15px_rgba(0,102,255,0.4)]'
+                  : 'bg-white dark:bg-white/[0.03] text-slate-600 dark:text-gray-400 border border-slate-200/80 dark:border-white/10 hover:text-slate-900 dark:hover:text-white'
+              }`}
             >
               {c.courseCode}: {c.title}
             </button>
@@ -61,7 +65,7 @@ function AttendancePage() {
           {selectedCourseId && (
             <button
               onClick={() => navigate(`/courses/${selectedCourseId}`)}
-              className="ml-auto text-xs font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
+              className="min-h-[44px] sm:ml-auto px-2 text-xs font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
             >
               Open Full Course Workspace →
             </button>
@@ -72,13 +76,13 @@ function AttendancePage() {
           <p className="text-sm font-bold text-slate-900 dark:text-white">No courses available for attendance tracking.</p>
           <button
             onClick={() => navigate('/courses')}
-            className="mt-2 text-xs font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
+            className="mt-2 min-h-[44px] px-3 text-xs font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
           >
             Explore Course Catalog →
           </button>
         </div>
       )}
-      <div className="-mx-6">
+      <div className="-mx-4 sm:-mx-6">
         {selectedCourseId && (
           <AttendanceTab
             courseId={selectedCourseId}

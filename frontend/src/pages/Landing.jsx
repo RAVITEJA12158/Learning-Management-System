@@ -86,7 +86,6 @@ function Landing() {
     return '/student'
   }
 
-  // Handle direct hash navigation on mount
   useEffect(() => {
     if (window.location.hash) {
       const targetId = window.location.hash.replace('#', '')
@@ -110,18 +109,18 @@ function Landing() {
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#F3F6FA] dark:bg-[#030712] text-slate-900 dark:text-white transition-colors duration-200 font-sans">
+    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-[#F3F6FA] dark:bg-[#030712] text-slate-900 dark:text-white transition-colors duration-200 font-sans">
       {/* =====================================================
           1. STICKY NAVIGATION BAR (ONLY FOR GUEST USERS)
       ====================================================== */}
       {!isAuthenticated && (
         <header className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-white/5 bg-white/95 dark:bg-gray-950/60 backdrop-blur-lg shadow-xs dark:shadow-md dark:shadow-black/30 transition-colors duration-200">
-          <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 sm:px-8">
+          <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 sm:px-8 gap-3">
             {/* Left: Brand Logo */}
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-8 min-w-0">
               <button
                 onClick={() => scrollTo('home')}
-                className="hub-lift flex items-center gap-3 cursor-pointer"
+                className="hub-lift flex items-center gap-3 cursor-pointer min-h-[44px] shrink-0"
               >
                 <BrandMark dark={isDark} />
                 <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
@@ -129,157 +128,153 @@ function Landing() {
                 </span>
               </button>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden items-center gap-6 lg:flex">
-              {[
-                ['Discover', 'home'],
-                ['Experience', 'experience'],
-                ['Features', 'features'],
-                ['For Educators', 'educators'],
-                ['Stories', 'stories'],
-              ].map(([label, id]) => (
-                <button
-                  key={label}
-                  onClick={() => scrollTo(id)}
-                  className="text-xs font-semibold text-slate-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-cyan-400 transition-colors cursor-pointer"
-                >
-                  {label}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          {/* Right: Theme Toggle & Auth Buttons */}
-          <div className="flex items-center gap-3">
-            {/* Theme Toggle Button (Same as Dashboard) */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              aria-label="Toggle theme"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 dark:border-white/10 bg-white dark:bg-white/[0.03] text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/[0.08] transition cursor-pointer"
-            >
-              {isDark ? (
-                <SunIcon className="h-4 w-4 text-amber-400" />
-              ) : (
-                <MoonIcon className="h-4 w-4 text-slate-700" />
-              )}
-            </button>
-
-            <div className="hidden items-center gap-2 sm:flex">
-              <button
-                onClick={() => to('/login')}
-                className="rounded-xl px-4 py-2 text-xs font-bold text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-cyan-400 transition"
-              >
-                Sign in
-              </button>
-
-              <button
-                onClick={() => to('/register')}
-                className="group relative inline-flex p-[1px] rounded-xl overflow-hidden transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] cursor-pointer"
-              >
-                <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 transition-all duration-300" />
-                <span className="relative flex items-center gap-1.5 px-4 py-2 rounded-[11px] bg-blue-600 dark:bg-gray-900 text-white text-xs font-bold transition-all duration-300 group-hover:bg-opacity-0">
-                  <span>Get started</span>
-                  <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-                </span>
-              </button>
+              {/* Desktop Navigation Links */}
+              <nav className="hidden items-center gap-6 lg:flex" aria-label="Landing Navigation">
+                {[
+                  ['Discover', 'home'],
+                  ['Experience', 'experience'],
+                  ['Features', 'features'],
+                  ['For Educators', 'educators'],
+                  ['Stories', 'stories'],
+                ].map(([label, id]) => (
+                  <button
+                    key={label}
+                    onClick={() => scrollTo(id)}
+                    className="min-h-[44px] px-1 text-xs font-semibold text-slate-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-cyan-400 transition-colors cursor-pointer"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </nav>
             </div>
 
-            {/* Mobile Hamburger Menu Toggle */}
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 dark:border-white/10 bg-white dark:bg-white/[0.03] text-slate-700 dark:text-gray-300 sm:hidden"
-              aria-label="Open menu"
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {menuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            {/* Right: Theme Toggle & Auth Buttons */}
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+                className="flex h-11 w-11 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-slate-200/80 dark:border-white/10 bg-white dark:bg-white/[0.03] text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/[0.08] transition cursor-pointer"
+              >
+                {isDark ? (
+                  <SunIcon className="h-4 w-4 text-amber-400" />
                 ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  <MoonIcon className="h-4 w-4 text-slate-700" />
                 )}
-              </svg>
-            </button>
-          </div>
-        </div>
+              </button>
 
-        {/* Mobile Dropdown Menu */}
-        {menuOpen && (
-          <div className="border-t border-slate-200/80 dark:border-white/5 bg-white dark:bg-gray-950/95 px-5 py-4 sm:hidden">
-            <div className="grid gap-1">
-              {[
-                ['Discover', 'home'],
-                ['Experience', 'experience'],
-                ['Features', 'features'],
-                ['For Educators', 'educators'],
-                ['Stories', 'stories'],
-              ].map(([label, id]) => (
+              <div className="hidden items-center gap-2 sm:flex">
                 <button
-                  key={label}
-                  onClick={() => scrollTo(id)}
-                  className="rounded-lg px-3 py-2.5 text-left text-xs font-bold text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition"
+                  onClick={() => to('/login')}
+                  className="min-h-[44px] rounded-xl px-4 py-2 text-xs font-bold text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-cyan-400 transition"
                 >
-                  {label}
+                  Sign in
                 </button>
-              ))}
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-2 border-t border-slate-200/80 dark:border-white/5 pt-3">
+
+                <button
+                  onClick={() => to('/register')}
+                  className="group relative inline-flex p-[1px] rounded-xl overflow-hidden transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] cursor-pointer"
+                >
+                  <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 transition-all duration-300" />
+                  <span className="relative flex min-h-[42px] items-center gap-1.5 px-4 py-2 rounded-[11px] bg-blue-600 dark:bg-gray-900 text-white text-xs font-bold transition-all duration-300 group-hover:bg-opacity-0">
+                    <span>Get started</span>
+                    <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                  </span>
+                </button>
+              </div>
+
+              {/* Mobile & Tablet Hamburger Menu Toggle (visible < 1024px) */}
               <button
-                onClick={() => to('/login')}
-                className="rounded-xl border border-slate-200 dark:border-white/10 py-2.5 text-center text-xs font-bold text-slate-800 dark:text-white"
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200/80 dark:border-white/10 bg-white dark:bg-white/[0.03] text-slate-700 dark:text-gray-300 lg:hidden"
+                aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={menuOpen}
               >
-                Sign in
-              </button>
-              <button
-                onClick={() => to('/register')}
-                className="rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 py-2.5 text-center text-xs font-bold text-white shadow-sm"
-              >
-                Get started
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {menuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
               </button>
             </div>
           </div>
-        )}
-      </header>
+
+          {/* Mobile & Tablet Collapsible Drawer */}
+          {menuOpen && (
+            <div className="border-t border-slate-200/80 dark:border-white/5 bg-white dark:bg-gray-950/95 px-4 sm:px-6 py-4 lg:hidden animate-auth-fade">
+              <div className="grid gap-1.5">
+                {[
+                  ['Discover', 'home'],
+                  ['Experience', 'experience'],
+                  ['Features', 'features'],
+                  ['For Educators', 'educators'],
+                  ['Stories', 'stories'],
+                ].map(([label, id]) => (
+                  <button
+                    key={label}
+                    onClick={() => scrollTo(id)}
+                    className="min-h-[44px] flex items-center rounded-xl px-3.5 py-2.5 text-left text-sm font-bold text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5 border-t border-slate-200/80 dark:border-white/5 pt-3 sm:hidden">
+                <button
+                  onClick={() => to('/login')}
+                  className="min-h-[44px] rounded-xl border border-slate-200 dark:border-white/10 py-2.5 text-center text-sm font-bold text-slate-800 dark:text-white"
+                >
+                  Sign in
+                </button>
+                <button
+                  onClick={() => to('/register')}
+                  className="min-h-[44px] rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 py-2.5 text-center text-sm font-bold text-white shadow-sm"
+                >
+                  Get started
+                </button>
+              </div>
+            </div>
+          )}
+        </header>
       )}
 
       {/* =====================================================
           2. HERO SECTION
       ====================================================== */}
-      <section id="home" className="relative overflow-hidden pt-12 pb-20 sm:pt-20 lg:pb-28">
-        {/* Subtle Ambient Backdrops (Light) & Massive Blurred Purple/Cyan Orb (Dark) */}
+      <section id="home" className="relative overflow-hidden pt-10 pb-16 sm:pt-20 lg:pb-28">
         <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl dark:hidden" />
         <div className="pointer-events-none absolute -left-24 top-1/2 h-80 w-80 rounded-full bg-indigo-500/10 blur-3xl dark:hidden" />
-
-        {/* Signature Massive Blurred Ambient Purple/Cyan Orb Glowing in the Center */}
-        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] sm:h-[700px] sm:w-[700px] rounded-full bg-gradient-to-tr from-cyan-500/15 via-blue-600/10 to-purple-600/15 blur-[120px] dark:block hidden" />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[320px] w-[320px] sm:h-[700px] sm:w-[700px] rounded-full bg-gradient-to-tr from-cyan-500/15 via-blue-600/10 to-purple-600/15 blur-[120px] dark:block hidden" />
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-8">
-          <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
             {/* Left Hero Content */}
-            <div className="max-w-xl">
+            <div className="max-w-xl w-full">
               {isAuthenticated ? (
                 <>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/80 dark:bg-emerald-950/40 px-3.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    👋 Welcome back, {user?.name || 'Scholar'} · {user?.role ? user.role.toUpperCase() : 'STUDENT'} ACTIVE
+                  <div className="inline-flex flex-wrap items-center gap-2 rounded-full border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/80 dark:bg-emerald-950/40 px-3.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                    <span>👋 Welcome back, {user?.name || 'Scholar'} · {user?.role ? user.role.toUpperCase() : 'STUDENT'} ACTIVE</span>
                   </div>
 
-                  <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-slate-900 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-cyan-400 dark:via-blue-400 dark:to-purple-500 sm:text-5xl lg:text-6xl lg:leading-[1.1]">
+                  <h1 className="mt-5 text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-cyan-400 dark:via-blue-400 dark:to-purple-500 lg:leading-[1.1]">
                     Your learning space is ready.
                   </h1>
 
-                  <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600 dark:text-gray-400">
+                  <p className="mt-4 sm:mt-5 text-base sm:text-lg leading-relaxed text-slate-600 dark:text-gray-400">
                     Welcome back to CourseHub! Continue your active modules, submit upcoming assignments, take timed quizzes, or explore the course catalog.
                   </p>
 
                   {/* CTAs */}
-                  <div className="mt-8 flex flex-wrap items-center gap-3.5">
-                    {/* Refraction Style Gradient-Border Glowing CTA Button */}
+                  <div className="mt-7 sm:mt-8 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3.5">
                     <button
                       onClick={() => to(getDashboardPath())}
                       className="group relative inline-flex p-[1px] rounded-xl overflow-hidden transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] cursor-pointer"
                     >
                       <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 transition-all duration-300" />
-                      <span className="relative flex items-center gap-2 px-6 py-3.5 rounded-[11px] bg-blue-600 dark:bg-gray-900 text-white text-sm font-bold transition-all duration-300 group-hover:bg-opacity-0">
+                      <span className="relative flex w-full min-h-[48px] items-center justify-center gap-2 px-6 py-3.5 rounded-[11px] bg-blue-600 dark:bg-gray-900 text-white text-sm font-bold transition-all duration-300 group-hover:bg-opacity-0">
                         <span>Go to {user?.role === 'faculty' ? 'Faculty Portal' : user?.role === 'admin' ? 'Admin Portal' : 'Student Dashboard'}</span>
                         <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </span>
@@ -287,21 +282,21 @@ function Landing() {
 
                     <button
                       onClick={() => to('/courses')}
-                      className="hub-lift inline-flex items-center gap-2 rounded-xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-white/[0.03] px-5 py-3.5 text-sm font-semibold text-slate-800 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-white/[0.08] transition cursor-pointer"
+                      className="hub-lift inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-white/[0.03] px-5 py-3.5 text-sm font-semibold text-slate-800 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-white/[0.08] transition cursor-pointer"
                     >
                       Browse Course Catalog
                     </button>
 
                     <button
                       onClick={() => scrollTo('features')}
-                      className="text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-white transition cursor-pointer px-3 py-2"
+                      className="min-h-[44px] text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-white transition cursor-pointer px-3 py-2 text-center"
                     >
                       Platform Tour ↓
                     </button>
                   </div>
 
                   {/* Proof Badges */}
-                  <div className="mt-10 grid grid-cols-3 gap-4 border-t border-slate-200/80 dark:border-white/5 pt-6">
+                  <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-200/80 dark:border-white/5 pt-6">
                     <div>
                       <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Active</p>
                       <p className="text-xs text-slate-500 dark:text-gray-400 font-medium mt-0.5">Session Status</p>
@@ -323,24 +318,22 @@ function Landing() {
                     The modern academic workspace
                   </div>
 
-                  {/* Headline: "Master Your Craft." Styled with Signature Gradient Text */}
-                  <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-slate-900 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-cyan-400 dark:via-blue-400 dark:to-purple-500 sm:text-5xl lg:text-6xl lg:leading-[1.1]">
+                  <h1 className="mt-5 text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-cyan-400 dark:via-blue-400 dark:to-purple-500 lg:leading-[1.1]">
                     Master Your Craft.
                   </h1>
 
-                  <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600 dark:text-gray-400">
+                  <p className="mt-4 sm:mt-5 text-base sm:text-lg leading-relaxed text-slate-600 dark:text-gray-400">
                     CourseHub brings your courses, assignments, quizzes, and academic community into one beautifully focused hub—engineered for clarity, speed, and real mastery.
                   </p>
 
                   {/* CTAs */}
-                  <div className="mt-8 flex flex-wrap items-center gap-3.5">
-                    {/* Refraction Style Gradient-Border Glowing CTA Button */}
+                  <div className="mt-7 sm:mt-8 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3.5">
                     <button
                       onClick={() => to('/register')}
                       className="group relative inline-flex p-[1px] rounded-xl overflow-hidden transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] cursor-pointer"
                     >
                       <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 transition-all duration-300" />
-                      <span className="relative flex items-center gap-2 px-6 py-3.5 rounded-[11px] bg-blue-600 dark:bg-gray-900 text-white text-sm font-bold transition-all duration-300 group-hover:bg-opacity-0">
+                      <span className="relative flex w-full min-h-[48px] items-center justify-center gap-2 px-6 py-3.5 rounded-[11px] bg-blue-600 dark:bg-gray-900 text-white text-sm font-bold transition-all duration-300 group-hover:bg-opacity-0">
                         <span>Begin your journey</span>
                         <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </span>
@@ -348,14 +341,14 @@ function Landing() {
 
                     <button
                       onClick={() => scrollTo('experience')}
-                      className="hub-lift inline-flex items-center gap-2 rounded-xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-white/[0.03] px-5 py-3.5 text-sm font-semibold text-slate-800 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-white/[0.08] transition cursor-pointer"
+                      className="hub-lift inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-white/[0.03] px-5 py-3.5 text-sm font-semibold text-slate-800 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-white/[0.08] transition cursor-pointer"
                     >
                       Explore preview
                     </button>
                   </div>
 
                   {/* Proof Badges */}
-                  <div className="mt-10 grid grid-cols-3 gap-4 border-t border-slate-200/80 dark:border-white/5 pt-6">
+                  <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-200/80 dark:border-white/5 pt-6">
                     <div>
                       <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">10k+</p>
                       <p className="text-xs text-slate-500 dark:text-gray-400 font-medium mt-0.5">Active Learners</p>
@@ -374,19 +367,18 @@ function Landing() {
             </div>
 
             {/* Right: Interactive Dashboard Preview Card */}
-            <div className="relative">
-              <div className="rounded-2xl border border-slate-200/90 dark:border-white/5 bg-white dark:bg-white/[0.02] backdrop-blur-xl p-6 shadow-xl shadow-slate-900/5 transition-colors">
+            <div className="relative w-full min-w-0">
+              <div className="rounded-2xl border border-slate-200/90 dark:border-white/5 bg-white dark:bg-white/[0.02] backdrop-blur-xl p-4 sm:p-6 shadow-xl shadow-slate-900/5 transition-colors">
                 {isAuthenticated ? (
                   <>
-                    {/* Header in Preview */}
-                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-cyan-950/40 text-blue-600 dark:text-cyan-400 flex items-center justify-center font-black border border-transparent dark:border-cyan-500/20">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-white/5 pb-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-10 w-10 shrink-0 rounded-xl bg-blue-50 dark:bg-cyan-950/40 text-blue-600 dark:text-cyan-400 flex items-center justify-center font-black border border-transparent dark:border-cyan-500/20">
                           {user?.name ? user.name[0].toUpperCase() : 'U'}
                         </div>
-                        <div>
-                          <h3 className="text-sm font-bold text-slate-900 dark:text-white">{user?.name || 'Active Scholar'}</h3>
-                          <p className="text-xs text-slate-500 dark:text-gray-400">{user?.email || 'Logged in'}</p>
+                        <div className="min-w-0">
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{user?.name || 'Active Scholar'}</h3>
+                          <p className="text-xs text-slate-500 dark:text-gray-400 truncate">{user?.email || 'Logged in'}</p>
                         </div>
                       </div>
                       <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/50 flex items-center gap-1.5">
@@ -395,17 +387,16 @@ function Landing() {
                       </span>
                     </div>
 
-                    {/* Quick Hub Navigation Cards */}
                     <div className="mt-4 space-y-3">
                       <button
                         onClick={() => to(getDashboardPath())}
-                        className="w-full text-left rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50/70 dark:bg-white/[0.02] p-4 transition hover:border-blue-500/50 dark:hover:border-cyan-500/50 flex items-center justify-between cursor-pointer group"
+                        className="w-full text-left rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50/70 dark:bg-white/[0.02] p-4 transition hover:border-blue-500/50 dark:hover:border-cyan-500/50 flex items-center justify-between gap-3 cursor-pointer group"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-cyan-400">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="p-2 shrink-0 rounded-lg bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-cyan-400">
                             <BookIcon className="w-4 h-4" />
                           </div>
-                          <div>
+                          <div className="min-w-0">
                             <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition-colors">
                               My Active Courses & Modules
                             </h4>
@@ -414,18 +405,18 @@ function Landing() {
                             </p>
                           </div>
                         </div>
-                        <ArrowRightIcon className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition" />
+                        <ArrowRightIcon className="w-4 h-4 shrink-0 text-slate-400 group-hover:translate-x-1 group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition" />
                       </button>
 
                       <button
                         onClick={() => to('/courses')}
-                        className="w-full text-left rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50/70 dark:bg-white/[0.02] p-4 transition hover:border-emerald-500/50 dark:hover:border-purple-500/50 flex items-center justify-between cursor-pointer group"
+                        className="w-full text-left rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50/70 dark:bg-white/[0.02] p-4 transition hover:border-emerald-500/50 dark:hover:border-purple-500/50 flex items-center justify-between gap-3 cursor-pointer group"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-emerald-100 dark:bg-purple-950/50 text-emerald-600 dark:text-purple-400">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="p-2 shrink-0 rounded-lg bg-emerald-100 dark:bg-purple-950/50 text-emerald-600 dark:text-purple-400">
                             <DocumentIcon className="w-4 h-4" />
                           </div>
-                          <div>
+                          <div className="min-w-0">
                             <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-purple-400 transition-colors">
                               Course Catalog & Syllabi
                             </h4>
@@ -434,18 +425,18 @@ function Landing() {
                             </p>
                           </div>
                         </div>
-                        <ArrowRightIcon className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-emerald-600 dark:group-hover:text-purple-400 transition" />
+                        <ArrowRightIcon className="w-4 h-4 shrink-0 text-slate-400 group-hover:translate-x-1 group-hover:text-emerald-600 dark:group-hover:text-purple-400 transition" />
                       </button>
 
                       <button
                         onClick={() => to(getDashboardPath())}
-                        className="w-full text-left rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50/70 dark:bg-white/[0.02] p-4 transition hover:border-cyan-500/50 dark:hover:border-cyan-500/50 flex items-center justify-between cursor-pointer group"
+                        className="w-full text-left rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50/70 dark:bg-white/[0.02] p-4 transition hover:border-cyan-500/50 dark:hover:border-cyan-500/50 flex items-center justify-between gap-3 cursor-pointer group"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-cyan-100 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="p-2 shrink-0 rounded-lg bg-cyan-100 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400">
                             <ClipboardCheckIcon className="w-4 h-4" />
                           </div>
-                          <div>
+                          <div className="min-w-0">
                             <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                               Timed Quizzes & Assessments
                             </h4>
@@ -454,12 +445,11 @@ function Landing() {
                             </p>
                           </div>
                         </div>
-                        <ArrowRightIcon className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-cyan-600 transition" />
+                        <ArrowRightIcon className="w-4 h-4 shrink-0 text-slate-400 group-hover:translate-x-1 group-hover:text-cyan-600 transition" />
                       </button>
                     </div>
 
-                    {/* Footer in Preview */}
-                    <div className="mt-5 flex items-center justify-between rounded-xl bg-blue-50/60 dark:bg-cyan-950/20 p-3.5 border border-blue-100 dark:border-cyan-900/30">
+                    <div className="mt-5 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-blue-50/60 dark:bg-cyan-950/20 p-3.5 border border-blue-100 dark:border-cyan-900/30">
                       <div className="flex items-center gap-2.5">
                         <ChartIcon className="h-4 w-4 text-blue-600 dark:text-cyan-400" />
                         <span className="text-xs font-semibold text-slate-800 dark:text-gray-200">
@@ -476,10 +466,9 @@ function Landing() {
                   </>
                 ) : (
                   <>
-                    {/* Header in Preview */}
-                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-white/5 pb-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-cyan-950/40 text-blue-600 dark:text-cyan-400 flex items-center justify-center font-black border border-transparent dark:border-cyan-500/20">
+                        <div className="h-10 w-10 shrink-0 rounded-xl bg-blue-50 dark:bg-cyan-950/40 text-blue-600 dark:text-cyan-400 flex items-center justify-center font-black border border-transparent dark:border-cyan-500/20">
                           <BookIcon className="h-5 w-5" />
                         </div>
                         <div>
@@ -492,7 +481,6 @@ function Landing() {
                       </span>
                     </div>
 
-                    {/* Course List in Preview */}
                     <div className="mt-4 space-y-3">
                       {previewCourses.map((c) => (
                         <div
@@ -500,7 +488,7 @@ function Landing() {
                           className="rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50/70 dark:bg-white/[0.02] p-4 transition hover:border-slate-300 dark:hover:border-white/10"
                         >
                           <div className="flex items-start justify-between gap-3">
-                            <div>
+                            <div className="min-w-0">
                               <span className="text-[10px] font-bold text-blue-600 dark:text-cyan-400 uppercase tracking-wider">
                                 {c.code}
                               </span>
@@ -511,12 +499,11 @@ function Landing() {
                                 {c.instructor} · {c.lesson}
                               </p>
                             </div>
-                            <span className="text-xs font-black text-slate-900 dark:text-zinc-100">
+                            <span className="text-xs font-black text-slate-900 dark:text-zinc-100 shrink-0">
                               {c.progress}%
                             </span>
                           </div>
 
-                          {/* Progress Bar */}
                           <div className="mt-3 h-1.5 w-full rounded-full bg-slate-200 dark:bg-zinc-700 overflow-hidden">
                             <div
                               className="h-full rounded-full bg-blue-600 dark:bg-blue-500 transition-all duration-500"
@@ -527,8 +514,7 @@ function Landing() {
                       ))}
                     </div>
 
-                    {/* Footer in Preview */}
-                    <div className="mt-5 flex items-center justify-between rounded-xl bg-blue-50/60 dark:bg-blue-950/30 p-3.5 border border-blue-100 dark:border-blue-900/40">
+                    <div className="mt-5 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 p-3.5 border border-blue-100 dark:border-blue-900/40">
                       <div className="flex items-center gap-2.5">
                         <ChartIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                         <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200">
@@ -548,16 +534,16 @@ function Landing() {
       </section>
 
       {/* =====================================================
-          3. FEATURES SECTION ("MORE THAN AN LMS")
+          3. FEATURES SECTION
       ====================================================== */}
-      <LazySection id="features" className="py-20 border-t border-slate-200/80 dark:border-white/5 bg-white dark:bg-transparent transition-colors" minHeight="450px">
+      <LazySection id="features" className="py-16 sm:py-20 border-t border-slate-200/80 dark:border-white/5 bg-white dark:bg-transparent transition-colors" minHeight="450px">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
                 CORE CAPABILITIES
               </p>
-              <h2 className="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+              <h2 className="mt-2 text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 The academic hub you’ll actually want to open.
               </h2>
               <p className="mt-3 max-w-xl text-sm sm:text-base text-slate-600 dark:text-gray-400">
@@ -569,7 +555,7 @@ function Landing() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 sm:mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {featureCards.map((card) => {
               const IconComponent = card.icon
               return (
@@ -601,14 +587,14 @@ function Landing() {
       {/* =====================================================
           4. INTERACTIVE COCKPIT SECTION
       ====================================================== */}
-      <LazySection id="experience" className="py-20 bg-[#F3F6FA] dark:bg-[#030712] border-t border-slate-200/80 dark:border-white/5 transition-colors" minHeight="550px">
+      <LazySection id="experience" className="py-16 sm:py-20 bg-[#F3F6FA] dark:bg-[#030712] border-t border-slate-200/80 dark:border-white/5 transition-colors" minHeight="550px">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           <div className="grid items-end gap-8 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
                 YOUR LEARNING COCKPIT
               </p>
-              <h2 className="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+              <h2 className="mt-2 text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 See your day. Own your pace.
               </h2>
               <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-gray-400">
@@ -616,8 +602,7 @@ function Landing() {
               </p>
             </div>
 
-            {/* Quick Metrics (Dashboard Style) */}
-            <div className="grid gap-3.5 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
               <div className="rounded-2xl border border-slate-200/80 dark:border-white/5 bg-white dark:bg-white/[0.02] dark:backdrop-blur-xl p-5 shadow-xs">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400">Focus Time</p>
                 <p className="mt-1 text-2xl font-black text-slate-900 dark:text-white">14.5h</p>
@@ -638,10 +623,8 @@ function Landing() {
             </div>
           </div>
 
-          {/* Interactive Row: Timeline & Notifications */}
-          <div className="mt-8 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-            {/* Timeline Widget */}
-            <div className="rounded-2xl border border-slate-200/80 dark:border-white/5 bg-white dark:bg-white/[0.02] dark:backdrop-blur-xl p-6 shadow-xs">
+          <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+            <div className="rounded-2xl border border-slate-200/80 dark:border-white/5 bg-white dark:bg-white/[0.02] dark:backdrop-blur-xl p-5 sm:p-6 shadow-xs">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4">
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-gray-400">
                   Today&apos;s Academic Schedule
@@ -659,23 +642,23 @@ function Landing() {
                 ].map((item) => (
                   <div
                     key={item.title}
-                    className={`flex items-center justify-between rounded-xl p-3.5 transition ${
+                    className={`flex flex-wrap items-center justify-between gap-2 rounded-xl p-3.5 transition ${
                       item.active
                         ? 'border border-cyan-400/50 bg-cyan-50/60 dark:bg-cyan-950/30'
                         : 'border border-slate-100 dark:border-white/5 bg-slate-50/60 dark:bg-white/[0.02]'
                     }`}
                   >
-                    <div className="flex items-center gap-3.5">
-                      <span className="text-xs font-bold text-slate-500 dark:text-gray-400 w-16">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="text-xs font-bold text-slate-500 dark:text-gray-400 shrink-0">
                         {item.time}
                       </span>
-                      <span className={`h-2.5 w-2.5 rounded-full ${item.active ? 'bg-cyan-500 ring-4 ring-cyan-500/20' : 'bg-slate-300 dark:bg-gray-700'}`} />
-                      <div>
-                        <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{item.title}</p>
+                      <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${item.active ? 'bg-cyan-500 ring-4 ring-cyan-500/20' : 'bg-slate-300 dark:bg-gray-700'}`} />
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">{item.title}</p>
                         <p className="text-[11px] text-slate-500 dark:text-gray-400">{item.hall}</p>
                       </div>
                     </div>
-                    <span className="rounded-md bg-white dark:bg-white/10 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-gray-300 border border-slate-200/60 dark:border-white/10">
+                    <span className="rounded-md bg-white dark:bg-white/10 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-gray-300 border border-slate-200/60 dark:border-white/10 shrink-0">
                       {item.tag}
                     </span>
                   </div>
@@ -683,10 +666,8 @@ function Landing() {
               </div>
             </div>
 
-            {/* Right Stack: Notifications & Study Session */}
             <div className="space-y-6">
-              {/* Notification Box */}
-              <div className="rounded-2xl border border-slate-200/80 dark:border-white/5 bg-white dark:bg-white/[0.02] dark:backdrop-blur-xl p-6 shadow-xs">
+              <div className="rounded-2xl border border-slate-200/80 dark:border-white/5 bg-white dark:bg-white/[0.02] dark:backdrop-blur-xl p-5 sm:p-6 shadow-xs">
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-gray-400 mb-3.5">
                   Recent Alerts
                 </p>
@@ -702,8 +683,7 @@ function Landing() {
                 </div>
               </div>
 
-              {/* Study Sprint Focus Box */}
-              <div className="rounded-2xl border border-slate-200/80 dark:border-white/5 bg-white dark:bg-white/[0.02] dark:backdrop-blur-xl p-6 shadow-xs">
+              <div className="rounded-2xl border border-slate-200/80 dark:border-white/5 bg-white dark:bg-white/[0.02] dark:backdrop-blur-xl p-5 sm:p-6 shadow-xs">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-gray-400">Study Session</p>
                   <span className="h-2 w-2 rounded-full bg-cyan-400 animate-ping" />
@@ -720,15 +700,15 @@ function Landing() {
       </LazySection>
 
       {/* =====================================================
-          5. ROLE TAILORING ("WHERE EVERY ROLE FEELS AT HOME")
+          5. ROLE TAILORING
       ====================================================== */}
-      <LazySection id="educators" className="py-20 border-t border-slate-200/80 dark:border-white/5 bg-white dark:bg-transparent transition-colors" minHeight="500px">
+      <LazySection id="educators" className="py-16 sm:py-20 border-t border-slate-200/80 dark:border-white/5 bg-white dark:bg-transparent transition-colors" minHeight="500px">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           <div className="text-center max-w-2xl mx-auto">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
               BUILT FOR YOUR CAMPUS
             </p>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            <h2 className="mt-2 text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
               Where every role feels at home.
             </h2>
             <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-gray-400">
@@ -736,7 +716,7 @@ function Landing() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <div className="mt-10 sm:mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
             {[
               {
                 role: 'Students',
@@ -773,7 +753,7 @@ function Landing() {
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <span className="inline-block rounded-md bg-cyan-50 dark:bg-cyan-950/40 px-2.5 py-1 text-[10px] font-bold text-cyan-600 dark:text-cyan-400 border border-cyan-100 dark:border-cyan-900/50">
                         {item.badge}
                       </span>
@@ -799,7 +779,7 @@ function Landing() {
                     {isCurrentRole && (
                       <button
                         onClick={() => to(getDashboardPath())}
-                        className="mt-4 w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold transition shadow-[0_0_15px_rgba(6,182,212,0.4)] cursor-pointer flex items-center justify-center gap-1.5"
+                        className="mt-4 w-full min-h-[44px] py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold transition shadow-[0_0_15px_rgba(6,182,212,0.4)] cursor-pointer flex items-center justify-center gap-1.5"
                       >
                         <span>Open {item.role} Workspace</span>
                         <ArrowRightIcon className="w-3.5 h-3.5" />
@@ -814,15 +794,15 @@ function Landing() {
       </LazySection>
 
       {/* =====================================================
-          6. TESTIMONIALS SECTION ("LOVED BY LEARNERS")
+          6. TESTIMONIALS SECTION
       ====================================================== */}
-      <LazySection id="stories" className="py-20 border-t border-slate-200/80 dark:border-white/5 bg-[#F3F6FA] dark:bg-[#030712] transition-colors" minHeight="420px">
+      <LazySection id="stories" className="py-16 sm:py-20 border-t border-slate-200/80 dark:border-white/5 bg-[#F3F6FA] dark:bg-[#030712] transition-colors" minHeight="420px">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           <div className="text-center max-w-xl mx-auto">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">
               COMMUNITY VOICES
             </p>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            <h2 className="mt-2 text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
               Loved by learners & faculty.
             </h2>
             <p className="mt-3 text-sm text-slate-600 dark:text-gray-400">
@@ -830,7 +810,7 @@ function Landing() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <div className="mt-10 sm:mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
             {[
               {
                 name: 'Ishita Nair',
@@ -868,8 +848,8 @@ function Landing() {
       {/* =====================================================
           7. FINAL CTA BANNER
       ====================================================== */}
-      <LazySection className="py-16 mx-auto max-w-7xl px-4 sm:px-8" minHeight="320px">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 dark:from-cyan-950/50 dark:via-gray-950 dark:to-purple-950/50 dark:border dark:border-white/10 px-6 py-14 text-center text-white shadow-xl shadow-blue-500/10 dark:shadow-[0_0_40px_rgba(6,182,212,0.15)] sm:px-12 sm:py-20">
+      <LazySection className="py-12 sm:py-16 mx-auto max-w-7xl px-4 sm:px-8" minHeight="320px">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 dark:from-cyan-950/50 dark:via-gray-950 dark:to-purple-950/50 dark:border dark:border-white/10 px-5 py-12 text-center text-white shadow-xl shadow-blue-500/10 dark:shadow-[0_0_40px_rgba(6,182,212,0.15)] sm:px-12 sm:py-20">
           <div className="pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full bg-white/10 dark:bg-cyan-500/10 blur-2xl" />
           <div className="pointer-events-none absolute -right-16 -bottom-16 h-64 w-64 rounded-full bg-blue-400/20 dark:bg-purple-500/10 blur-2xl" />
 
@@ -879,17 +859,17 @@ function Landing() {
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">
                   READY TO DIVE BACK IN?
                 </p>
-                <h2 className="mt-3 text-3xl sm:text-5xl font-extrabold tracking-tight">
+                <h2 className="mt-3 text-2xl sm:text-5xl font-extrabold tracking-tight">
                   Keep moving your academics forward.
                 </h2>
                 <p className="mt-4 text-sm sm:text-base text-blue-100 leading-relaxed">
                   Your active course modules, discussions, and timed quiz assessments are waiting in your workspace.
                 </p>
 
-                <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <div className="mt-8 flex flex-col sm:flex-row flex-wrap justify-center gap-3">
                   <button
                     onClick={() => to(getDashboardPath())}
-                    className="hub-lift inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-blue-700 shadow-md hover:bg-slate-50 transition cursor-pointer"
+                    className="hub-lift inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-blue-700 shadow-md hover:bg-slate-50 transition cursor-pointer"
                   >
                     Go to {user?.role === 'faculty' ? 'Faculty Portal' : user?.role === 'admin' ? 'Admin Portal' : 'Student Dashboard'}
                     <ArrowRightIcon className="h-4 w-4" />
@@ -897,7 +877,7 @@ function Landing() {
 
                   <button
                     onClick={() => to('/courses')}
-                    className="hub-lift rounded-xl border border-white/30 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/20 transition cursor-pointer"
+                    className="hub-lift min-h-[48px] rounded-xl border border-white/30 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/20 transition cursor-pointer"
                   >
                     Explore Course Catalog
                   </button>
@@ -908,17 +888,17 @@ function Landing() {
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">
                   YOUR NEXT CHAPTER STARTS TODAY
                 </p>
-                <h2 className="mt-3 text-3xl sm:text-5xl font-extrabold tracking-tight">
+                <h2 className="mt-3 text-2xl sm:text-5xl font-extrabold tracking-tight">
                   Learning can feel this good.
                 </h2>
                 <p className="mt-4 text-sm sm:text-base text-blue-100 leading-relaxed">
                   Start your CourseHub journey today and build the academic habits that take you further.
                 </p>
 
-                <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <div className="mt-8 flex flex-col sm:flex-row flex-wrap justify-center gap-3">
                   <button
                     onClick={() => to('/register')}
-                    className="hub-lift inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-blue-700 shadow-md hover:bg-slate-50 transition cursor-pointer"
+                    className="hub-lift inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-blue-700 shadow-md hover:bg-slate-50 transition cursor-pointer"
                   >
                     Create your account
                     <ArrowRightIcon className="h-4 w-4" />
@@ -926,7 +906,7 @@ function Landing() {
 
                   <button
                     onClick={() => to('/login')}
-                    className="hub-lift rounded-xl border border-white/30 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/20 transition cursor-pointer"
+                    className="hub-lift min-h-[48px] rounded-xl border border-white/30 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/20 transition cursor-pointer"
                   >
                     I have an account
                   </button>
@@ -938,11 +918,11 @@ function Landing() {
       </LazySection>
 
       {/* =====================================================
-          8. FOOTER (ONLY FOR GUEST VIEW; AUTHENTICATED WRAPPER USES GLOBAL FOOTER)
+          8. FOOTER (ONLY FOR GUEST VIEW)
       ====================================================== */}
       {!isAuthenticated && (
         <footer className="border-t border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors">
-          <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-8 md:grid-cols-[1.6fr_repeat(3,1fr)]">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-12 sm:grid-cols-2 sm:px-8 md:grid-cols-[1.6fr_repeat(3,1fr)]">
             <div>
               <div className="flex items-center gap-3">
                 <BrandMark dark={isDark} />
@@ -973,12 +953,12 @@ function Landing() {
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-zinc-100">
                   {col.title}
                 </h4>
-                <ul className="mt-4 space-y-2.5">
+                <ul className="mt-4 space-y-2">
                   {col.links.map((link) => (
                     <li key={link}>
                       <button
                         onClick={() => to('/login')}
-                        className="text-xs text-slate-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer"
+                        className="py-1.5 text-xs text-slate-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer"
                       >
                         {link}
                       </button>
@@ -990,11 +970,11 @@ function Landing() {
           </div>
 
           <div className="border-t border-slate-100 dark:border-zinc-800/80 py-5">
-            <div className="mx-auto flex max-w-7xl flex-wrap justify-between items-center gap-2 px-4 sm:px-8 text-xs text-slate-400 dark:text-zinc-500">
+            <div className="mx-auto flex max-w-7xl flex-col sm:flex-row justify-between items-center gap-3 px-4 sm:px-8 text-xs text-slate-400 dark:text-zinc-500 text-center sm:text-left">
               <span>© 2026 CourseHub. Built for modern academic communities.</span>
               <div className="flex gap-4">
-                <span className="hover:text-slate-600 dark:hover:text-zinc-300 cursor-pointer">Privacy Policy</span>
-                <span className="hover:text-slate-600 dark:hover:text-zinc-300 cursor-pointer">Terms of Service</span>
+                <span className="hover:text-slate-600 dark:hover:text-zinc-300 cursor-pointer py-1">Privacy Policy</span>
+                <span className="hover:text-slate-600 dark:hover:text-zinc-300 cursor-pointer py-1">Terms of Service</span>
               </div>
             </div>
           </div>

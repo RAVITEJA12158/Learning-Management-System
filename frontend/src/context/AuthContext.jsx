@@ -1,8 +1,9 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 
-const AuthContext = /*#__PURE__*/(0, createContext)(null);
+const AuthContext = createContext(null);
 const TOKEN_KEY = 'lms_token';
 const USER_KEY = 'lms_user';
+
 function safeGetItem(key) {
   try {
     return localStorage.getItem(key);
@@ -10,6 +11,7 @@ function safeGetItem(key) {
     return null;
   }
 }
+
 function safeSetItem(key, val) {
   try {
     localStorage.setItem(key, val);
@@ -17,6 +19,7 @@ function safeSetItem(key, val) {
     // ignore storage errors
   }
 }
+
 function safeRemoveItem(key) {
   try {
     localStorage.removeItem(key);
@@ -25,10 +28,6 @@ function safeRemoveItem(key) {
   }
 }
 
-/**
- * Reads the persisted user from localStorage.
- * Returns null when nothing is stored or the JSON is corrupted.
- */
 function loadPersistedUser() {
   try {
     const raw = safeGetItem(USER_KEY);
@@ -38,12 +37,12 @@ function loadPersistedUser() {
     return null;
   }
 }
-function AuthProvider({
-  children
-}) {
-  const [user, setUser] = (0, useState)(() => loadPersistedUser());
-  const [loading, setLoading] = (0, useState)(true);
-  (0, useEffect)(() => {
+
+function AuthProvider({ children }) {
+  const [user, setUser] = useState(() => loadPersistedUser());
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
     const token = safeGetItem(TOKEN_KEY);
     const savedUser = loadPersistedUser();
     if (token && savedUser) {
@@ -55,38 +54,39 @@ function AuthProvider({
     }
     setLoading(false);
   }, []);
-  function login({
-    token,
-    user: userData
-  }) {
+
+  function login({ token, user: userData }) {
     const enrichedUser = {
       username: userData.username || userData.email?.split('@')[0] || 'scholar',
       department: userData.department || 'Computer Science & Engineering',
       semester: userData.semester || 'Fall 2026',
-      mobileNumber: userData.mobileNumber || '+1 (555) 234-8910',
-      ...userData
+      mobileNumber: userData.mobileNumber || '',
+      ...userData,
     };
     safeSetItem(TOKEN_KEY, token);
     safeSetItem(USER_KEY, JSON.stringify(enrichedUser));
     safeSetItem('token', token);
     setUser(enrichedUser);
   }
+
   function logout() {
     safeRemoveItem(TOKEN_KEY);
     safeRemoveItem(USER_KEY);
     safeRemoveItem('token');
     setUser(null);
   }
+
   function updateUser(updatedData) {
-    setUser(prev => {
+    setUser((prev) => {
       const nextUser = {
         ...(prev || {}),
-        ...updatedData
+        ...updatedData,
       };
       safeSetItem(USER_KEY, JSON.stringify(nextUser));
       return nextUser;
     });
   }
+
   const value = {
     user,
     loading,
@@ -94,14 +94,14 @@ function AuthProvider({
     accessToken: safeGetItem(TOKEN_KEY),
     login,
     logout,
-    updateUser
+    updateUser,
   };
-  return /*#__PURE__*/React.createElement(AuthContext.Provider, {
-    value: value
-  }, children);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
+
 function useAuth() {
-  const context = (0, useContext)(AuthContext);
+  const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used inside AuthProvider');
   }

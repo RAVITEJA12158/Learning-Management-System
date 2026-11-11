@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const prisma = require('../lib/prisma');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const sendWelcomeEmail = require('../../utils/sendVerificationEmail');
+const sendVerificationEmail = require('../../utils/sendVerificationEmail');
 const { sendPasswordResetEmail } = require('../../utils/sendVerificationEmail');
 
 const ROLE_VALUES = { student: 'STUDENT', faculty: 'FACULTY', admin: 'ADMIN' };

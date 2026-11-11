@@ -206,7 +206,6 @@ function CourseDetails() {
       ? Math.round((completedContentCount / totalContentCount) * 100)
       : progressData?.completionPercent ?? 0;
 
-  // Avoid duplicate "Dr. Dr." prefixes when faculty names already include titles
   const rawCreatorName = course.instructorName || course.createdBy?.name || 'Course Instructor';
   const instructorsText = /^(dr\.|prof\.)/i.test(rawCreatorName.trim())
     ? rawCreatorName.trim()
@@ -214,7 +213,7 @@ function CourseDetails() {
   const courseCode = course.courseCode || 'COURSE';
 
   return (
-    <div className="flex min-h-[calc(100vh-72px)] bg-[#F8FAFC] dark:bg-[#030712] text-slate-900 dark:text-white font-sans transition-colors duration-200">
+    <div className="flex flex-col lg:flex-row min-h-[calc(100vh-72px)] w-full max-w-[100vw] overflow-x-hidden bg-[#F8FAFC] dark:bg-[#030712] text-slate-900 dark:text-white font-sans transition-colors duration-200">
       <CourseSidebar
         courseCode={courseCode}
         courseTitle={course.title}
@@ -226,26 +225,53 @@ function CourseDetails() {
         onDropCourse={handleDrop}
       />
 
-      <div className="flex-1 min-w-0 overflow-y-auto">
-        <div className="lg:hidden sticky top-0 z-20 bg-white/95 dark:bg-gray-950/95 backdrop-blur-md border-b border-slate-200/80 dark:border-white/5 px-4 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
-          {SIDEBAR_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
-                activeTab === tab.id
-                  ? 'bg-blue-600 dark:bg-cyan-500 text-white dark:text-gray-950 shadow-xs'
-                  : 'text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/[0.04] hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      <div className="flex-1 min-w-0 w-full overflow-x-hidden">
+        {/* Mobile & Tablet Course Header + Navigation Strip */}
+        <div className="lg:hidden sticky top-0 z-20 bg-white/95 dark:bg-gray-950/95 backdrop-blur-md border-b border-slate-200/80 dark:border-white/5">
+          <div className="flex items-center justify-between gap-3 px-4 pt-3 pb-2 border-b border-slate-100 dark:border-white/5">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-cyan-400">
+                  {courseCode}
+                </span>
+                <span className="rounded-full bg-blue-50 dark:bg-cyan-950/60 px-2 py-0.5 text-[10px] font-extrabold text-blue-600 dark:text-cyan-400">
+                  {overallCompletionPercent}% Complete
+                </span>
+              </div>
+              <h2 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate mt-0.5">
+                {course.title}
+              </h2>
+            </div>
+            {isEnrolled && (
+              <button
+                onClick={handleDrop}
+                disabled={enrolling}
+                className="shrink-0 rounded-lg border border-red-200 dark:border-rose-900/50 bg-red-50/70 dark:bg-rose-950/30 px-2.5 py-1.5 text-[11px] font-bold text-red-600 dark:text-rose-400 cursor-pointer disabled:opacity-50"
+              >
+                {enrolling ? '…' : 'Drop Course'}
+              </button>
+            )}
+          </div>
+          <div className="px-3 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
+            {SIDEBAR_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`whitespace-nowrap min-h-[40px] rounded-xl px-3.5 py-2 text-xs font-bold transition cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'bg-blue-600 dark:bg-cyan-500 text-white dark:text-gray-950 shadow-xs'
+                    : 'text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/[0.04] hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {message && (
           <div
-            className={`mx-6 mt-4 p-3.5 rounded-xl text-xs font-bold ${
+            className={`mx-4 sm:mx-6 mt-4 p-3.5 rounded-xl text-xs font-bold ${
               message.includes('Success') || message.includes('enrolled')
                 ? 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300'
                 : 'bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300'
@@ -263,11 +289,18 @@ function CourseDetails() {
             isCreatorOrStaff={isCreatorOrStaff}
             isEnrolled={isEnrolled}
             enrolling={enrolling}
-            handleEnroll={handleEnroll}
+            onEnroll={handleEnroll}
+            overallCompletionPercent={overallCompletionPercent}
+            totalContentCount={totalContentCount}
+            completedContentCount={completedContentCount}
+            completedItems={completedItems}
+            onToggleContentProgress={handleToggleContentProgress}
+            onSelectContent={setSelectedContent}
             assignments={assignments}
             onSelectTab={setActiveTab}
           />
         )}
+
         {activeTab === 'modules' && (
           <ModulesTab
             course={course}
@@ -277,23 +310,32 @@ function CourseDetails() {
             completedItems={completedItems}
             onToggleContentProgress={handleToggleContentProgress}
             onSelectContent={setSelectedContent}
-            onRefreshCourse={fetchCourseDetails}
+            onRefresh={fetchCourseDetails}
           />
         )}
+
         {activeTab === 'assignments' && (
           <AssignmentsTab
             courseId={id}
+            assignments={assignments}
             isCreatorOrStaff={isCreatorOrStaff}
             isEnrolled={isEnrolled}
+            user={user}
+            onRefresh={fetchAssignments}
           />
         )}
+
         {activeTab === 'quizzes' && (
           <QuizzesTab
             courseId={id}
+            courseCode={courseCode}
+            courseTitle={course.title}
             isCreatorOrStaff={isCreatorOrStaff}
-            isEnrolled={isEnrolled || isCreatorOrStaff}
+            isEnrolled={isEnrolled}
+            user={user}
           />
         )}
+
         {activeTab === 'attendance' && (
           <AttendanceTab
             courseId={id}
@@ -301,14 +343,26 @@ function CourseDetails() {
             user={user}
           />
         )}
+
         {activeTab === 'grades' && (
           <GradesTab
             courseId={id}
-            course={course}
+            courseTitle={course.title}
             isCreatorOrStaff={isCreatorOrStaff}
             overallCompletionPercent={overallCompletionPercent}
+            assignments={assignments}
+            user={user}
           />
         )}
+
+        {activeTab === 'discussions' && (
+          <DiscussionsTab
+            courseId={id}
+            isCreatorOrStaff={isCreatorOrStaff}
+            user={user}
+          />
+        )}
+
         {activeTab === 'announcements' && (
           <AnnouncementsTab
             courseId={id}
@@ -316,20 +370,12 @@ function CourseDetails() {
             isCreatorOrStaff={isCreatorOrStaff}
           />
         )}
-        {activeTab === 'discussions' && (
-          <DiscussionsTab
-            courseId={id}
-            isCreatorOrStaff={isCreatorOrStaff}
-            isEnrolled={isEnrolled}
-            user={user}
-          />
-        )}
+
         {activeTab === 'roster' && (
           <RosterTab
             course={course}
-            courseId={id}
+            instructorsText={instructorsText}
             isCreatorOrStaff={isCreatorOrStaff}
-            onRefreshCourse={fetchCourseDetails}
           />
         )}
       </div>
@@ -338,12 +384,15 @@ function CourseDetails() {
         content={selectedContent}
         isOpen={Boolean(selectedContent)}
         onClose={() => setSelectedContent(null)}
-        isCompleted={selectedContent ? completedItems[selectedContent.id] : false}
-        onToggleComplete={isEnrolled ? handleToggleContentProgress : null}
+        isCompleted={selectedContent ? Boolean(completedItems[selectedContent.id]) : false}
+        onToggleComplete={
+          isEnrolled && user?.role?.toLowerCase() === 'student'
+            ? (cId, status) => handleToggleContentProgress(cId, status)
+            : null
+        }
       />
     </div>
   );
 }
 
-export { CourseDetails };
 export default CourseDetails;

@@ -37,6 +37,10 @@ function DashboardLayout() {
   const notifRef = useRef(null);
 
   useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
     let isMounted = true;
     if (isAuthenticated) {
       notificationService.fetchAll().then((list) => {
@@ -81,6 +85,7 @@ function DashboardLayout() {
 
   const handleLogout = () => {
     setProfileOpen(false);
+    setMenuOpen(false);
     logout();
     navigate('/');
   };
@@ -95,6 +100,7 @@ function DashboardLayout() {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
+    setMenuOpen(false);
     if (searchQuery.trim()) {
       navigate(`/courses?search=${encodeURIComponent(searchQuery.trim())}`);
     } else {
@@ -172,13 +178,13 @@ function DashboardLayout() {
   ];
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#F3F6FA] dark:bg-[#030712] text-slate-900 dark:text-white flex flex-col font-sans transition-colors duration-200">
+    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-[#F3F6FA] dark:bg-[#030712] text-slate-900 dark:text-white flex flex-col font-sans transition-colors duration-200">
       <header className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-white/5 bg-white/95 dark:bg-gray-950/75 backdrop-blur-xl shadow-xs dark:shadow-md dark:shadow-black/30 transition-colors duration-200">
-        <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-4 sm:px-8">
-          <div className="flex items-center gap-7">
+        <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-4 sm:px-8 gap-3">
+          <div className="flex items-center gap-7 min-w-0">
             <button
               onClick={() => navigate('/')}
-              className="hub-lift flex items-center gap-3 cursor-pointer"
+              className="hub-lift flex items-center gap-2.5 sm:gap-3 cursor-pointer min-h-[44px] shrink-0"
             >
               <BrandMark dark={isDark} />
               <span className="text-lg font-black tracking-[-.06em] text-[#151515] dark:text-white transition-colors">
@@ -186,12 +192,12 @@ function DashboardLayout() {
               </span>
             </button>
 
-            <nav className="hidden items-center gap-5 lg:flex">
+            <nav className="hidden items-center gap-5 lg:flex" aria-label="Primary Navigation">
               {navItems.map((item) => (
                 <button
                   key={item.path}
                   onClick={() => navigate(item.path)}
-                  className={`relative py-1 text-xs font-semibold transition cursor-pointer flex flex-col items-center ${
+                  className={`relative py-2 px-1 text-xs font-semibold transition cursor-pointer flex flex-col items-center ${
                     item.active
                       ? 'text-blue-600 dark:text-cyan-400 font-bold'
                       : 'text-slate-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white'
@@ -199,15 +205,15 @@ function DashboardLayout() {
                 >
                   <span>{item.label}</span>
                   {item.active && (
-                    <span className="absolute -bottom-1.5 h-1 w-4 rounded-full bg-blue-600 dark:bg-cyan-400 dark:shadow-[0_0_8px_rgba(34,211,238,0.9)]" />
+                    <span className="absolute bottom-0 h-1 w-4 rounded-full bg-blue-600 dark:bg-cyan-400 dark:shadow-[0_0_8px_rgba(34,211,238,0.9)]" />
                   )}
                 </button>
               ))}
             </nav>
           </div>
 
-          <div className="hidden items-center gap-3 sm:flex">
-            <form onSubmit={handleSearchSubmit} className="relative">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <form onSubmit={handleSearchSubmit} className="relative hidden md:block">
               <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-gray-500">
                 <SearchIcon className="w-4 h-4" />
               </span>
@@ -216,13 +222,13 @@ function DashboardLayout() {
                 placeholder="Search courses..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-4 py-2 w-36 xl:w-52 bg-slate-100/80 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 rounded-full text-xs font-medium text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-white/[0.06] focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-cyan-500/20 focus:border-blue-500 dark:focus:border-cyan-500/60 transition"
+                className="pl-9 pr-4 py-2 w-40 xl:w-56 bg-slate-100/80 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 rounded-full text-xs font-medium text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-white/[0.06] focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-cyan-500/20 focus:border-blue-500 dark:focus:border-cyan-500/60 transition"
               />
             </form>
 
             <button
               onClick={toggleTheme}
-              className="p-2.5 text-slate-600 dark:text-gray-300 bg-slate-100/70 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 rounded-full hover:bg-slate-200/70 dark:hover:bg-white/[0.08] transition cursor-pointer"
+              className="flex h-11 w-11 sm:h-10 sm:w-10 items-center justify-center text-slate-600 dark:text-gray-300 bg-slate-100/70 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 rounded-full hover:bg-slate-200/70 dark:hover:bg-white/[0.08] transition cursor-pointer"
               title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               aria-label="Toggle Theme"
             >
@@ -239,7 +245,7 @@ function DashboardLayout() {
                 <div className="relative" ref={notifRef}>
                   <button
                     onClick={() => setNotifOpen(!notifOpen)}
-                    className="relative p-2.5 text-slate-600 dark:text-gray-300 bg-slate-100/70 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 rounded-full hover:bg-slate-200/70 dark:hover:bg-white/[0.08] transition cursor-pointer"
+                    className="relative flex h-11 w-11 sm:h-10 sm:w-10 items-center justify-center text-slate-600 dark:text-gray-300 bg-slate-100/70 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 rounded-full hover:bg-slate-200/70 dark:hover:bg-white/[0.08] transition cursor-pointer"
                     aria-label="Notifications"
                   >
                     <BellIcon className="w-4 h-4" />
@@ -251,7 +257,7 @@ function DashboardLayout() {
                   </button>
 
                   {notifOpen && (
-                    <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white dark:bg-gray-950/95 dark:backdrop-blur-xl border border-slate-200/90 dark:border-white/10 shadow-xl dark:shadow-2xl dark:shadow-black/80 py-2 z-50">
+                    <div className="fixed sm:absolute right-4 sm:right-0 top-[76px] sm:top-auto sm:mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-md rounded-2xl bg-white dark:bg-gray-950/95 dark:backdrop-blur-xl border border-slate-200/90 dark:border-white/10 shadow-xl dark:shadow-2xl dark:shadow-black/80 py-2 z-50">
                       <div className="px-4 py-3 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
                         <div>
                           <p className="text-xs font-extrabold text-slate-900 dark:text-white">
@@ -264,7 +270,7 @@ function DashboardLayout() {
                         {unreadCount > 0 && (
                           <button
                             onClick={handleMarkAllRead}
-                            className="text-[11px] font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
+                            className="text-[11px] font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer px-2 py-1"
                           >
                             Mark all read
                           </button>
@@ -316,7 +322,7 @@ function DashboardLayout() {
                             setNotifOpen(false);
                             navigate('/notifications');
                           }}
-                          className="w-full py-2 text-center text-xs font-bold text-blue-600 dark:text-cyan-400 hover:bg-slate-50 dark:hover:bg-white/[0.04] rounded-xl transition cursor-pointer"
+                          className="w-full py-2.5 text-center text-xs font-bold text-blue-600 dark:text-cyan-400 hover:bg-slate-50 dark:hover:bg-white/[0.04] rounded-xl transition cursor-pointer"
                         >
                           View All Notifications →
                         </button>
@@ -325,11 +331,11 @@ function DashboardLayout() {
                   )}
                 </div>
 
-                {/* Profile Dropdown */}
-                <div className="relative" ref={dropdownRef}>
+                {/* Desktop Profile Dropdown */}
+                <div className="relative hidden sm:block" ref={dropdownRef}>
                   <button
                     onClick={() => setProfileOpen(!profileOpen)}
-                    className="flex items-center gap-2.5 p-1 pr-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/[0.04] transition cursor-pointer"
+                    className="flex items-center gap-2.5 p-1 pr-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/[0.04] transition cursor-pointer"
                   >
                     <div className="relative p-[1.5px] rounded-full dark:bg-gradient-to-r dark:from-cyan-400 dark:via-blue-500 dark:to-purple-600 dark:animate-spin-ring">
                       {user?.profileImage ? (
@@ -344,7 +350,7 @@ function DashboardLayout() {
                         </span>
                       )}
                     </div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-white">
+                    <span className="text-xs font-bold text-slate-800 dark:text-white max-w-[120px] truncate">
                       {user?.name || 'User'}
                     </span>
                     <ChevronDownIcon
@@ -357,7 +363,7 @@ function DashboardLayout() {
                   {profileOpen && (
                     <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-gray-950/95 dark:backdrop-blur-xl border border-slate-200/90 dark:border-white/10 shadow-xl dark:shadow-2xl dark:shadow-black/70 py-2 z-50">
                       <div className="px-4 py-3 border-b border-slate-100 dark:border-white/5">
-                        <p className="text-xs font-bold text-slate-900 dark:text-white">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
                           {user?.name || 'Scholar'}
                         </p>
                         <p className="text-[11px] text-slate-500 dark:text-gray-400 truncate">
@@ -374,7 +380,7 @@ function DashboardLayout() {
                             setProfileOpen(false);
                             navigate(getDashboardPath());
                           }}
-                          className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
                         >
                           <BookIcon className="w-4 h-4 text-slate-400 dark:text-gray-500" />
                           My Workspace
@@ -384,7 +390,7 @@ function DashboardLayout() {
                             setProfileOpen(false);
                             navigate('/assignments');
                           }}
-                          className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
                         >
                           <ClipboardCheckIcon className="w-4 h-4 text-slate-400 dark:text-gray-500" />
                           Assessments & Quizzes
@@ -394,7 +400,7 @@ function DashboardLayout() {
                             setProfileOpen(false);
                             navigate('/grades');
                           }}
-                          className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
                         >
                           <ChartIcon className="w-4 h-4 text-slate-400 dark:text-gray-500" />
                           Grades & Transcript
@@ -404,7 +410,7 @@ function DashboardLayout() {
                             setProfileOpen(false);
                             navigate('/attendance');
                           }}
-                          className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
                         >
                           <CalendarIcon className="w-4 h-4 text-slate-400 dark:text-gray-500" />
                           Attendance Tracker
@@ -414,7 +420,7 @@ function DashboardLayout() {
                             setProfileOpen(false);
                             navigate('/notifications');
                           }}
-                          className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
                         >
                           <BellIcon className="w-4 h-4 text-slate-400 dark:text-gray-500" />
                           Notification Center
@@ -424,7 +430,7 @@ function DashboardLayout() {
                             setProfileOpen(false);
                             navigate('/profile');
                           }}
-                          className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
                         >
                           <UserIcon className="w-4 h-4 text-slate-400 dark:text-gray-500" />
                           Profile
@@ -434,7 +440,7 @@ function DashboardLayout() {
                             setProfileOpen(false);
                             navigate('/settings');
                           }}
-                          className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
                         >
                           <CogIcon className="w-4 h-4 text-slate-400 dark:text-gray-500" />
                           Settings
@@ -444,7 +450,7 @@ function DashboardLayout() {
                             setProfileOpen(false);
                             navigate('/contact');
                           }}
-                          className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
+                          className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-blue-600 dark:hover:text-cyan-400 flex items-center gap-2.5 transition cursor-pointer"
                         >
                           <MailIcon className="w-4 h-4 text-slate-400 dark:text-gray-500" />
                           Contact Support
@@ -465,140 +471,174 @@ function DashboardLayout() {
                 </div>
               </>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-2">
                 <button
                   onClick={() => navigate('/login')}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200/80 dark:border-white/10 transition cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-gray-200 hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200/80 dark:border-white/10 transition cursor-pointer"
                 >
                   Sign In
                 </button>
                 <button
                   onClick={() => navigate('/register')}
-                  className="px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-cyan-500 dark:text-gray-950 dark:hover:bg-cyan-400 transition cursor-pointer shadow-xs"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-cyan-500 dark:text-gray-950 dark:hover:bg-cyan-400 transition cursor-pointer shadow-xs"
                 >
                   Register
                 </button>
               </div>
             )}
-          </div>
 
-          {/* Mobile hamburger menu toggle */}
-          <div className="flex items-center gap-2 sm:hidden">
+            {/* Mobile & Tablet Hamburger Menu Button (visible on screens < 1024px) */}
             <button
-              onClick={toggleTheme}
-              className="p-2 text-slate-600 dark:text-slate-300 rounded-full border border-slate-200 dark:border-slate-700 cursor-pointer"
-            >
-              {isDark ? (
-                <SunIcon className="w-4 h-4 text-amber-400" />
-              ) : (
-                <MoonIcon className="w-4 h-4 text-slate-600" />
-              )}
-            </button>
-            <button
+              type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="rounded-full border border-slate-200 dark:border-slate-700 p-2 text-slate-700 dark:text-slate-200 cursor-pointer"
+              aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={menuOpen}
+              className="flex lg:hidden h-11 w-11 items-center justify-center rounded-xl border border-slate-200/80 dark:border-white/10 bg-slate-100/70 dark:bg-white/[0.03] text-slate-700 dark:text-gray-200 hover:bg-slate-200/70 dark:hover:bg-white/[0.08] transition cursor-pointer"
             >
-              <span className="block h-0.5 w-4 bg-current mb-1" />
-              <span className="block h-0.5 w-4 bg-current mb-1" />
-              <span className="block h-0.5 w-4 bg-current" />
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {menuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
             </button>
           </div>
         </div>
-      </header>
 
-      {/* Mobile Drawer */}
-      {menuOpen && (
-        <div className="border-t border-slate-200 dark:border-white/10 bg-white dark:bg-[#030712] px-5 py-4 sm:hidden space-y-3">
-          <div className="grid gap-1">
-            {navItems.map((item) => (
+        {/* Mobile & Tablet Collapsible Navigation Drawer */}
+        {menuOpen && (
+          <div className="lg:hidden border-t border-slate-200 dark:border-white/10 bg-white dark:bg-[#030712] px-4 sm:px-6 py-4 space-y-4 shadow-xl animate-auth-fade">
+            {/* Mobile Course Search */}
+            <form onSubmit={handleSearchSubmit} className="relative md:hidden">
+              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-gray-500">
+                <SearchIcon className="w-4 h-4" />
+              </span>
+              <input
+                type="text"
+                placeholder="Search courses by title or code..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full min-h-[44px] pl-10 pr-4 py-2.5 bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 dark:focus:border-cyan-400"
+              />
+            </form>
+
+            {isAuthenticated && user && (
+              <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/70 dark:border-white/5 sm:hidden">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-600 text-white flex items-center justify-center text-sm font-black shrink-0">
+                  {user.name ? user.name.trim().charAt(0).toUpperCase() : 'U'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{user.name}</p>
+                  <p className="text-[11px] text-slate-500 dark:text-gray-400 truncate">{user.email}</p>
+                </div>
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-blue-50 dark:bg-cyan-950/60 text-blue-600 dark:text-cyan-400">
+                  {user.role}
+                </span>
+              </div>
+            )}
+
+            <nav className="grid gap-1.5" aria-label="Mobile Navigation">
+              {navItems.map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate(item.path);
+                  }}
+                  className={`min-h-[44px] flex items-center justify-between rounded-xl px-4 py-2.5 text-left text-sm font-bold transition ${
+                    item.active
+                      ? 'bg-blue-50 dark:bg-cyan-950/40 text-blue-600 dark:text-cyan-400 border border-blue-200/60 dark:border-cyan-500/30'
+                      : 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-800 dark:text-white'
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  {item.active && <span className="h-2 w-2 rounded-full bg-blue-600 dark:bg-cyan-400" />}
+                </button>
+              ))}
+              {isAuthenticated && (
+                <>
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate('/notifications');
+                    }}
+                    className="min-h-[44px] flex items-center justify-between rounded-xl px-4 py-2.5 text-left text-sm font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-800 dark:text-white"
+                  >
+                    <span>Notifications</span>
+                    {unreadCount > 0 && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-extrabold bg-blue-600 dark:bg-cyan-500 text-white dark:text-gray-950">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate('/profile');
+                    }}
+                    className="min-h-[44px] flex items-center rounded-xl px-4 py-2.5 text-left text-sm font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-800 dark:text-white"
+                  >
+                    Profile
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate('/settings');
+                    }}
+                    className="min-h-[44px] flex items-center rounded-xl px-4 py-2.5 text-left text-sm font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-800 dark:text-white"
+                  >
+                    Settings
+                  </button>
+                </>
+              )}
               <button
-                key={item.path}
                 onClick={() => {
                   setMenuOpen(false);
-                  navigate(item.path);
+                  navigate('/contact');
                 }}
-                className="rounded-xl px-3 py-2 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white"
+                className="min-h-[44px] flex items-center rounded-xl px-4 py-2.5 text-left text-sm font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-800 dark:text-white"
               >
-                {item.label}
+                Contact Support
               </button>
-            ))}
-            {isAuthenticated && (
-              <>
-                <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    navigate('/notifications');
-                  }}
-                  className="rounded-xl px-3 py-2 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white"
-                >
-                  Notifications ({unreadCount})
-                </button>
-                <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    navigate('/profile');
-                  }}
-                  className="rounded-xl px-3 py-2 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white"
-                >
-                  Profile
-                </button>
-                <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    navigate('/settings');
-                  }}
-                  className="rounded-xl px-3 py-2 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white"
-                >
-                  Settings
-                </button>
-              </>
-            )}
-            <button
-              onClick={() => {
-                setMenuOpen(false);
-                navigate('/contact');
-              }}
-              className="rounded-xl px-3 py-2 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white"
-            >
-              Contact Support
-            </button>
-          </div>
+            </nav>
 
-          <div className="pt-3 border-t border-slate-100 dark:border-white/10">
-            {isAuthenticated ? (
-              <button
-                onClick={handleLogout}
-                className="w-full rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 py-2.5 text-xs font-bold text-red-600 dark:text-red-400"
-              >
-                Sign out
-              </button>
-            ) : (
-              <div className="grid grid-cols-2 gap-2">
+            <div className="pt-3 border-t border-slate-100 dark:border-white/10">
+              {isAuthenticated ? (
                 <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    navigate('/login');
-                  }}
-                  className="rounded-xl border border-slate-200 dark:border-white/10 py-2 text-xs font-bold"
+                  onClick={handleLogout}
+                  className="w-full min-h-[44px] rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 py-2.5 text-sm font-bold text-red-600 dark:text-red-400"
                 >
-                  Sign In
+                  Sign out
                 </button>
-                <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    navigate('/register');
-                  }}
-                  className="rounded-xl bg-blue-600 text-white py-2 text-xs font-bold"
-                >
-                  Register
-                </button>
-              </div>
-            )}
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate('/login');
+                    }}
+                    className="min-h-[44px] rounded-xl border border-slate-200 dark:border-white/10 py-2.5 text-sm font-bold text-slate-800 dark:text-white"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate('/register');
+                    }}
+                    className="min-h-[44px] rounded-xl bg-blue-600 text-white py-2.5 text-sm font-bold"
+                  >
+                    Register
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </header>
 
-      <div className="flex-1">
+      <div className="flex-1 w-full max-w-[100vw] overflow-x-hidden">
         <Outlet />
       </div>
 
