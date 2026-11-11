@@ -1,5 +1,5 @@
 function validateRegister(req, res, next) {
-  const { name, username, email, password, confirmPassword, mobile_number, role } = req.body || {}
+  const { name, username, email, password, confirmPassword, mobile_number, role, secretCode } = req.body || {}
 
   if ([name, username, email, password, confirmPassword, mobile_number].some(
     (value) => typeof value !== 'string' || !value.trim()
@@ -7,11 +7,13 @@ function validateRegister(req, res, next) {
     return res.status(400).json({ error: 'All registration fields are required' })
   }
 
-  if (role !== undefined && typeof role !== 'string') {
-    return res.status(400).json({ error: 'Role must be student or faculty' })
+  const requestedRole = (role || 'student').toLowerCase()
+  if (!['student', 'faculty', 'admin'].includes(requestedRole)) {
+    return res.status(400).json({ error: 'Role must be student, faculty, or admin' })
   }
-  if (!['student', 'faculty'].includes((role || 'student').toLowerCase())) {
-    return res.status(400).json({ error: 'Role must be student or faculty' })
+
+  if (requestedRole === 'admin' && (!secretCode || !secretCode.trim())) {
+    return res.status(400).json({ error: 'Administrator secret code is required to register as admin' })
   }
 
   next()

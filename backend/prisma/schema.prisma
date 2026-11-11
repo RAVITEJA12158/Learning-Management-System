@@ -23,6 +23,9 @@ model User {
   verificationToken          String?                @unique @map("verification_token")
   verificationTokenExpires   DateTime?              @map("verification_token_expires")
   mobileNumber               String?                @map("mobile_number")
+  department                 String?
+  semester                   String?
+  bio                        String?
   announcements              Announcement[]
   gradedSubmissions          AssignmentSubmission[] @relation("SubmissionGradedBy")
   submissions                AssignmentSubmission[] @relation("SubmissionStudent")
@@ -51,6 +54,8 @@ model Course {
   description        String?
   createdById        String              @map("created_by")
   semester           String?
+  category           String?
+  bannerUrl          String?             @map("banner_url")
   createdAt          DateTime            @default(now()) @map("created_at")
   updatedAt          DateTime            @updatedAt @map("updated_at")
   announcements      Announcement[]

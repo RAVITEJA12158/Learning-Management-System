@@ -2,11 +2,11 @@ const prisma = require("../lib/prisma");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const ROLE_VALUES = { student: "STUDENT", faculty: "FACULTY" };
+const ROLE_VALUES = { student: "STUDENT", faculty: "FACULTY", admin: "ADMIN" };
 
 const register = async (req, res) => {
   try {
-    const { name, username, email, password, confirmPassword, mobile_number, role } = req.body;
+    const { name, username, email, password, confirmPassword, mobile_number, role, secretCode } = req.body;
 
     if (!name || !username || !email || !password || !confirmPassword || !mobile_number) {
       return res.status(400).json({ error: "All fields are required" });
@@ -33,6 +33,12 @@ const register = async (req, res) => {
       return res.status(400).json({ error: "Invalid role specified" });
     }
 
+    if (requestedRole === "admin") {
+      if (!secretCode || secretCode !== process.env.ADMIN_SECRET_CODE) {
+        return res.status(403).json({ error: "Invalid administrator secret code" });
+      }
+    }
+
     const cleanName = name.trim();
     const cleanUsername = username.trim();
     const cleanEmail = email.trim().toLowerCase();
@@ -52,6 +58,7 @@ const register = async (req, res) => {
         mobileNumber: cleanedMobile,
         passwordHash: hashedPassword,
         role: ROLE_VALUES[requestedRole],
+        isVerified: true,
       },
     });
 
@@ -69,7 +76,13 @@ const register = async (req, res) => {
       name: user.name,
       username: user.username,
       role: user.role,
+      department: user.department || null,
+      semester: user.semester || null,
+      bio: user.bio || null,
     };
+    if (user.profileImage) {
+      registerResponse.profileImage = user.profileImage;
+    }
 
     console.log("Register response:", registerResponse);
     return res.status(201).json(registerResponse);
@@ -126,6 +139,9 @@ const login = async (req, res) => {
       name: user.name,
       username: user.username,
       role: user.role,
+      department: user.department || null,
+      semester: user.semester || null,
+      bio: user.bio || null,
     };
     if (user.profileImage) {
       loginResponse.profileImage = user.profileImage;

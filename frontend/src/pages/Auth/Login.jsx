@@ -82,42 +82,82 @@ function Login() {
     }, 180);
     return () => clearTimeout(timer);
   }, []);
-  const handleQuickDemoLogin = roleId => {
-    const demoProfiles = {
+  const handleQuickDemoLogin = async roleId => {
+    const demoCredentials = {
       student: {
-        id: 'user-student-1',
-        name: 'Sarah Jensen',
-        username: 'sarah_jensen',
         email: 'sarah.jensen@university.edu',
-        role: 'student',
-        department: 'Computer Science & Engineering',
-        semester: 'Fall 2026'
+        password: 'Student123!',
       },
       faculty: {
-        id: 'user-faculty-1',
-        name: 'Dr. Alan Turing',
-        username: 'alan_turing',
         email: 'alan.turing@university.edu',
-        role: 'faculty',
-        department: 'Artificial Intelligence & ML',
-        semester: 'Fall 2026'
+        password: 'Faculty123!',
       },
       admin: {
-        id: 'user-admin-1',
-        name: 'Dean Robert Vance',
-        username: 'robert_vance',
         email: 'admin@university.edu',
-        role: 'admin',
-        department: 'Academic Administration',
-        semester: 'Fall 2026'
-      }
+        password: 'Admin123!',
+        secretCode: 'admin@lms',
+      },
     };
-    const profile = demoProfiles[roleId] || demoProfiles.student;
-    login({
-      token: `jwt-demo-${roleId}-${Date.now()}`,
-      user: profile
-    });
-    navigate(roleId === 'student' ? '/student' : `/${roleId}`);
+
+    const creds = demoCredentials[roleId] || demoCredentials.student;
+    setLoading(true);
+    setMessage('');
+    try {
+      const response = await authApi.login(creds);
+      login({
+        token: response.token,
+        user: {
+          id: response.userId,
+          name: response.name,
+          username: response.username,
+          role: response.role.toLowerCase(),
+          department: response.department,
+          semester: response.semester,
+          bio: response.bio,
+          profileImage: response.profileImage,
+        },
+      });
+      navigate(roleId === 'student' ? '/student' : `/${roleId}`);
+    } catch (err) {
+      console.warn('Backend login fallback to demo mock mode:', err.message);
+      const demoProfiles = {
+        student: {
+          id: 'e0000000-0000-4000-8000-000000000001',
+          name: 'Sarah Jensen',
+          username: 'sarah_jensen',
+          email: 'sarah.jensen@university.edu',
+          role: 'student',
+          department: 'Computer Science & Engineering',
+          semester: 'Fall 2026',
+        },
+        faculty: {
+          id: 'f0000000-0000-4000-8000-000000000001',
+          name: 'Dr. Alan Turing',
+          username: 'alan_turing',
+          email: 'alan.turing@university.edu',
+          role: 'faculty',
+          department: 'Computer Science & AI',
+          semester: 'Fall 2026',
+        },
+        admin: {
+          id: 'a0000000-0000-4000-8000-000000000001',
+          name: 'Dean Robert Vance',
+          username: 'admin_vance',
+          email: 'admin@university.edu',
+          role: 'admin',
+          department: 'Academic Administration',
+          semester: 'Fall 2026',
+        },
+      };
+      const profile = demoProfiles[roleId] || demoProfiles.student;
+      login({
+        token: `jwt-demo-${roleId}-${Date.now()}`,
+        user: profile,
+      });
+      navigate(roleId === 'student' ? '/student' : `/${roleId}`);
+    } finally {
+      setLoading(false);
+    }
   };
   async function handleSubmit(event) {
     event.preventDefault();
@@ -155,7 +195,11 @@ function Login() {
         id: data.userId || `user-${returnedRole}-1`,
         name: data.name || data.username || 'Scholar',
         email: email.trim(),
-        role: returnedRole || selectedRole.id
+        role: returnedRole || selectedRole.id,
+        department: data.department,
+        semester: data.semester,
+        bio: data.bio,
+        profileImage: data.profileImage,
       };
       login({
         token: data.token,

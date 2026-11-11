@@ -3,6 +3,7 @@
 const localOrigins = [
   'http://localhost:3000',  // Vite dev server
   'http://localhost:5173',  // Vite default port (fallback)
+  'https://learning-management-system-eight-lilac.vercel.app/ ',
 ];
 const configuredOrigins = (process.env.FRONTEND_ORIGINS || '')
   .split(',')

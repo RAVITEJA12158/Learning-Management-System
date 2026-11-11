@@ -60,6 +60,7 @@ describe("authController", () => {
           mobileNumber: "9876543210",
           passwordHash: "hashed-password",
           role: "STUDENT",
+          isVerified: true,
         },
       });
       expect(res.status).toHaveBeenCalledWith(201);
@@ -70,6 +71,9 @@ describe("authController", () => {
         name: "Test User",
         username: "testuser",
         role: "STUDENT",
+        department: null,
+        semester: null,
+        bio: null,
       });
     });
 
@@ -115,6 +119,9 @@ describe("authController", () => {
         name: "Test User",
         username: "testuser",
         role: "STUDENT",
+        department: null,
+        semester: null,
+        bio: null,
       });
     });
 

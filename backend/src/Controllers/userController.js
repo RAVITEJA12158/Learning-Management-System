@@ -31,6 +31,9 @@ exports.getProfile = async (req, res) => {
         role: true,
         profileImage: true,
         mobileNumber: true,
+        department: true,
+        semester: true,
+        bio: true,
         createdAt: true,
       },
     });
@@ -53,7 +56,7 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { name, mobileNumber, mobile_number } = req.body;
+    const { name, mobileNumber, mobile_number, department, semester, bio } = req.body;
 
     const targetMobile = mobileNumber !== undefined ? mobileNumber : mobile_number;
     const dataToUpdate = {};
@@ -69,6 +72,18 @@ exports.updateProfile = async (req, res) => {
       dataToUpdate.mobileNumber = targetMobile ? String(targetMobile).trim() : null;
     }
 
+    if (department !== undefined) {
+      dataToUpdate.department = department ? String(department).trim() : null;
+    }
+
+    if (semester !== undefined) {
+      dataToUpdate.semester = semester ? String(semester).trim() : null;
+    }
+
+    if (bio !== undefined) {
+      dataToUpdate.bio = bio ? String(bio).trim() : null;
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: dataToUpdate,
@@ -80,6 +95,9 @@ exports.updateProfile = async (req, res) => {
         role: true,
         profileImage: true,
         mobileNumber: true,
+        department: true,
+        semester: true,
+        bio: true,
         createdAt: true,
       },
     });
@@ -244,6 +262,9 @@ exports.getAllUsers = async (req, res) => {
         role: true,
         profileImage: true,
         mobileNumber: true,
+        department: true,
+        semester: true,
+        bio: true,
         createdAt: true,
         _count: {
           select: {
@@ -268,7 +289,7 @@ exports.getAllUsers = async (req, res) => {
  */
 exports.createUser = async (req, res) => {
   try {
-    const { name, email, username, role, mobileNumber, password } = req.body;
+    const { name, email, username, role, mobileNumber, password, department, semester, bio } = req.body;
 
     if (!name || !email || !role) {
       return res.status(400).json({ error: 'Name, email, and role are required.' });
@@ -300,6 +321,9 @@ exports.createUser = async (req, res) => {
         passwordHash: hashedPassword,
         role: normalizedRole,
         mobileNumber: mobileNumber ? String(mobileNumber).trim() : null,
+        department: department ? String(department).trim() : null,
+        semester: semester ? String(semester).trim() : null,
+        bio: bio ? String(bio).trim() : null,
         isVerified: true,
       },
       select: {
@@ -309,6 +333,9 @@ exports.createUser = async (req, res) => {
         email: true,
         role: true,
         mobileNumber: true,
+        department: true,
+        semester: true,
+        bio: true,
         createdAt: true,
       },
     });
@@ -327,7 +354,7 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, role, mobileNumber, email } = req.body;
+    const { name, role, mobileNumber, email, department, semester, bio } = req.body;
 
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) return res.status(404).json({ error: 'User not found.' });
@@ -336,6 +363,9 @@ exports.updateUser = async (req, res) => {
     if (name) updateData.name = name.trim();
     if (email) updateData.email = email.trim().toLowerCase();
     if (mobileNumber !== undefined) updateData.mobileNumber = mobileNumber ? String(mobileNumber).trim() : null;
+    if (department !== undefined) updateData.department = department ? String(department).trim() : null;
+    if (semester !== undefined) updateData.semester = semester ? String(semester).trim() : null;
+    if (bio !== undefined) updateData.bio = bio ? String(bio).trim() : null;
     if (role && ['STUDENT', 'FACULTY', 'ADMIN'].includes(role.toUpperCase())) {
       updateData.role = role.toUpperCase();
     }
@@ -351,6 +381,9 @@ exports.updateUser = async (req, res) => {
         role: true,
         profileImage: true,
         mobileNumber: true,
+        department: true,
+        semester: true,
+        bio: true,
         updatedAt: true,
       },
     });

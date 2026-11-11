@@ -52,7 +52,7 @@ exports.getCourseById = async (req, res) => {
 // Create a new course
 exports.createCourse = async (req, res) => {
   try {
-    const { title, courseCode, description, semester } = req.body;
+    const { title, courseCode, description, semester, category, bannerUrl } = req.body;
     
     // Check if course code + semester already exists
     const existing = await prisma.course.findUnique({
@@ -68,6 +68,8 @@ exports.createCourse = async (req, res) => {
         courseCode,
         description,
         semester: semester || '',
+        category: category ? String(category).trim() : null,
+        bannerUrl: bannerUrl ? String(bannerUrl).trim() : null,
         createdById: req.user.userId,
       },
     });
@@ -91,7 +93,7 @@ exports.createCourse = async (req, res) => {
 exports.updateCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, semester } = req.body;
+    const { title, description, semester, category, bannerUrl } = req.body;
 
     // Verify ownership or admin
     const course = await prisma.course.findUnique({ where: { id } });
@@ -100,9 +102,16 @@ exports.updateCourse = async (req, res) => {
       return res.status(403).json({ error: 'Not authorized to update this course.' });
     }
 
+    const updateData = {};
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (semester !== undefined) updateData.semester = semester;
+    if (category !== undefined) updateData.category = category ? String(category).trim() : null;
+    if (bannerUrl !== undefined) updateData.bannerUrl = bannerUrl ? String(bannerUrl).trim() : null;
+
     const updated = await prisma.course.update({
       where: { id },
-      data: { title, description, semester },
+      data: updateData,
     });
     res.json(updated);
   } catch (err) {
