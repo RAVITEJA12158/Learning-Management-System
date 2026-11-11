@@ -1,16 +1,33 @@
 const prisma = require('../lib/prisma');
 
-// Marks a single content item as completed/incomplete for the current
-// student. Upserts because the doc's ContentProgress table has a
-// @@unique([userId, contentId]) — one row per student per content item.
+async function verifyStudentCourseEnrollment(courseId, userId) {
+  if (!courseId || !prisma.courseEnrollment?.findUnique) return true;
+  const enrollment = await prisma.courseEnrollment.findUnique({
+    where: { courseId_studentId: { courseId, studentId: userId } },
+  });
+  // Only block if findUnique explicitly resolved to null or non-ACTIVE status
+  if (enrollment === null || (enrollment && enrollment.status !== 'ACTIVE')) {
+    return false;
+  }
+  return true;
+}
+
 exports.markContentProgress = async (req, res) => {
   try {
     const { contentId } = req.params;
     const { completed = true } = req.body;
     const userId = req.user.userId;
 
-    const content = await prisma.content.findUnique({ where: { id: contentId } });
+    const content = await prisma.content.findUnique({
+      where: { id: contentId },
+      include: { module: { select: { courseId: true } } },
+    });
     if (!content) return res.status(404).json({ error: 'Content not found.' });
+
+    const courseId = content.module?.courseId;
+    if (courseId && !(await verifyStudentCourseEnrollment(courseId, userId))) {
+      return res.status(403).json({ error: 'You must be actively enrolled in this course to track progress.' });
+    }
 
     const progress = await prisma.contentProgress.upsert({
       where: { userId_contentId: { userId, contentId } },
@@ -30,13 +47,14 @@ exports.markContentProgress = async (req, res) => {
   }
 };
 
-// Returns the student's per-item completion state for a course, plus the
-// overall completion % per "2.8 Course Progress Tracking":
-//   completion % = (completed content ÷ total content) × 100
 exports.getCourseProgress = async (req, res) => {
   try {
     const { courseId } = req.params;
     const userId = req.user.userId;
+
+    if (!(await verifyStudentCourseEnrollment(courseId, userId))) {
+      return res.status(403).json({ error: 'You must be actively enrolled in this course to view progress.' });
+    }
 
     const modules = await prisma.module.findMany({
       where: { courseId },
@@ -69,9 +87,8 @@ exports.getCourseProgress = async (req, res) => {
       return { moduleId: mod.id, title: mod.title, content: items };
     });
 
-    const completionPercent = totalContent === 0
-      ? 0
-      : Math.round((completedContent / totalContent) * 100);
+    const completionPercent =
+      totalContent === 0 ? 0 : Math.round((completedContent / totalContent) * 100);
 
     res.json({
       courseId,

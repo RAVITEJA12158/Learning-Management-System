@@ -1,4 +1,3 @@
-import React from 'react';
 import { api } from './api';
 
 const userService = {
@@ -15,58 +14,23 @@ const userService = {
     }
   },
   async updateProfile(profileData) {
-    try {
-      return await api.put('/users/profile', profileData);
-    } catch {
-      try {
-        const raw = localStorage.getItem('lms_user');
-        const current = raw ? JSON.parse(raw) : {};
-        const next = {
-          ...current,
-          ...profileData
-        };
-        localStorage.setItem('lms_user', JSON.stringify(next));
-        return next;
-      } catch {
-        return profileData;
-      }
-    }
+    return await api.put('/users/profile', profileData);
   },
   async updateProfilePhoto(file) {
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      return await api.upload('/users/profile/photo', formData);
-    } catch {
-      const dataUrl = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-      return {
-        profileImage: dataUrl
-      };
-    }
+    const formData = new FormData();
+    formData.append('file', file);
+    return await api.upload('/users/profile/photo', formData);
   },
   async deleteProfilePhoto() {
-    try {
-      return await api.delete('/users/profile/photo');
-    } catch {
-      return {
-        profileImage: null
-      };
-    }
+    return await api.delete('/users/profile/photo');
   },
   async changePassword(currentPassword, newPassword) {
     return await api.put('/users/change-password', {
       currentPassword,
-      newPassword
+      newPassword,
     });
-  }
+  },
 };
-var _default = userService;
 
 export { userService };
-
-export default _default;
+export default userService;

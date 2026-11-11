@@ -7,8 +7,10 @@ async function isCourseStaff(courseId, user) {
     include: { instructors: true },
   });
   if (!course) return false;
-  return course.createdById === user.userId ||
-    course.instructors?.some((i) => i.facultyId === user.userId);
+  return (
+    course.createdById === user.userId ||
+    course.instructors?.some((i) => i.facultyId === user.userId)
+  );
 }
 
 async function canAccessCourse(courseId, user) {
@@ -18,7 +20,10 @@ async function canAccessCourse(courseId, user) {
     include: { instructors: true },
   });
   if (!course) return false;
-  if (course.createdById === user.userId || course.instructors?.some((i) => i.facultyId === user.userId)) {
+  if (
+    course.createdById === user.userId ||
+    course.instructors?.some((i) => i.facultyId === user.userId)
+  ) {
     return true;
   }
   const enrollment = await prisma.courseEnrollment.findUnique({
@@ -29,7 +34,6 @@ async function canAccessCourse(courseId, user) {
 
 /**
  * GET /api/announcements/course/:courseId
- * List all announcements for a course.
  */
 exports.getAnnouncementsByCourse = async (req, res) => {
   try {
@@ -55,7 +59,8 @@ exports.getAnnouncementsByCourse = async (req, res) => {
       courseId: a.courseId,
       title: a.title,
       message: a.message,
-      content: a.message, // For frontend compatibility
+      content: a.message,
+      pinned: Boolean(a.pinned),
       createdAt: a.createdAt,
       time: new Date(a.createdAt).toLocaleString(),
       author: a.createdBy?.name || 'Instructor',
@@ -72,11 +77,10 @@ exports.getAnnouncementsByCourse = async (req, res) => {
 
 /**
  * POST /api/announcements
- * Create an announcement for a course and notify enrolled students (Faculty/Admin).
  */
 exports.createAnnouncement = async (req, res) => {
   try {
-    const { courseId, title, message, content } = req.body;
+    const { courseId, title, message, content, pinned } = req.body;
     const bodyMessage = message || content;
 
     if (!courseId || !title || !bodyMessage) {
@@ -88,20 +92,24 @@ exports.createAnnouncement = async (req, res) => {
       return res.status(403).json({ error: 'Not authorized to post announcements for this course.' });
     }
 
+    const createData = {
+      courseId,
+      title: title.trim(),
+      message: bodyMessage.trim(),
+      createdById: req.user.userId,
+    };
+    if (pinned !== undefined) {
+      createData.pinned = Boolean(pinned);
+    }
+
     const announcement = await prisma.announcement.create({
-      data: {
-        courseId,
-        title: title.trim(),
-        message: bodyMessage.trim(),
-        createdById: req.user.userId,
-      },
+      data: createData,
       include: {
         createdBy: { select: { id: true, name: true, role: true } },
         course: { select: { title: true, courseCode: true } },
       },
     });
 
-    // Notify enrolled students asynchronously
     const enrollments = await prisma.courseEnrollment.findMany({
       where: { courseId, status: 'ACTIVE' },
       select: { studentId: true },
@@ -125,6 +133,7 @@ exports.createAnnouncement = async (req, res) => {
       title: announcement.title,
       message: announcement.message,
       content: announcement.message,
+      pinned: Boolean(announcement.pinned),
       createdAt: announcement.createdAt,
       time: 'Just now',
       author: announcement.createdBy?.name || 'Instructor',
@@ -138,12 +147,11 @@ exports.createAnnouncement = async (req, res) => {
 
 /**
  * PUT /api/announcements/:id
- * Update an existing announcement (Author/Admin).
  */
 exports.updateAnnouncement = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, message, content } = req.body;
+    const { title, message, content, pinned } = req.body;
     const bodyMessage = message || content;
 
     const existing = await prisma.announcement.findUnique({
@@ -162,6 +170,7 @@ exports.updateAnnouncement = async (req, res) => {
       data: {
         ...(title !== undefined && { title: title.trim() }),
         ...(bodyMessage !== undefined && { message: bodyMessage.trim() }),
+        ...(pinned !== undefined && { pinned: Boolean(pinned) }),
       },
     });
 
@@ -174,7 +183,6 @@ exports.updateAnnouncement = async (req, res) => {
 
 /**
  * DELETE /api/announcements/:id
- * Delete an announcement (Author/Admin).
  */
 exports.deleteAnnouncement = async (req, res) => {
   try {
@@ -198,4 +206,3 @@ exports.deleteAnnouncement = async (req, res) => {
     res.status(500).json({ error: 'Failed to delete announcement.' });
   }
 };
-

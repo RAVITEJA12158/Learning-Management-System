@@ -7,13 +7,14 @@ async function isCourseStaff(courseId, user) {
     include: { instructors: true },
   });
   if (!course) return false;
-  return course.createdById === user.userId ||
-    course.instructors?.some((i) => i.facultyId === user.userId);
+  return (
+    course.createdById === user.userId ||
+    course.instructors?.some((i) => i.facultyId === user.userId)
+  );
 }
 
 /**
  * GET /api/attendance/course/:courseId
- * Retrieve all sessions and their student records for a course (Faculty/Admin).
  */
 exports.getSessionsByCourse = async (req, res) => {
   try {
@@ -37,21 +38,24 @@ exports.getSessionsByCourse = async (req, res) => {
       orderBy: { date: 'desc' },
     });
 
-    const formatted = sessions.map((s) => ({
-      id: s.id,
-      courseId: s.courseId,
-      date: s.date ? new Date(s.date).toISOString().slice(0, 10) : '',
-      topic: `Lecture Session (${s.date ? new Date(s.date).toISOString().slice(0, 10) : ''})`,
-      createdBy: s.createdBy?.name || 'Instructor',
-      records: s.records.map((r) => ({
-        id: r.id,
-        sessionId: r.sessionId,
-        studentId: r.studentId,
-        studentName: r.student?.name || 'Student',
-        email: r.student?.email || '',
-        status: r.status,
-      })),
-    }));
+    const formatted = sessions.map((s) => {
+      const dateStr = s.date ? new Date(s.date).toISOString().slice(0, 10) : '';
+      return {
+        id: s.id,
+        courseId: s.courseId,
+        date: dateStr,
+        topic: s.topic || `Lecture Session (${dateStr})`,
+        createdBy: s.createdBy?.name || 'Instructor',
+        records: s.records.map((r) => ({
+          id: r.id,
+          sessionId: r.sessionId,
+          studentId: r.studentId,
+          studentName: r.student?.name || 'Student',
+          email: r.student?.email || '',
+          status: r.status,
+        })),
+      };
+    });
 
     res.json(formatted);
   } catch (err) {
@@ -62,7 +66,6 @@ exports.getSessionsByCourse = async (req, res) => {
 
 /**
  * POST /api/attendance/session
- * Create an attendance session for a date, initializing records for enrolled students (Faculty/Admin).
  */
 exports.createSession = async (req, res) => {
   try {
@@ -79,19 +82,22 @@ exports.createSession = async (req, res) => {
 
     const parsedDate = new Date(date);
 
-    // Fetch enrolled students
     const enrollments = await prisma.courseEnrollment.findMany({
       where: { courseId, status: 'ACTIVE' },
       select: { studentId: true },
     });
 
-    // Create session
+    const sessionData = {
+      courseId,
+      date: parsedDate,
+      createdById: req.user.userId,
+    };
+    if (topic && String(topic).trim()) {
+      sessionData.topic = String(topic).trim();
+    }
+
     const session = await prisma.attendanceSession.create({
-      data: {
-        courseId,
-        date: parsedDate,
-        createdById: req.user.userId,
-      },
+      data: sessionData,
       include: {
         createdBy: { select: { name: true } },
       },
@@ -130,7 +136,7 @@ exports.createSession = async (req, res) => {
       id: session.id,
       courseId: session.courseId,
       date: session.date ? new Date(session.date).toISOString().slice(0, 10) : date,
-      topic: topic || `Lecture Session (${date})`,
+      topic: session.topic || topic || `Lecture Session (${date})`,
       createdBy: session.createdBy?.name || req.user.userId,
       records: createdRecords.map((r) => ({
         id: r.id,
@@ -148,7 +154,6 @@ exports.createSession = async (req, res) => {
 
 /**
  * PUT /api/attendance/session/:sessionId/record
- * Update attendance status for a student (Faculty/Admin).
  */
 exports.updateRecord = async (req, res) => {
   try {
@@ -185,7 +190,6 @@ exports.updateRecord = async (req, res) => {
 
 /**
  * POST /api/attendance/session/:sessionId/mark-all
- * Mark all students in session as PRESENT (Faculty/Admin).
  */
 exports.markAllPresent = async (req, res) => {
   try {
@@ -220,12 +224,20 @@ exports.markAllPresent = async (req, res) => {
 
 /**
  * GET /api/attendance/student/course/:courseId
- * Retrieve the current student's personal attendance stats and sessions for a course.
  */
 exports.getStudentAttendance = async (req, res) => {
   try {
     const { courseId } = req.params;
     const studentId = req.user.userId;
+
+    if (req.user.role === 'STUDENT' && prisma.courseEnrollment?.findUnique) {
+      const enrollment = await prisma.courseEnrollment.findUnique({
+        where: { courseId_studentId: { courseId, studentId } },
+      });
+      if (enrollment === null || (enrollment && enrollment.status !== 'ACTIVE')) {
+        return res.status(403).json({ error: 'You must be actively enrolled in this course to view attendance.' });
+      }
+    }
 
     const sessions = await prisma.attendanceSession.findMany({
       where: { courseId },
@@ -248,18 +260,20 @@ exports.getStudentAttendance = async (req, res) => {
       else if (status === 'LATE') lateCount += 1;
       else absentCount += 1;
 
+      const dateStr = s.date ? new Date(s.date).toISOString().slice(0, 10) : '';
       return {
         sessionId: s.id,
-        date: s.date ? new Date(s.date).toISOString().slice(0, 10) : '',
-        topic: `Lecture Session (${s.date ? new Date(s.date).toISOString().slice(0, 10) : ''})`,
+        date: dateStr,
+        topic: s.topic || `Lecture Session (${dateStr})`,
         status,
       };
     });
 
     const totalSessions = sessionLogs.length;
-    const derivedPercentage = totalSessions > 0
-      ? Math.round(((presentCount + lateCount * 0.5) / totalSessions) * 100)
-      : 100;
+    const derivedPercentage =
+      totalSessions > 0
+        ? Math.round(((presentCount + lateCount * 0.5) / totalSessions) * 100)
+        : 100;
 
     res.json({
       courseId,
@@ -275,4 +289,3 @@ exports.getStudentAttendance = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch student attendance.' });
   }
 };
-

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { announcementService } from '../../../services/courseService';
 
 export function OverviewTab({
   course,
@@ -8,12 +9,26 @@ export function OverviewTab({
   isEnrolled,
   enrolling,
   handleEnroll,
-  assignments,
+  assignments = [],
   onSelectTab,
 }) {
   const [assessmentsPanelOpen, setAssessmentsPanelOpen] = useState(true);
+  const [announcements, setAnnouncements] = useState([]);
 
-  // Check if any assignment is due within 24 hours
+  useEffect(() => {
+    let isMounted = true;
+    if ((isEnrolled || isCreatorOrStaff) && course?.id) {
+      announcementService.fetchByCourse(course.id).then((list) => {
+        if (isMounted && Array.isArray(list)) {
+          setAnnouncements(list.slice(0, 3));
+        }
+      });
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [course?.id, isEnrolled, isCreatorOrStaff]);
+
   const hasSoonDue = assignments.some((a) => {
     const diff = new Date(a.dueDate) - new Date();
     return diff > 0 && diff < 86400000;
@@ -21,9 +36,7 @@ export function OverviewTab({
 
   return (
     <div className="p-6 space-y-6">
-      {/* A. Hero Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-white/[0.02] dark:backdrop-blur-xl border border-slate-200/80 dark:border-white/5 p-6 sm:p-8 shadow-xs transition-colors">
-        {/* Subtle radial gradient flair */}
         <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-cyan-500/10 dark:bg-cyan-500/10 blur-3xl" />
 
         <div className="relative">
@@ -40,7 +53,10 @@ export function OverviewTab({
           )}
           <div className="mt-5 flex flex-wrap items-center gap-4">
             <p className="text-xs text-slate-500 dark:text-gray-400">
-              Instructor: <span className="text-slate-800 dark:text-zinc-200 font-semibold">{instructorsText}</span>
+              Instructor:{' '}
+              <span className="text-slate-800 dark:text-zinc-200 font-semibold">
+                {instructorsText}
+              </span>
             </p>
             {isCreatorOrStaff ? (
               <span className="text-[10px] font-bold bg-slate-100 dark:bg-white/[0.04] text-slate-700 dark:text-gray-300 px-2.5 py-1 rounded-md border border-slate-200 dark:border-white/10">
@@ -63,27 +79,27 @@ export function OverviewTab({
         </div>
       </div>
 
-      {/* B. Split-Screen Dashboard Grid */}
       <div className="grid grid-cols-12 gap-6">
-        {/* Main Column */}
         <div
           className={`transition-all duration-300 ease-in-out space-y-6 ${
             assessmentsPanelOpen ? 'col-span-12 lg:col-span-8' : 'col-span-12'
           }`}
         >
-          {/* Course Description / Syllabus */}
           <div className="rounded-2xl bg-white dark:bg-white/[0.02] dark:backdrop-blur-xl border border-slate-200/80 dark:border-white/5 p-6 shadow-xs transition-colors">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Course Syllabus</h3>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">
+              Course Syllabus
+            </h3>
             <p className="text-xs leading-relaxed text-slate-600 dark:text-gray-400">
               {course.description ||
                 'This course covers key academic concepts including theory, practical lab work, and applied research methodology. Students will gain hands-on experience with modern frameworks and tools through structured assignments and collaborative projects.'}
             </p>
           </div>
 
-          {/* Recent Announcements Feed */}
           <div className="rounded-2xl bg-white dark:bg-white/[0.02] dark:backdrop-blur-xl border border-slate-200/80 dark:border-white/5 p-6 shadow-xs transition-colors">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Recent Announcements</h3>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                Recent Announcements
+              </h3>
               <button
                 onClick={() => onSelectTab('announcements')}
                 className="text-[11px] font-semibold text-cyan-600 dark:text-cyan-400 hover:underline cursor-pointer"
@@ -92,34 +108,48 @@ export function OverviewTab({
               </button>
             </div>
             <div className="space-y-3">
-              <AnnouncementCard
-                title="Exam Dates Finalized"
-                author={instructorsText}
-                time="2 hours ago"
-                snippet="The midterm exam has been scheduled for Nov 25th in Room 302. Please review all modules before the deadline."
-              />
-              <AnnouncementCard
-                title="New Practice Dataset Uploaded"
-                author={instructorsText}
-                time="Yesterday"
-                snippet="Please review module 1 practice dataset files prior to Friday's lecture. Office hours are open for questions."
-              />
+              {announcements.length > 0 ? (
+                announcements.map((ann) => (
+                  <AnnouncementCard
+                    key={ann.id}
+                    title={ann.title}
+                    author={ann.author || instructorsText}
+                    time={ann.time}
+                    snippet={ann.message || ann.content}
+                  />
+                ))
+              ) : (
+                <p className="text-xs text-slate-400 dark:text-gray-500 italic">
+                  {isEnrolled || isCreatorOrStaff
+                    ? 'No announcements posted for this course yet.'
+                    : 'Enroll in this course to view instructor announcements.'}
+                </p>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Collapsible Right Column — Upcoming Assessments */}
         {assessmentsPanelOpen ? (
           <div className="hidden lg:block col-span-4 transition-all duration-300 ease-in-out">
             <div className="rounded-2xl bg-white dark:bg-white/[0.02] dark:backdrop-blur-xl border border-slate-200/80 dark:border-white/5 p-5 sticky top-4 shadow-xs transition-colors">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Upcoming Assessments</h3>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Upcoming Assessments
+                </h3>
                 <button
                   onClick={() => setAssessmentsPanelOpen(false)}
                   className="p-1 text-slate-400 hover:text-slate-600 dark:text-gray-400 dark:hover:text-gray-200 transition cursor-pointer rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.05]"
                   title="Collapse panel"
                 >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M13 17l5-5-5-5M6 17l5-5-5-5" />
                   </svg>
                 </button>
@@ -134,33 +164,44 @@ export function OverviewTab({
                     return (
                       <div
                         key={asm.id}
-                        className="p-3 rounded-xl bg-slate-50 dark:bg-gray-900/40 border border-slate-200/60 dark:border-white/5 transition-colors"
+                        onClick={() => onSelectTab('assignments')}
+                        className="p-3 rounded-xl bg-slate-50 dark:bg-gray-900/40 border border-slate-200/60 dark:border-white/5 transition-colors cursor-pointer hover:border-cyan-400/50"
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{asm.title}</h4>
-                          {isUrgent && <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse shrink-0" />}
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                            {asm.title}
+                          </h4>
+                          {isUrgent && (
+                            <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+                          )}
                         </div>
                         <p className="text-[10px] text-slate-500 dark:text-gray-400 mt-1 font-medium">
                           Due:{' '}
-                          <span className={isUrgent ? 'text-red-600 dark:text-red-400 font-bold' : 'text-slate-700 dark:text-gray-300'}>
-                            {due.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                          <span
+                            className={
+                              isUrgent
+                                ? 'text-red-600 dark:text-red-400 font-bold'
+                                : 'text-slate-700 dark:text-gray-300'
+                            }
+                          >
+                            {due.toLocaleDateString(undefined, {
+                              month: 'short',
+                              day: 'numeric',
+                            })}
                           </span>
                         </p>
                       </div>
                     );
                   })
                 ) : (
-                  <>
-                    <AssessmentPlaceholder title="Assignment 3: ER Diagram" due="Nov 18" />
-                    <AssessmentPlaceholder title="Linear Algebra Quiz" due="Nov 20" urgent />
-                    <AssessmentPlaceholder title="Web Dev Quiz 1" due="Nov 24" />
-                  </>
+                  <p className="text-xs text-slate-400 dark:text-gray-500 italic">
+                    No upcoming assignments scheduled.
+                  </p>
                 )}
               </div>
             </div>
           </div>
         ) : (
-          /* Minimized Strip */
           <div className="hidden lg:flex col-span-1 transition-all duration-300 ease-in-out">
             <button
               onClick={() => setAssessmentsPanelOpen(true)}
@@ -170,10 +211,6 @@ export function OverviewTab({
               {hasSoonDue && (
                 <span className="absolute top-3 right-2 h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse ring-2 ring-white dark:ring-[#030712]" />
               )}
-              <svg className="h-4 w-4 text-slate-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" />
-                <path d="M16 2v4M8 2v4M3 10h18" />
-              </svg>
               <span className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider [writing-mode:vertical-lr]">
                 Assessments
               </span>
@@ -190,23 +227,15 @@ function AnnouncementCard({ title, author, time, snippet }) {
     <div className="p-4 rounded-xl bg-slate-50 dark:bg-gray-900/40 border border-slate-200/60 dark:border-white/5 transition-colors">
       <div className="flex items-center justify-between gap-4">
         <h4 className="text-xs font-bold text-slate-900 dark:text-white">{title}</h4>
-        <span className="text-[10px] text-slate-400 dark:text-gray-500 font-medium shrink-0">{time}</span>
+        <span className="text-[10px] text-slate-400 dark:text-gray-500 font-medium shrink-0">
+          {time}
+        </span>
       </div>
-      <p className="text-[11px] text-slate-600 dark:text-gray-400 mt-1.5 leading-relaxed">{snippet}</p>
-      <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-2 font-medium">— {author}</p>
-    </div>
-  );
-}
-
-function AssessmentPlaceholder({ title, due, urgent = false }) {
-  return (
-    <div className="p-3 rounded-xl bg-slate-50 dark:bg-gray-900/40 border border-slate-200/60 dark:border-white/5 transition-colors">
-      <div className="flex items-center justify-between gap-2">
-        <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{title}</h4>
-        {urgent && <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse shrink-0" />}
-      </div>
-      <p className="text-[10px] text-slate-500 dark:text-gray-400 mt-1 font-medium">
-        Due: <span className={urgent ? 'text-red-600 dark:text-red-400 font-bold' : 'text-slate-700 dark:text-gray-300'}>{due}</span>
+      <p className="text-[11px] text-slate-600 dark:text-gray-400 mt-1.5 leading-relaxed">
+        {snippet}
+      </p>
+      <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-2 font-medium">
+        — {author}
       </p>
     </div>
   );

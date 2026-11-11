@@ -1,7 +1,10 @@
+const crypto = require('crypto');
 const prisma = require('../lib/prisma');
 const bcrypt = require('bcryptjs');
 const cloudinary = require('../config/cloudinary');
 const { uploadBufferToCloudinary } = require('../Middleware/upload');
+
+const STRONG_PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8,}$/;
 
 /**
  * Extracts the Cloudinary public_id from a Cloudinary URL.
@@ -29,6 +32,7 @@ exports.getProfile = async (req, res) => {
         username: true,
         email: true,
         role: true,
+        status: true,
         profileImage: true,
         mobileNumber: true,
         department: true,
@@ -56,7 +60,7 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { name, mobileNumber, mobile_number, department, semester, bio } = req.body;
+    const { name, email, username, mobileNumber, mobile_number, department, semester, bio } = req.body;
 
     const targetMobile = mobileNumber !== undefined ? mobileNumber : mobile_number;
     const dataToUpdate = {};
@@ -68,8 +72,49 @@ exports.updateProfile = async (req, res) => {
       dataToUpdate.name = name.trim();
     }
 
+    if (email !== undefined && String(email).trim()) {
+      const cleanEmail = String(email).trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/i.test(cleanEmail)) {
+        return res.status(400).json({ error: 'Please enter a valid email address.' });
+      }
+      dataToUpdate.email = cleanEmail;
+    }
+
+    if (username !== undefined && String(username).trim()) {
+      dataToUpdate.username = String(username).trim();
+    }
+
     if (targetMobile !== undefined) {
-      dataToUpdate.mobileNumber = targetMobile ? String(targetMobile).trim() : null;
+      if (targetMobile && String(targetMobile).trim()) {
+        const cleanedMobile = String(targetMobile).replace(/[\s\-()]/g, '');
+        if (!/^\+?\d{10,15}$/.test(cleanedMobile)) {
+          return res.status(400).json({ error: 'Phone number must be 10 to 15 digits.' });
+        }
+        dataToUpdate.mobileNumber = cleanedMobile;
+      } else {
+        dataToUpdate.mobileNumber = null;
+      }
+    }
+
+    // Check uniqueness for email, username, or mobileNumber if any are being updated
+    const uniqueChecks = [];
+    if (dataToUpdate.email) uniqueChecks.push({ email: dataToUpdate.email });
+    if (dataToUpdate.username) uniqueChecks.push({ username: dataToUpdate.username });
+    if (dataToUpdate.mobileNumber) uniqueChecks.push({ mobileNumber: dataToUpdate.mobileNumber });
+
+    if (uniqueChecks.length > 0 && prisma.user.findFirst) {
+      const conflict = await prisma.user.findFirst({
+        where: {
+          id: { not: userId },
+          OR: uniqueChecks,
+        },
+      });
+      if (conflict) {
+        if (dataToUpdate.mobileNumber && conflict.mobileNumber === dataToUpdate.mobileNumber) {
+          return res.status(409).json({ error: 'Mobile number is already in use by another account.' });
+        }
+        return res.status(409).json({ error: 'Email or username is already in use by another account.' });
+      }
     }
 
     if (department !== undefined) {
@@ -93,6 +138,7 @@ exports.updateProfile = async (req, res) => {
         username: true,
         email: true,
         role: true,
+        status: true,
         profileImage: true,
         mobileNumber: true,
         department: true,
@@ -111,8 +157,6 @@ exports.updateProfile = async (req, res) => {
 
 /**
  * POST /api/users/profile/photo
- * Uploads a new profile picture to Cloudinary, removes any previously
- * existing Cloudinary picture to save storage space, and updates the DB.
  */
 exports.updateProfilePhoto = async (req, res) => {
   try {
@@ -135,13 +179,11 @@ exports.updateProfilePhoto = async (req, res) => {
       return res.status(404).json({ error: 'User not found.' });
     }
 
-    // Upload new profile image to Cloudinary in the "lms/profiles" folder
     const uploadResult = await uploadBufferToCloudinary(req.file.buffer, {
       folder: 'lms/profiles',
       resourceType: 'image',
     });
 
-    // Update user record in database
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { profileImage: uploadResult.secure_url },
@@ -155,7 +197,6 @@ exports.updateProfilePhoto = async (req, res) => {
       },
     });
 
-    // Keep the old image available until the replacement is safely stored.
     if (currentUser.profileImage) {
       const oldPublicId = extractCloudinaryPublicId(currentUser.profileImage);
       if (oldPublicId) {
@@ -180,8 +221,6 @@ exports.updateProfilePhoto = async (req, res) => {
 
 /**
  * DELETE /api/users/profile/photo
- * Deletes the user's profile picture from Cloudinary to save storage,
- * sets profileImage to null in the database, reverting to the default avatar.
  */
 exports.deleteProfilePhoto = async (req, res) => {
   try {
@@ -233,7 +272,6 @@ exports.deleteProfilePhoto = async (req, res) => {
 
 /**
  * GET /api/users (Admin only)
- * List users with optional search and role filtering.
  */
 exports.getAllUsers = async (req, res) => {
   try {
@@ -260,6 +298,7 @@ exports.getAllUsers = async (req, res) => {
         username: true,
         email: true,
         role: true,
+        status: true,
         profileImage: true,
         mobileNumber: true,
         department: true,
@@ -285,7 +324,6 @@ exports.getAllUsers = async (req, res) => {
 
 /**
  * POST /api/users (Admin only)
- * Provision a new user account.
  */
 exports.createUser = async (req, res) => {
   try {
@@ -298,20 +336,34 @@ exports.createUser = async (req, res) => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanUsername = (username || cleanEmail.split('@')[0]).trim();
     const normalizedRole = role.toUpperCase();
+    const cleanedMobile = mobileNumber ? String(mobileNumber).replace(/[\s\-()]/g, '') : null;
 
     if (!['STUDENT', 'FACULTY', 'ADMIN'].includes(normalizedRole)) {
       return res.status(400).json({ error: 'Invalid role specified.' });
     }
 
+    if (cleanedMobile && !/^\+?\d{10,15}$/.test(cleanedMobile)) {
+      return res.status(400).json({ error: 'Phone number must be 10 to 15 digits.' });
+    }
+
+    const orConditions = [{ email: cleanEmail }, { username: cleanUsername }];
+    if (cleanedMobile) orConditions.push({ mobileNumber: cleanedMobile });
+
     const existing = await prisma.user.findFirst({
-      where: { OR: [{ email: cleanEmail }, { username: cleanUsername }] },
+      where: { OR: orConditions },
     });
     if (existing) {
+      if (cleanedMobile && existing.mobileNumber === cleanedMobile) {
+        return res.status(409).json({ error: 'User with this mobile number already exists.' });
+      }
       return res.status(409).json({ error: 'User with this email or username already exists.' });
     }
 
-    const defaultPass = password || 'Temporary123!';
-    const hashedPassword = await bcrypt.hash(defaultPass, 10);
+    const initialPassword =
+      password ||
+      process.env.DEFAULT_USER_PASSWORD ||
+      `Temp${crypto.randomBytes(6).toString('hex')}!1A`;
+    const hashedPassword = await bcrypt.hash(initialPassword, 10);
 
     const user = await prisma.user.create({
       data: {
@@ -320,7 +372,8 @@ exports.createUser = async (req, res) => {
         email: cleanEmail,
         passwordHash: hashedPassword,
         role: normalizedRole,
-        mobileNumber: mobileNumber ? String(mobileNumber).trim() : null,
+        status: 'ACTIVE',
+        mobileNumber: cleanedMobile,
         department: department ? String(department).trim() : null,
         semester: semester ? String(semester).trim() : null,
         bio: bio ? String(bio).trim() : null,
@@ -332,6 +385,7 @@ exports.createUser = async (req, res) => {
         username: true,
         email: true,
         role: true,
+        status: true,
         mobileNumber: true,
         department: true,
         semester: true,
@@ -349,12 +403,11 @@ exports.createUser = async (req, res) => {
 
 /**
  * PUT /api/users/:id (Admin only)
- * Update a user's details or role.
  */
 exports.updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, role, mobileNumber, email, department, semester, bio } = req.body;
+    const { name, role, status, mobileNumber, email, department, semester, bio } = req.body;
 
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) return res.status(404).json({ error: 'User not found.' });
@@ -362,12 +415,33 @@ exports.updateUser = async (req, res) => {
     const updateData = {};
     if (name) updateData.name = name.trim();
     if (email) updateData.email = email.trim().toLowerCase();
-    if (mobileNumber !== undefined) updateData.mobileNumber = mobileNumber ? String(mobileNumber).trim() : null;
+    if (mobileNumber !== undefined) {
+      updateData.mobileNumber = mobileNumber ? String(mobileNumber).replace(/[\s\-()]/g, '') : null;
+    }
     if (department !== undefined) updateData.department = department ? String(department).trim() : null;
     if (semester !== undefined) updateData.semester = semester ? String(semester).trim() : null;
     if (bio !== undefined) updateData.bio = bio ? String(bio).trim() : null;
     if (role && ['STUDENT', 'FACULTY', 'ADMIN'].includes(role.toUpperCase())) {
       updateData.role = role.toUpperCase();
+    }
+    if (status && ['ACTIVE', 'SUSPENDED'].includes(status.toUpperCase())) {
+      updateData.status = status.toUpperCase();
+    }
+
+    const uniqueChecks = [];
+    if (updateData.email) uniqueChecks.push({ email: updateData.email });
+    if (updateData.mobileNumber) uniqueChecks.push({ mobileNumber: updateData.mobileNumber });
+
+    if (uniqueChecks.length > 0 && prisma.user.findFirst) {
+      const conflict = await prisma.user.findFirst({
+        where: {
+          id: { not: id },
+          OR: uniqueChecks,
+        },
+      });
+      if (conflict) {
+        return res.status(409).json({ error: 'Email or mobile number is already assigned to another user.' });
+      }
     }
 
     const updated = await prisma.user.update({
@@ -379,6 +453,7 @@ exports.updateUser = async (req, res) => {
         username: true,
         email: true,
         role: true,
+        status: true,
         profileImage: true,
         mobileNumber: true,
         department: true,
@@ -397,7 +472,6 @@ exports.updateUser = async (req, res) => {
 
 /**
  * DELETE /api/users/:id (Admin only)
- * Delete a user by ID.
  */
 exports.deleteUser = async (req, res) => {
   try {
@@ -416,7 +490,6 @@ exports.deleteUser = async (req, res) => {
 
 /**
  * GET /api/users/stats (Admin only)
- * System-wide overview metrics for the Admin dashboard.
  */
 exports.getSystemStats = async (req, res) => {
   try {
@@ -447,7 +520,6 @@ exports.getSystemStats = async (req, res) => {
 
 /**
  * PUT /api/users/change-password
- * Change current user password with old password verification and bcrypt hash.
  */
 exports.changePassword = async (req, res) => {
   try {
@@ -457,8 +529,10 @@ exports.changePassword = async (req, res) => {
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ error: 'Current password and new password are required.' });
     }
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'New password must be at least 6 characters.' });
+    if (!STRONG_PASSWORD_REGEX.test(newPassword)) {
+      return res.status(400).json({
+        error: 'New password must be at least 8 characters and include uppercase, lowercase, number, and special symbol.',
+      });
     }
 
     const user = await prisma.user.findUnique({ where: { id: userId } });

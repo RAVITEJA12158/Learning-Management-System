@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
@@ -6,10 +7,20 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting database seeding for Learning Management System...');
 
-  // 1. Password Hashes
-  const adminPasswordHash = await bcrypt.hash('Admin123!', 10);
-  const facultyPasswordHash = await bcrypt.hash('Faculty123!', 10);
-  const studentPasswordHash = await bcrypt.hash('Student123!', 10);
+  const adminRawPassword = process.env.SEED_ADMIN_PASSWORD;
+  const facultyRawPassword = process.env.SEED_FACULTY_PASSWORD;
+  const studentRawPassword = process.env.SEED_STUDENT_PASSWORD;
+
+  if (!adminRawPassword || !facultyRawPassword || !studentRawPassword) {
+    throw new Error(
+      'Missing seed passwords. Please set SEED_ADMIN_PASSWORD, SEED_FACULTY_PASSWORD, and SEED_STUDENT_PASSWORD in backend/.env before running the seed script.'
+    );
+  }
+
+  // 1. Password Hashes (from environment variables — no hardcoded secrets)
+  const adminPasswordHash = await bcrypt.hash(adminRawPassword, 10);
+  const facultyPasswordHash = await bcrypt.hash(facultyRawPassword, 10);
+  const studentPasswordHash = await bcrypt.hash(studentRawPassword, 10);
 
   // User IDs (Deterministic UUIDs)
   const ADMIN_ID = 'a0000000-0000-4000-8000-000000000001';
@@ -33,7 +44,6 @@ async function main() {
 
   console.log('👤 Seeding Users (Admin, Faculty, Students)...');
 
-  // --- Seed Users ---
   const users = [
     {
       id: ADMIN_ID,
@@ -42,6 +52,7 @@ async function main() {
       email: 'admin@university.edu',
       passwordHash: adminPasswordHash,
       role: 'ADMIN',
+      status: 'ACTIVE',
       mobileNumber: '+15550001111',
       department: 'Academic Administration',
       semester: 'Fall 2026',
@@ -56,6 +67,7 @@ async function main() {
       email: 'alan.turing@university.edu',
       passwordHash: facultyPasswordHash,
       role: 'FACULTY',
+      status: 'ACTIVE',
       mobileNumber: '+15551112233',
       department: 'Computer Science & AI',
       semester: 'Fall 2026',
@@ -70,6 +82,7 @@ async function main() {
       email: 'grace.hopper@university.edu',
       passwordHash: facultyPasswordHash,
       role: 'FACULTY',
+      status: 'ACTIVE',
       mobileNumber: '+15552223344',
       department: 'Software Engineering',
       semester: 'Fall 2026',
@@ -84,6 +97,7 @@ async function main() {
       email: 'katherine.johnson@university.edu',
       passwordHash: facultyPasswordHash,
       role: 'FACULTY',
+      status: 'ACTIVE',
       mobileNumber: '+15553334455',
       department: 'Mathematics & Applied Statistics',
       semester: 'Fall 2026',
@@ -98,6 +112,7 @@ async function main() {
       email: 'tim.bl@university.edu',
       passwordHash: facultyPasswordHash,
       role: 'FACULTY',
+      status: 'ACTIVE',
       mobileNumber: '+15554445566',
       department: 'Web & Distributed Systems',
       semester: 'Fall 2026',
@@ -112,6 +127,7 @@ async function main() {
       email: 'sarah.jensen@university.edu',
       passwordHash: studentPasswordHash,
       role: 'STUDENT',
+      status: 'ACTIVE',
       mobileNumber: '+15552348910',
       department: 'Computer Science & Engineering',
       semester: 'Fall 2026',
@@ -126,6 +142,7 @@ async function main() {
       email: 'arjun.rao@university.edu',
       passwordHash: studentPasswordHash,
       role: 'STUDENT',
+      status: 'ACTIVE',
       mobileNumber: '+15558765432',
       department: 'Computer Science & Engineering',
       semester: 'Fall 2026',
@@ -140,6 +157,7 @@ async function main() {
       email: 'ishita.nair@university.edu',
       passwordHash: studentPasswordHash,
       role: 'STUDENT',
+      status: 'ACTIVE',
       mobileNumber: '+15559871234',
       department: 'Data Science & Analytics',
       semester: 'Fall 2026',
@@ -154,6 +172,7 @@ async function main() {
       email: 'alex.chen@university.edu',
       passwordHash: studentPasswordHash,
       role: 'STUDENT',
+      status: 'ACTIVE',
       mobileNumber: '+15553456789',
       department: 'Software Engineering',
       semester: 'Fall 2026',
@@ -171,6 +190,7 @@ async function main() {
         username: u.username,
         passwordHash: u.passwordHash,
         role: u.role,
+        status: u.status,
         mobileNumber: u.mobileNumber,
         department: u.department,
         semester: u.semester,
@@ -184,7 +204,6 @@ async function main() {
 
   console.log('📚 Seeding Courses...');
 
-  // --- Seed Courses ---
   const courses = [
     {
       id: COURSE_ML_ID,
@@ -285,18 +304,14 @@ async function main() {
   console.log('🎓 Enrolling Students...');
 
   const enrollments = [
-    // Course 1 (CS401)
     { courseId: COURSE_ML_ID, studentId: STUDENT_SARAH_ID, status: 'ACTIVE' },
     { courseId: COURSE_ML_ID, studentId: STUDENT_ARJUN_ID, status: 'ACTIVE' },
     { courseId: COURSE_ML_ID, studentId: STUDENT_ISHITA_ID, status: 'ACTIVE' },
     { courseId: COURSE_ML_ID, studentId: STUDENT_ALEX_ID, status: 'ACTIVE' },
-    // Course 2 (CS350)
     { courseId: COURSE_WEB_ID, studentId: STUDENT_SARAH_ID, status: 'ACTIVE' },
     { courseId: COURSE_WEB_ID, studentId: STUDENT_ARJUN_ID, status: 'ACTIVE' },
-    // Course 3 (MATH202)
     { courseId: COURSE_MATH_ID, studentId: STUDENT_SARAH_ID, status: 'ACTIVE' },
     { courseId: COURSE_MATH_ID, studentId: STUDENT_ISHITA_ID, status: 'ACTIVE' },
-    // Course 4 (CS102)
     { courseId: COURSE_DSA_ID, studentId: STUDENT_ALEX_ID, status: 'ACTIVE' },
     { courseId: COURSE_DSA_ID, studentId: STUDENT_ARJUN_ID, status: 'ACTIVE' },
   ];
@@ -311,7 +326,6 @@ async function main() {
 
   console.log('📦 Seeding Course Modules and Content Items...');
 
-  // Modules for CS401
   const MOD_1_ID = 'm0000000-0000-4000-8000-000000000001';
   const MOD_2_ID = 'm0000000-0000-4000-8000-000000000002';
   const MOD_3_ID = 'm0000000-0000-4000-8000-000000000003';
@@ -359,7 +373,6 @@ async function main() {
     });
   }
 
-  // Content Items
   const CNT_101_ID = 'cnt00000-0000-4000-8000-000000000101';
   const CNT_102_ID = 'cnt00000-0000-4000-8000-000000000102';
   const CNT_103_ID = 'cnt00000-0000-4000-8000-000000000103';
@@ -506,7 +519,7 @@ async function main() {
       title: 'Assignment 1: Bayesian Classifier & Posterior Estimation',
       description: 'Implement Gaussian & Multinomial Naive Bayes classifier from scratch. Evaluate precision, recall, and F1-score on benchmark data.',
       maxMarks: 100,
-      dueDate: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000), // 8 days from now
+      dueDate: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
       allowLateSubmission: true,
       createdById: FACULTY_TURING_ID,
     },
@@ -546,7 +559,6 @@ async function main() {
     });
   }
 
-  // Submissions
   const submissions = [
     {
       assignmentId: ASM_1_ID,
@@ -647,7 +659,6 @@ async function main() {
     });
   }
 
-  // Quiz 1 Questions
   const quiz1Questions = [
     {
       id: 'qu000000-0000-4000-8000-000000000001',
@@ -749,7 +760,6 @@ async function main() {
     }
   }
 
-  // Quiz Attempts
   const ATTEMPT_1_ID = 'att00000-0000-4000-8000-000000000001';
   await prisma.quizAttempt.upsert({
     where: { id: ATTEMPT_1_ID },
@@ -768,11 +778,11 @@ async function main() {
   console.log('⚖️ Seeding Grade Components (Rubric)...');
 
   const gradeComponents = [
-    { courseId: COURSE_ML_ID, name: 'Assignments', type: 'assignment', weight: 20.0 },
-    { courseId: COURSE_ML_ID, name: 'Quizzes', type: 'quiz', weight: 20.0 },
-    { courseId: COURSE_ML_ID, name: 'Midterm Exam', type: 'exam', weight: 25.0 },
-    { courseId: COURSE_ML_ID, name: 'Final Exam', type: 'exam', weight: 30.0 },
-    { courseId: COURSE_ML_ID, name: 'Participation', type: 'participation', weight: 5.0 },
+    { courseId: COURSE_ML_ID, name: 'Assignments', type: 'ASSIGNMENTS', weight: 20.0 },
+    { courseId: COURSE_ML_ID, name: 'Quizzes', type: 'QUIZZES', weight: 20.0 },
+    { courseId: COURSE_ML_ID, name: 'Midterm Exam', type: 'MID_EXAM', weight: 25.0 },
+    { courseId: COURSE_ML_ID, name: 'Final Exam', type: 'FINAL_EXAM', weight: 30.0 },
+    { courseId: COURSE_ML_ID, name: 'Participation', type: 'PARTICIPATION', weight: 5.0 },
   ];
 
   await prisma.gradeComponent.deleteMany({ where: { courseId: COURSE_ML_ID } });
@@ -790,6 +800,7 @@ async function main() {
       id: ATT_SESS_1_ID,
       courseId: COURSE_ML_ID,
       date: new Date('2026-10-22'),
+      topic: 'Bayesian Foundations & Prior Probability',
       createdById: FACULTY_TURING_ID,
       records: [
         { studentId: STUDENT_SARAH_ID, status: 'PRESENT' },
@@ -802,6 +813,7 @@ async function main() {
       id: ATT_SESS_2_ID,
       courseId: COURSE_ML_ID,
       date: new Date('2026-10-27'),
+      topic: 'Linear Regression & Gradient Descent',
       createdById: FACULTY_TURING_ID,
       records: [
         { studentId: STUDENT_SARAH_ID, status: 'PRESENT' },
@@ -814,6 +826,7 @@ async function main() {
       id: ATT_SESS_3_ID,
       courseId: COURSE_ML_ID,
       date: new Date('2026-10-29'),
+      topic: 'Regularization (Ridge & Lasso) Lab',
       createdById: FACULTY_TURING_ID,
       records: [
         { studentId: STUDENT_SARAH_ID, status: 'PRESENT' },
@@ -826,6 +839,7 @@ async function main() {
       id: ATT_SESS_4_ID,
       courseId: COURSE_ML_ID,
       date: new Date('2026-11-03'),
+      topic: 'Multi-Layer Perceptrons & Backpropagation',
       createdById: FACULTY_TURING_ID,
       records: [
         { studentId: STUDENT_SARAH_ID, status: 'PRESENT' },
@@ -839,11 +853,12 @@ async function main() {
   for (const sess of attendanceSessions) {
     await prisma.attendanceSession.upsert({
       where: { id: sess.id },
-      update: { date: sess.date },
+      update: { date: sess.date, topic: sess.topic },
       create: {
         id: sess.id,
         courseId: sess.courseId,
         date: sess.date,
+        topic: sess.topic,
         createdById: sess.createdById,
       },
     });
@@ -871,6 +886,9 @@ async function main() {
     update: {
       title: 'Clarification on Module 1 — Laplace Smoothing in Naive Bayes',
       content: 'When computing P(x_i | y) with Laplace smoothing (α = 1), do we add |V| (vocabulary size) or the number of feature classes to the denominator for multinomial text classification?',
+      pinned: true,
+      resolved: true,
+      likes: 4,
     },
     create: {
       id: DISC_1_ID,
@@ -878,6 +896,9 @@ async function main() {
       userId: STUDENT_ISHITA_ID,
       title: 'Clarification on Module 1 — Laplace Smoothing in Naive Bayes',
       content: 'When computing P(x_i | y) with Laplace smoothing (α = 1), do we add |V| (vocabulary size) or the number of feature classes to the denominator for multinomial text classification?',
+      pinned: true,
+      resolved: true,
+      likes: 4,
     },
   });
 
@@ -911,6 +932,7 @@ async function main() {
     update: {
       title: 'Study Group & Practice Session for Upcoming Midterm Exam',
       content: 'Setting up a collaborative review session this Saturday at 4:00 PM to work through past Bayesian derivation problems. Reply below if you want to join!',
+      likes: 2,
     },
     create: {
       id: DISC_2_ID,
@@ -918,6 +940,7 @@ async function main() {
       userId: STUDENT_ALEX_ID,
       title: 'Study Group & Practice Session for Upcoming Midterm Exam',
       content: 'Setting up a collaborative review session this Saturday at 4:00 PM to work through past Bayesian derivation problems. Reply below if you want to join!',
+      likes: 2,
     },
   });
 
@@ -930,6 +953,7 @@ async function main() {
       createdById: FACULTY_TURING_ID,
       title: 'Midterm Exam Schedule & Room Allocation Finalized',
       message: 'The midterm examination for this course has been officially scheduled for Nov 25th in Lecture Hall 302. Please review Modules 1 and 2 thoroughly.',
+      pinned: true,
     },
     {
       id: 'an000000-0000-4000-8000-000000000002',
@@ -937,6 +961,7 @@ async function main() {
       createdById: FACULTY_TURING_ID,
       title: 'New Benchmark Dataset & Jupyter Notebook Uploaded',
       message: 'The Module 2 practice dataset and starter notebook have been uploaded under Course Modules. Please verify your local Python environment before Friday’s lab session.',
+      pinned: false,
     },
     {
       id: 'an000000-0000-4000-8000-000000000003',
@@ -944,13 +969,14 @@ async function main() {
       createdById: FACULTY_TURING_ID,
       title: 'Welcome to Fall 2026 Semester on CourseHub!',
       message: 'Welcome everyone! Please review the course syllabus in Module 1, check the weighted grading rubric in the Grades tab, and introduce yourself in the Discussion Forum.',
+      pinned: false,
     },
   ];
 
   for (const ann of announcements) {
     await prisma.announcement.upsert({
       where: { id: ann.id },
-      update: { title: ann.title, message: ann.message },
+      update: { title: ann.title, message: ann.message, pinned: ann.pinned },
       create: ann,
     });
   }
@@ -1009,14 +1035,6 @@ async function main() {
   }
 
   console.log('✅ Database Seeding Completed Successfully!');
-  console.log('----------------------------------------------------');
-  console.log('🔑 Default User Accounts:');
-  console.log('  👑 ADMIN:   admin@university.edu       / Admin123!   (Secret Code: admin@lms)');
-  console.log('  👨‍🏫 FACULTY: alan.turing@university.edu   / Faculty123!');
-  console.log('  👨‍🏫 FACULTY: grace.hopper@university.edu  / Faculty123!');
-  console.log('  👩‍🎓 STUDENT: sarah.jensen@university.edu   / Student123!');
-  console.log('  👨‍🎓 STUDENT: arjun.rao@university.edu      / Student123!');
-  console.log('----------------------------------------------------');
 }
 
 main()
@@ -1027,4 +1045,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-

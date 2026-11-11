@@ -7,8 +7,10 @@ async function isCourseStaff(courseId, user) {
     include: { instructors: true },
   });
   if (!course) return false;
-  return course.createdById === user.userId ||
-    course.instructors?.some((i) => i.facultyId === user.userId);
+  return (
+    course.createdById === user.userId ||
+    course.instructors?.some((i) => i.facultyId === user.userId)
+  );
 }
 
 async function isEnrolledStudent(courseId, studentId) {
@@ -21,7 +23,6 @@ async function isEnrolledStudent(courseId, studentId) {
 
 /**
  * GET /api/quizzes/course/:courseId
- * List all quizzes for a course, formatted with attempt stats for students.
  */
 exports.getQuizzesByCourse = async (req, res) => {
   try {
@@ -46,12 +47,13 @@ exports.getQuizzesByCourse = async (req, res) => {
         _count: {
           select: { questions: true, attempts: true },
         },
-        attempts: user.role === 'STUDENT'
-          ? {
-              where: { studentId: user.userId },
-              orderBy: { startedAt: 'desc' },
-            }
-          : false,
+        attempts:
+          user.role === 'STUDENT'
+            ? {
+                where: { studentId: user.userId },
+                orderBy: { startedAt: 'desc' },
+              }
+            : false,
       },
       orderBy: { startTime: 'asc' },
     });
@@ -74,6 +76,9 @@ exports.getQuizzesByCourse = async (req, res) => {
         status = 'Completed';
       }
 
+      const questionCount = q._count?.questions || 0;
+      const totalMarks = Number(q.totalMarks);
+
       return {
         id: q.id,
         courseId: q.courseId,
@@ -83,18 +88,26 @@ exports.getQuizzesByCourse = async (req, res) => {
         durationMinutes: q.durationMinutes,
         duration: `${q.durationMinutes} Mins`,
         timeLimit: `${q.durationMinutes} mins`,
-        totalMarks: Number(q.totalMarks),
-        marks: Number(q.totalMarks),
+        totalMarks,
+        marks: totalMarks,
+        points: totalMarks,
         maxAttempts: q.maxAttempts,
         attemptsAllowed: q.maxAttempts,
         attemptsUsed,
         startTime: q.startTime,
         endTime: q.endTime,
-        questionCount: q._count?.questions || 0,
+        questionCount,
+        questions: questionCount,
         status,
+        latestAttemptId: latestAttempt?.id || null,
         score: latestAttempt?.score ? Number(latestAttempt.score) : null,
         highestScore: attempts.length > 0 ? highestScore : null,
-        buttonText: status === 'Completed' ? 'View Results' : status === 'Active' ? 'Start Assessment' : 'View Details',
+        buttonText:
+          status === 'Completed'
+            ? 'View Results'
+            : status === 'Active'
+            ? 'Start Assessment'
+            : 'View Details',
         createdBy: q.createdBy?.name,
       };
     });
@@ -108,8 +121,6 @@ exports.getQuizzesByCourse = async (req, res) => {
 
 /**
  * GET /api/quizzes/:id
- * Get single quiz with questions and options.
- * Hides isCorrect for students taking the quiz.
  */
 exports.getQuizById = async (req, res) => {
   try {
@@ -155,7 +166,6 @@ exports.getQuizById = async (req, res) => {
 
 /**
  * POST /api/quizzes
- * Author a new quiz with questions & options (Faculty/Admin).
  */
 exports.createQuiz = async (req, res) => {
   try {
@@ -164,15 +174,30 @@ exports.createQuiz = async (req, res) => {
       title,
       description,
       durationMinutes,
+      duration,
       maxAttempts,
+      attemptsAllowed,
       startTime,
       endTime,
       totalMarks,
+      points,
       questions,
+      questionsList,
     } = req.body;
 
-    if (!courseId || !title || !durationMinutes || !totalMarks) {
-      return res.status(400).json({ error: 'courseId, title, durationMinutes, and totalMarks are required.' });
+    const parsedDuration = Number(durationMinutes || parseInt(duration, 10));
+    const parsedTotalMarks = Number(totalMarks ?? points);
+    const parsedMaxAttempts = Number(maxAttempts ?? attemptsAllowed) || 1;
+    const rawQuestions = Array.isArray(questions)
+      ? questions
+      : Array.isArray(questionsList)
+      ? questionsList
+      : [];
+
+    if (!courseId || !title || !parsedDuration || !parsedTotalMarks) {
+      return res.status(400).json({
+        error: 'courseId, title, durationMinutes, and totalMarks are required.',
+      });
     }
 
     const staff = await isCourseStaff(courseId, req.user);
@@ -181,35 +206,38 @@ exports.createQuiz = async (req, res) => {
     }
 
     const parsedStart = startTime ? new Date(startTime) : new Date();
-    const parsedEnd = endTime ? new Date(endTime) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const parsedEnd = endTime
+      ? new Date(endTime)
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    const questionsData = Array.isArray(questions)
-      ? questions.map((q, idx) => ({
-          questionText: q.questionText || `Question ${idx + 1}`,
-          questionType: q.questionType || 'MCQ',
-          marks: Number(q.marks) || 1,
-          position: q.position || idx + 1,
-          options: {
-            create: Array.isArray(q.options)
-              ? q.options.map((opt) => ({
-                  optionText: typeof opt === 'string' ? opt : opt.optionText,
-                  isCorrect: typeof opt === 'object' ? Boolean(opt.isCorrect) : false,
-                }))
-              : [],
-          },
-        }))
-      : [];
+    const questionsData = rawQuestions.map((q, idx) => ({
+      questionText: q.questionText || q.question || `Question ${idx + 1}`,
+      questionType: q.questionType || q.type || 'MCQ',
+      marks: Number(q.marks) || Math.max(1, Math.round(parsedTotalMarks / (rawQuestions.length || 1))),
+      position: q.position || idx + 1,
+      options: {
+        create: Array.isArray(q.options)
+          ? q.options.map((opt, optIdx) => ({
+              optionText: typeof opt === 'string' ? opt : opt.optionText,
+              isCorrect:
+                typeof opt === 'object'
+                  ? Boolean(opt.isCorrect)
+                  : Number(q.correctIndex) === optIdx,
+            }))
+          : [],
+      },
+    }));
 
     const newQuiz = await prisma.quiz.create({
       data: {
         courseId,
         title: title.trim(),
         description: description || null,
-        durationMinutes: Number(durationMinutes),
-        maxAttempts: Number(maxAttempts) || 1,
+        durationMinutes: parsedDuration,
+        maxAttempts: parsedMaxAttempts,
         startTime: parsedStart,
         endTime: parsedEnd,
-        totalMarks: Number(totalMarks),
+        totalMarks: parsedTotalMarks,
         createdById: req.user.userId,
         questions: {
           create: questionsData,
@@ -231,7 +259,6 @@ exports.createQuiz = async (req, res) => {
 
 /**
  * PUT /api/quizzes/:id
- * Update quiz metadata (Faculty/Admin).
  */
 exports.updateQuiz = async (req, res) => {
   try {
@@ -268,7 +295,6 @@ exports.updateQuiz = async (req, res) => {
 
 /**
  * DELETE /api/quizzes/:id
- * Delete a quiz (Faculty/Admin).
  */
 exports.deleteQuiz = async (req, res) => {
   try {
@@ -292,18 +318,18 @@ exports.deleteQuiz = async (req, res) => {
 
 /**
  * POST /api/quizzes/:id/attempt
- * Student submits an attempt: auto-grades MCQs & True/False, stores results.
  */
 exports.submitQuizAttempt = async (req, res) => {
   try {
     const { id } = req.params;
     const studentId = req.user.userId;
-    const { answers } = req.body; // array of { questionId, selectedOptionId, textAnswer }
+    const { answers } = req.body;
 
     const quiz = await prisma.quiz.findUnique({
       where: { id },
       include: {
         questions: {
+          orderBy: { position: 'asc' },
           include: { options: true },
         },
       },
@@ -334,6 +360,21 @@ exports.submitQuizAttempt = async (req, res) => {
           submittedAnswersMap.set(ans.questionId, ans);
         }
       });
+    } else if (answers && typeof answers === 'object') {
+      // Support index-keyed map fallback `{ 0: 1 }`
+      Object.entries(answers).forEach(([qIdxStr, optIdxOrId]) => {
+        const qObj = quiz.questions[Number(qIdxStr)];
+        if (qObj) {
+          const matchedOpt =
+            typeof optIdxOrId === 'number'
+              ? qObj.options?.[optIdxOrId]
+              : qObj.options?.find((o) => o.id === optIdxOrId);
+          submittedAnswersMap.set(qObj.id, {
+            questionId: qObj.id,
+            selectedOptionId: matchedOpt?.id || null,
+          });
+        }
+      });
     }
 
     quiz.questions.forEach((question) => {
@@ -342,7 +383,9 @@ exports.submitQuizAttempt = async (req, res) => {
 
       if (submission) {
         if (question.questionType === 'MCQ' || question.questionType === 'TRUE_FALSE') {
-          const selectedOption = question.options.find((opt) => opt.id === submission.selectedOptionId);
+          const selectedOption = question.options.find(
+            (opt) => opt.id === submission.selectedOptionId
+          );
           if (selectedOption && selectedOption.isCorrect) {
             marksAwarded = Number(question.marks);
           }
@@ -373,7 +416,7 @@ exports.submitQuizAttempt = async (req, res) => {
       include: {
         answers: {
           include: {
-            question: { select: { questionText: true, marks: true } },
+            question: { select: { questionText: true, marks: true, options: true } },
             selectedOption: { select: { optionText: true } },
           },
         },
@@ -402,7 +445,6 @@ exports.submitQuizAttempt = async (req, res) => {
 
 /**
  * GET /api/quizzes/:id/attempts
- * List attempts for a quiz (student gets own, faculty gets all).
  */
 exports.getQuizAttempts = async (req, res) => {
   try {
@@ -436,7 +478,6 @@ exports.getQuizAttempts = async (req, res) => {
 
 /**
  * GET /api/quizzes/attempts/:attemptId
- * Detailed view of a completed attempt with correct answers for review.
  */
 exports.getAttemptDetails = async (req, res) => {
   try {
@@ -474,4 +515,3 @@ exports.getAttemptDetails = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch attempt details.' });
   }
 };
-

@@ -1,5 +1,14 @@
 const prisma = require('../lib/prisma');
 
+function isCourseStaffObj(course, user) {
+  if (!course || !user) return false;
+  return (
+    user.role === 'ADMIN' ||
+    course.createdById === user.userId ||
+    course.instructors?.some((i) => i.facultyId === user.userId)
+  );
+}
+
 async function canAccessCourse(courseId, user) {
   if (user.role === 'ADMIN') return true;
   const course = await prisma.course.findUnique({
@@ -7,7 +16,7 @@ async function canAccessCourse(courseId, user) {
     include: { instructors: true },
   });
   if (!course) return false;
-  if (course.createdById === user.userId || course.instructors?.some((i) => i.facultyId === user.userId)) {
+  if (isCourseStaffObj(course, user)) {
     return true;
   }
   const enrollment = await prisma.courseEnrollment.findUnique({
@@ -18,7 +27,6 @@ async function canAccessCourse(courseId, user) {
 
 /**
  * GET /api/discussions/course/:courseId
- * List all discussion threads with replies for a course.
  */
 exports.getDiscussionsByCourse = async (req, res) => {
   try {
@@ -48,10 +56,18 @@ exports.getDiscussionsByCourse = async (req, res) => {
       courseId: t.courseId,
       title: t.title,
       content: t.content,
+      pinned: Boolean(t.pinned),
+      resolved: Boolean(t.resolved),
+      likes: Number(t.likes || 0),
       createdAt: t.createdAt,
       time: new Date(t.createdAt).toLocaleString(),
       author: t.user?.name || 'Anonymous',
-      authorRole: t.user?.role === 'FACULTY' ? 'Instructor' : t.user?.role === 'ADMIN' ? 'Admin' : 'Student',
+      authorRole:
+        t.user?.role === 'FACULTY'
+          ? 'Instructor'
+          : t.user?.role === 'ADMIN'
+          ? 'Admin'
+          : 'Student',
       userId: t.userId,
       replies: t.replies.map((r) => ({
         id: r.id,
@@ -59,7 +75,12 @@ exports.getDiscussionsByCourse = async (req, res) => {
         createdAt: r.createdAt,
         time: new Date(r.createdAt).toLocaleString(),
         author: r.user?.name || 'Anonymous',
-        authorRole: r.user?.role === 'FACULTY' ? 'Instructor' : r.user?.role === 'ADMIN' ? 'Admin' : 'Student',
+        authorRole:
+          r.user?.role === 'FACULTY'
+            ? 'Instructor'
+            : r.user?.role === 'ADMIN'
+            ? 'Admin'
+            : 'Student',
         userId: r.userId,
       })),
     }));
@@ -73,7 +94,6 @@ exports.getDiscussionsByCourse = async (req, res) => {
 
 /**
  * GET /api/discussions/:id
- * Get single thread details with all replies.
  */
 exports.getDiscussionById = async (req, res) => {
   try {
@@ -108,7 +128,6 @@ exports.getDiscussionById = async (req, res) => {
 
 /**
  * POST /api/discussions
- * Create a new discussion thread in a course.
  */
 exports.createDiscussion = async (req, res) => {
   try {
@@ -140,6 +159,9 @@ exports.createDiscussion = async (req, res) => {
       courseId: thread.courseId,
       title: thread.title,
       content: thread.content,
+      pinned: Boolean(thread.pinned),
+      resolved: Boolean(thread.resolved),
+      likes: Number(thread.likes || 0),
       createdAt: thread.createdAt,
       time: 'Just now',
       author: thread.user?.name || 'Anonymous',
@@ -154,8 +176,48 @@ exports.createDiscussion = async (req, res) => {
 };
 
 /**
+ * PUT /api/discussions/:id
+ */
+exports.updateDiscussion = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, content, pinned, resolved, likes } = req.body;
+
+    const thread = await prisma.discussion.findUnique({
+      where: { id },
+      include: { course: { include: { instructors: true } } },
+    });
+    if (!thread) return res.status(404).json({ error: 'Discussion not found.' });
+
+    const access = await canAccessCourse(thread.courseId, req.user);
+    if (!access) {
+      return res.status(403).json({ error: 'Not authorized to update this discussion.' });
+    }
+
+    const isStaff = isCourseStaffObj(thread.course, req.user);
+    const isAuthor = thread.userId === req.user.userId;
+
+    const data = {};
+    if (title !== undefined && (isAuthor || isStaff)) data.title = title.trim();
+    if (content !== undefined && (isAuthor || isStaff)) data.content = content.trim();
+    if (pinned !== undefined && isStaff) data.pinned = Boolean(pinned);
+    if (resolved !== undefined && (isAuthor || isStaff)) data.resolved = Boolean(resolved);
+    if (likes !== undefined) data.likes = Math.max(0, Number(likes) || 0);
+
+    const updated = await prisma.discussion.update({
+      where: { id },
+      data,
+    });
+
+    res.json(updated);
+  } catch (err) {
+    console.error('updateDiscussion error:', err);
+    res.status(500).json({ error: 'Failed to update discussion.' });
+  }
+};
+
+/**
  * POST /api/discussions/:id/replies
- * Add a reply to a discussion thread.
  */
 exports.createReply = async (req, res) => {
   try {
@@ -185,18 +247,19 @@ exports.createReply = async (req, res) => {
       },
     });
 
-    // Notify thread author if not the replier
     if (thread.userId !== req.user.userId) {
-      await prisma.notification.create({
-        data: {
-          userId: thread.userId,
-          title: `New reply on: ${thread.title}`,
-          message: `${reply.user.name}: ${content.trim().slice(0, 120)}`,
-          type: 'DISCUSSION',
-        },
-      }).catch((err) => {
-        console.warn('Failed to create discussion reply notification:', err);
-      });
+      await prisma.notification
+        .create({
+          data: {
+            userId: thread.userId,
+            title: `New reply on: ${thread.title}`,
+            message: `${reply.user.name}: ${content.trim().slice(0, 120)}`,
+            type: 'DISCUSSION',
+          },
+        })
+        .catch((err) => {
+          console.warn('Failed to create discussion reply notification:', err);
+        });
     }
 
     res.status(201).json({
@@ -217,7 +280,6 @@ exports.createReply = async (req, res) => {
 
 /**
  * DELETE /api/discussions/:id
- * Delete a thread (Author or Admin).
  */
 exports.deleteDiscussion = async (req, res) => {
   try {
@@ -225,15 +287,14 @@ exports.deleteDiscussion = async (req, res) => {
 
     const thread = await prisma.discussion.findUnique({
       where: { id },
-      include: { course: true },
+      include: { course: { include: { instructors: true } } },
     });
     if (!thread) return res.status(404).json({ error: 'Discussion not found.' });
 
     const isAuthor = thread.userId === req.user.userId;
-    const isAdmin = req.user.role === 'ADMIN';
-    const isCreator = thread.course.createdById === req.user.userId;
+    const isStaff = isCourseStaffObj(thread.course, req.user);
 
-    if (!isAuthor && !isAdmin && !isCreator) {
+    if (!isAuthor && !isStaff) {
       return res.status(403).json({ error: 'Not authorized to delete this discussion.' });
     }
 
@@ -247,7 +308,6 @@ exports.deleteDiscussion = async (req, res) => {
 
 /**
  * DELETE /api/discussions/replies/:replyId
- * Delete a reply (Author or Admin).
  */
 exports.deleteReply = async (req, res) => {
   try {
@@ -255,15 +315,14 @@ exports.deleteReply = async (req, res) => {
 
     const reply = await prisma.discussionReply.findUnique({
       where: { id: replyId },
-      include: { discussion: { include: { course: true } } },
+      include: { discussion: { include: { course: { include: { instructors: true } } } } },
     });
     if (!reply) return res.status(404).json({ error: 'Reply not found.' });
 
     const isAuthor = reply.userId === req.user.userId;
-    const isAdmin = req.user.role === 'ADMIN';
-    const isCreator = reply.discussion.course.createdById === req.user.userId;
+    const isStaff = isCourseStaffObj(reply.discussion.course, req.user);
 
-    if (!isAuthor && !isAdmin && !isCreator) {
+    if (!isAuthor && !isStaff) {
       return res.status(403).json({ error: 'Not authorized to delete this reply.' });
     }
 
@@ -274,4 +333,3 @@ exports.deleteReply = async (req, res) => {
     res.status(500).json({ error: 'Failed to delete reply.' });
   }
 };
-

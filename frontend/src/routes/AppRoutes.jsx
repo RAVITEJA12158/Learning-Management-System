@@ -32,25 +32,27 @@ function LandingLoader() {
   );
 }
 
+export function getRoleDashboardPath(user) {
+  const role = (user?.role || 'student').toLowerCase();
+  if (role === 'admin') return '/admin';
+  if (role === 'faculty') return '/faculty';
+  return '/student';
+}
+
 function AppRoutes() {
   const { isAuthenticated, user } = useAuth();
+  const roleDashboard = getRoleDashboardPath(user);
 
   return (
     <Routes>
       {/* Public Auth Routes */}
       <Route
         path="/login"
-        element={
-          isAuthenticated ? (
-            <Navigate to={user?.role?.toLowerCase() === 'student' ? '/student' : `/${user?.role?.toLowerCase() || ''}`} replace />
-          ) : (
-            <Login />
-          )
-        }
+        element={isAuthenticated ? <Navigate to={roleDashboard} replace /> : <Login />}
       />
       <Route
         path="/register"
-        element={isAuthenticated ? <Navigate to="/" replace /> : <Register />}
+        element={isAuthenticated ? <Navigate to={roleDashboard} replace /> : <Register />}
       />
 
       {/* Main Layout Routes */}

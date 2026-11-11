@@ -29,8 +29,8 @@ body,
 }
 
 body {
-  background: #f6f2e9;
-  color: #151515;
+  background-color: #f8fafc;
+  color: #0f172a;
   font-family:
     Inter,
     ui-sans-serif,
@@ -47,7 +47,7 @@ body {
 
 /* Midnight Glassmorphism Void Canvas (#030712) */
 html.dark body {
-  background: #030712;
+  background-color: #030712;
   color: #ffffff;
 }
 
@@ -67,8 +67,8 @@ button:disabled {
 }
 
 ::selection {
-  background: #dfff63;
-  color: #151515;
+  background: #2563eb;
+  color: #ffffff;
 }
 
 .dark ::selection {

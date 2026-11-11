@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { authApi } from '../../services/api';
 import { notificationService } from '../../services/courseService';
 import BrandMark from '../common/BrandMark';
 import Footer from './Footer';
@@ -25,21 +24,33 @@ import {
 function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, login, logout, isAuthenticated, updateUser } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [notifications, setNotifications] = useState(() => notificationService.getAll());
+  const [notifications, setNotifications] = useState([]);
 
   const dropdownRef = useRef(null);
   const notifRef = useRef(null);
 
   useEffect(() => {
-    setNotifications(notificationService.getAll());
-  }, [location.pathname]);
+    let isMounted = true;
+    if (isAuthenticated) {
+      notificationService.fetchAll().then((list) => {
+        if (isMounted && Array.isArray(list)) {
+          setNotifications(list);
+        }
+      });
+    } else {
+      setNotifications([]);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [location.pathname, isAuthenticated]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -63,9 +74,6 @@ function DashboardLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  // When visiting the landing page as an unauthenticated guest, Landing.jsx provides
-  // its dedicated marketing navbar (Discover, Features, etc.) and footer.
-  // Suppress the dashboard workspace header and footer to prevent duplicate navbars.
   const isGuestLanding = !isAuthenticated && (location.pathname === '/' || location.pathname === '');
   if (isGuestLanding) {
     return <Outlet />;
@@ -85,37 +93,6 @@ function DashboardLayout() {
     return '/student';
   };
 
-  const handleQuickRoleSwitch = async (newRole) => {
-    const demoCredentials = {
-      student: { email: 'sarah.jensen@university.edu', password: 'Student123!' },
-      faculty: { email: 'alan.turing@university.edu', password: 'Faculty123!' },
-      admin: { email: 'admin@university.edu', password: 'Admin123!', secretCode: 'admin@lms' },
-    };
-    const creds = demoCredentials[newRole];
-    if (creds) {
-      try {
-        const response = await authApi.login(creds);
-        login({
-          token: response.token,
-          user: {
-            id: response.userId,
-            name: response.name,
-            username: response.username,
-            role: response.role.toLowerCase(),
-            department: response.department,
-            semester: response.semester,
-            bio: response.bio,
-            profileImage: response.profileImage,
-          },
-        });
-      } catch (err) {
-        console.error('Quick role switch login error:', err);
-      }
-    }
-    setProfileOpen(false);
-    navigate(getDashboardPath(newRole));
-  };
-
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -127,12 +104,16 @@ function DashboardLayout() {
 
   const handleMarkAllRead = () => {
     const updated = notificationService.markAllAsRead();
-    setNotifications(updated);
+    if (Array.isArray(updated)) {
+      setNotifications(updated);
+    }
   };
 
   const handleNotifClick = (notif) => {
     const updated = notificationService.markAsRead(notif.id);
-    setNotifications(updated);
+    if (Array.isArray(updated)) {
+      setNotifications(updated);
+    }
     setNotifOpen(false);
     if (notif.courseId) {
       navigate(`/courses/${notif.courseId}`);
@@ -141,42 +122,53 @@ function DashboardLayout() {
     }
   };
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
+  const unreadCount = safeNotifications.filter((n) => !n.isRead).length;
+
+  const userRoleLower = (user?.role || 'student').toLowerCase();
 
   const navItems = [
-    {
-      label:
-        user?.role === 'admin'
-          ? 'Admin Center'
-          : user?.role === 'faculty'
-          ? 'Faculty Hub'
-          : 'My Courses',
-      path: getDashboardPath(),
-      active:
-        location.pathname.startsWith('/student') ||
-        location.pathname.startsWith('/faculty') ||
-        location.pathname.startsWith('/admin'),
-    },
+    ...(isAuthenticated
+      ? [
+          {
+            label:
+              userRoleLower === 'admin'
+                ? 'Admin Center'
+                : userRoleLower === 'faculty'
+                ? 'Faculty Hub'
+                : 'My Courses',
+            path: getDashboardPath(),
+            active:
+              location.pathname.startsWith('/student') ||
+              location.pathname.startsWith('/faculty') ||
+              location.pathname.startsWith('/admin'),
+          },
+        ]
+      : []),
     {
       label: 'Catalog',
       path: '/courses',
       active: location.pathname.startsWith('/courses'),
     },
-    {
-      label: 'Assessments',
-      path: '/assignments',
-      active: location.pathname.startsWith('/assignments'),
-    },
-    {
-      label: 'Grades & Progress',
-      path: '/grades',
-      active: location.pathname.startsWith('/grades'),
-    },
-    {
-      label: 'Attendance',
-      path: '/attendance',
-      active: location.pathname.startsWith('/attendance'),
-    },
+    ...(isAuthenticated
+      ? [
+          {
+            label: 'Assessments',
+            path: '/assignments',
+            active: location.pathname.startsWith('/assignments'),
+          },
+          {
+            label: 'Grades & Progress',
+            path: '/grades',
+            active: location.pathname.startsWith('/grades'),
+          },
+          {
+            label: 'Attendance',
+            path: '/attendance',
+            active: location.pathname.startsWith('/attendance'),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -280,36 +272,42 @@ function DashboardLayout() {
                       </div>
 
                       <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-white/5">
-                        {notifications.slice(0, 5).map((notif) => (
-                          <button
-                            key={notif.id}
-                            onClick={() => handleNotifClick(notif)}
-                            className={`w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition flex items-start gap-3 cursor-pointer ${
-                              !notif.isRead ? 'bg-blue-50/40 dark:bg-cyan-950/20' : ''
-                            }`}
-                          >
-                            <span
-                              className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
-                                !notif.isRead
-                                  ? 'bg-blue-600 dark:bg-cyan-400'
-                                  : 'bg-slate-300 dark:bg-gray-700'
+                        {safeNotifications.length > 0 ? (
+                          safeNotifications.slice(0, 5).map((notif) => (
+                            <button
+                              key={notif.id}
+                              onClick={() => handleNotifClick(notif)}
+                              className={`w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition flex items-start gap-3 cursor-pointer ${
+                                !notif.isRead ? 'bg-blue-50/40 dark:bg-cyan-950/20' : ''
                               }`}
-                            />
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center justify-between gap-2">
-                                <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                                  {notif.title}
+                            >
+                              <span
+                                className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
+                                  !notif.isRead
+                                    ? 'bg-blue-600 dark:bg-cyan-400'
+                                    : 'bg-slate-300 dark:bg-gray-700'
+                                }`}
+                              />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                                    {notif.title}
+                                  </p>
+                                  <span className="text-[10px] text-slate-400 dark:text-gray-500 shrink-0">
+                                    {notif.createdAt}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-slate-500 dark:text-gray-400 line-clamp-2 mt-0.5">
+                                  {notif.message}
                                 </p>
-                                <span className="text-[10px] text-slate-400 dark:text-gray-500 shrink-0">
-                                  {notif.createdAt}
-                                </span>
                               </div>
-                              <p className="text-[11px] text-slate-500 dark:text-gray-400 line-clamp-2 mt-0.5">
-                                {notif.message}
-                              </p>
-                            </div>
-                          </button>
-                        ))}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="px-4 py-6 text-center text-xs text-slate-400 dark:text-gray-500">
+                            No notifications yet.
+                          </div>
+                        )}
                       </div>
 
                       <div className="pt-2 px-4 pb-1 border-t border-slate-100 dark:border-white/5">
@@ -360,38 +358,14 @@ function DashboardLayout() {
                     <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-gray-950/95 dark:backdrop-blur-xl border border-slate-200/90 dark:border-white/10 shadow-xl dark:shadow-2xl dark:shadow-black/70 py-2 z-50">
                       <div className="px-4 py-3 border-b border-slate-100 dark:border-white/5">
                         <p className="text-xs font-bold text-slate-900 dark:text-white">
-                          {user?.name || 'Sarah Jensen'}
+                          {user?.name || 'Scholar'}
                         </p>
                         <p className="text-[11px] text-slate-500 dark:text-gray-400 truncate">
-                          {user?.email || 'sarah.jensen@university.edu'}
+                          {user?.email || ''}
                         </p>
                         <span className="mt-1.5 inline-block text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-50 dark:bg-purple-950/50 text-blue-600 dark:text-cyan-400 border border-blue-200 dark:border-purple-800/40">
                           {user?.role || 'Student'}
                         </span>
-                      </div>
-
-                      <div className="px-4 py-2.5 border-b border-slate-100 dark:border-white/5">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-500 mb-1.5">
-                          Switch Role View
-                        </p>
-                        <div className="grid grid-cols-3 gap-1">
-                          {['student', 'faculty', 'admin'].map((r) => {
-                            const isActiveRole = (user?.role || 'student').toLowerCase() === r;
-                            return (
-                              <button
-                                key={r}
-                                onClick={() => handleQuickRoleSwitch(r)}
-                                className={`py-1 rounded-lg text-[10px] font-bold capitalize transition cursor-pointer ${
-                                  isActiveRole
-                                    ? 'bg-blue-600 dark:bg-cyan-500 text-white dark:text-gray-950'
-                                    : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-400 hover:bg-slate-200 dark:hover:bg-white/10'
-                                }`}
-                              >
-                                {r}
-                              </button>
-                            );
-                          })}
-                        </div>
                       </div>
 
                       <div className="py-1">
@@ -548,33 +522,37 @@ function DashboardLayout() {
                 {item.label}
               </button>
             ))}
-            <button
-              onClick={() => {
-                setMenuOpen(false);
-                navigate('/notifications');
-              }}
-              className="rounded-xl px-3 py-2 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white"
-            >
-              Notifications ({unreadCount})
-            </button>
-            <button
-              onClick={() => {
-                setMenuOpen(false);
-                navigate('/profile');
-              }}
-              className="rounded-xl px-3 py-2 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white"
-            >
-              Profile
-            </button>
-            <button
-              onClick={() => {
-                setMenuOpen(false);
-                navigate('/settings');
-              }}
-              className="rounded-xl px-3 py-2 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white"
-            >
-              Settings
-            </button>
+            {isAuthenticated && (
+              <>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate('/notifications');
+                  }}
+                  className="rounded-xl px-3 py-2 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white"
+                >
+                  Notifications ({unreadCount})
+                </button>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate('/profile');
+                  }}
+                  className="rounded-xl px-3 py-2 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white"
+                >
+                  Profile
+                </button>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate('/settings');
+                  }}
+                  className="rounded-xl px-3 py-2 text-left text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-900 dark:text-white"
+                >
+                  Settings
+                </button>
+              </>
+            )}
             <button
               onClick={() => {
                 setMenuOpen(false);
@@ -587,12 +565,35 @@ function DashboardLayout() {
           </div>
 
           <div className="pt-3 border-t border-slate-100 dark:border-white/10">
-            <button
-              onClick={handleLogout}
-              className="w-full rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 py-2.5 text-xs font-bold text-red-600 dark:text-red-400"
-            >
-              Sign out
-            </button>
+            {isAuthenticated ? (
+              <button
+                onClick={handleLogout}
+                className="w-full rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 py-2.5 text-xs font-bold text-red-600 dark:text-red-400"
+              >
+                Sign out
+              </button>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate('/login');
+                  }}
+                  className="rounded-xl border border-slate-200 dark:border-white/10 py-2 text-xs font-bold"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate('/register');
+                  }}
+                  className="rounded-xl bg-blue-600 text-white py-2 text-xs font-bold"
+                >
+                  Register
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

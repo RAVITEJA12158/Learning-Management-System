@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api, authApi } from './api';
 import { DEFAULT_GRADE_COMPONENTS } from '../utils/constants';
 
 // ============================================================================
@@ -86,13 +86,8 @@ const courseService = {
   },
 
   async updateRosterStatus(courseId, studentId, status) {
-    try {
-      return await api.put(`/courses/${courseId}/roster/${studentId}`, { status });
-    } catch (err) {
-      console.error(`courseService.updateRosterStatus error:`, err);
-      return [];
-    }
-  }
+    return await api.put(`/courses/${courseId}/roster/${studentId}`, { status });
+  },
 };
 
 // ============================================================================
@@ -104,7 +99,7 @@ const moduleService = {
       const data = await api.get(`/courses/${courseId}/modules`);
       return Array.isArray(data) ? data : [];
     } catch (err) {
-      console.error(`moduleService.getCourseModules error:`, err);
+      console.error('moduleService.getCourseModules error:', err);
       return [];
     }
   },
@@ -137,7 +132,7 @@ const moduleService = {
     const formData = new FormData();
     formData.append('file', file);
     return await api.upload('/modules/content/upload', formData);
-  }
+  },
 };
 
 // ============================================================================
@@ -154,10 +149,10 @@ const progressService = {
       if (res && Array.isArray(res.modules)) return res;
       return { courseId, completionPercent: 0, modules: [] };
     } catch (err) {
-      console.error(`progressService.getCourseProgress error:`, err);
+      console.error('progressService.getCourseProgress error:', err);
       return { courseId, completionPercent: 0, modules: [] };
     }
-  }
+  },
 };
 
 // ============================================================================
@@ -216,14 +211,14 @@ const assignmentService = {
 
   async gradeSubmission(submissionId, data) {
     return await api.put(`/assignments/submissions/${submissionId}/grade`, data);
-  }
+  },
 };
 
 // ============================================================================
 // 5. Quiz Service
 // ============================================================================
 const quizService = {
-  getByCourse(courseId) {
+  getByCourse() {
     return [];
   },
 
@@ -254,14 +249,35 @@ const quizService = {
 
   async submitAttempt(quizId, answers) {
     return await api.post(`/quizzes/${quizId}/attempt`, { answers });
-  }
+  },
+
+  async getAttempts(quizId) {
+    if (!quizId) return [];
+    try {
+      const data = await api.get(`/quizzes/${quizId}/attempts`);
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.error(`quizService.getAttempts(${quizId}) error:`, err);
+      return [];
+    }
+  },
+
+  async getAttemptDetails(attemptId) {
+    if (!attemptId) return null;
+    try {
+      return await api.get(`/quizzes/attempts/${attemptId}`);
+    } catch (err) {
+      console.error(`quizService.getAttemptDetails(${attemptId}) error:`, err);
+      return null;
+    }
+  },
 };
 
 // ============================================================================
 // 6. Attendance Service
 // ============================================================================
 const attendanceService = {
-  getSessions(courseId) {
+  getSessions() {
     return [];
   },
 
@@ -274,13 +290,13 @@ const attendanceService = {
       } else {
         const studentData = await api.get(`/attendance/student/course/${courseId}`);
         if (studentData && Array.isArray(studentData.sessions)) {
-          return studentData.sessions.map(s => ({
+          return studentData.sessions.map((s) => ({
             id: s.sessionId,
             courseId,
             date: s.date,
             topic: s.topic,
             status: s.status,
-            records: [{ studentId: 'me', studentName: 'Me', status: s.status }]
+            records: [{ studentId: 'me', studentName: 'Me', status: s.status }],
           }));
         }
         return [];
@@ -301,14 +317,14 @@ const attendanceService = {
 
   async markAllPresent(courseId, sessionId) {
     return await api.post(`/attendance/session/${sessionId}/mark-all`, {});
-  }
+  },
 };
 
 // ============================================================================
 // 7. Discussion Service
 // ============================================================================
 const discussionService = {
-  getByCourse(courseId) {
+  getByCourse() {
     return [];
   },
 
@@ -327,6 +343,10 @@ const discussionService = {
     return await api.post('/discussions', { courseId, title, content });
   },
 
+  async updateThread(id, updates) {
+    return await api.put(`/discussions/${id}`, updates);
+  },
+
   async createReply(discussionId, content) {
     return await api.post(`/discussions/${discussionId}/replies`, { content });
   },
@@ -341,14 +361,14 @@ const discussionService = {
 
   saveForCourse(courseId, threads) {
     return threads;
-  }
+  },
 };
 
 // ============================================================================
 // 8. Announcement Service
 // ============================================================================
 const announcementService = {
-  getByCourse(courseId) {
+  getByCourse() {
     return [];
   },
 
@@ -363,13 +383,18 @@ const announcementService = {
     }
   },
 
-  async createAnnouncement(courseId, { title, message, content }) {
+  async createAnnouncement(courseId, { title, message, content, pinned }) {
     const cleanMessage = message || content;
     return await api.post('/announcements', {
       courseId,
       title,
-      message: cleanMessage
+      message: cleanMessage,
+      pinned: Boolean(pinned),
     });
+  },
+
+  async updateAnnouncement(id, updates) {
+    return await api.put(`/announcements/${id}`, updates);
   },
 
   async deleteAnnouncement(id) {
@@ -378,7 +403,7 @@ const announcementService = {
 
   saveForCourse(courseId, list) {
     return list;
-  }
+  },
 };
 
 // ============================================================================
@@ -388,8 +413,9 @@ let notificationCache = [];
 
 const notificationService = {
   getAll() {
-    api.get('/notifications')
-      .then(data => {
+    api
+      .get('/notifications')
+      .then((data) => {
         if (Array.isArray(data)) {
           notificationCache = data;
         }
@@ -411,47 +437,38 @@ const notificationService = {
     return notificationCache;
   },
 
-  async markAsRead(id) {
-    notificationCache = notificationCache.map(n => n.id === id ? { ...n, isRead: true } : n);
-    try {
-      await api.put(`/notifications/${id}/read`);
-    } catch {}
-    return notificationCache;
+  markAsRead(id) {
+    notificationCache = notificationCache.map((n) =>
+      n.id === id ? { ...n, isRead: true } : n
+    );
+    api.put(`/notifications/${id}/read`).catch(() => {});
+    return [...notificationCache];
   },
 
-  async markAllAsRead() {
-    notificationCache = notificationCache.map(n => ({ ...n, isRead: true }));
-    try {
-      await api.put('/notifications/read-all');
-    } catch {}
-    return notificationCache;
+  markAllAsRead() {
+    notificationCache = notificationCache.map((n) => ({ ...n, isRead: true }));
+    api.put('/notifications/read-all').catch(() => {});
+    return [...notificationCache];
   },
 
-  async delete(id) {
-    notificationCache = notificationCache.filter(n => n.id !== id);
-    try {
-      await api.delete(`/notifications/${id}`);
-    } catch {}
-    return notificationCache;
+  delete(id) {
+    notificationCache = notificationCache.filter((n) => n.id !== id);
+    api.delete(`/notifications/${id}`).catch(() => {});
+    return [...notificationCache];
   },
 
   async create(notification) {
-    try {
-      const res = await api.post('/notifications/broadcast', notification);
-      if (res && res.id) {
-        notificationCache = [res, ...notificationCache];
-        return notificationCache;
-      }
-    } catch {}
-    return notificationCache;
-  }
+    const res = await api.post('/notifications/broadcast', notification);
+    await this.fetchAll();
+    return res;
+  },
 };
 
 // ============================================================================
 // 10. Grade Service
 // ============================================================================
 const gradeService = {
-  getWeights(courseId) {
+  getWeights() {
     return DEFAULT_GRADE_COMPONENTS;
   },
 
@@ -463,18 +480,16 @@ const gradeService = {
         return data;
       }
     } catch (err) {
-      console.error(`gradeService.fetchWeights error:`, err);
+      console.error('gradeService.fetchWeights error:', err);
     }
     return DEFAULT_GRADE_COMPONENTS;
   },
 
   async saveWeights(courseId, weights) {
-    try {
-      await api.post(`/grades/course/${courseId}/components`, { components: weights });
-    } catch (err) {
-      console.error('gradeService.saveWeights error:', err);
-    }
-    return weights;
+    const res = await api.post(`/grades/course/${courseId}/components`, {
+      components: weights,
+    });
+    return Array.isArray(res) ? res : weights;
   },
 
   async getStudentOverview() {
@@ -492,10 +507,10 @@ const gradeService = {
       const data = await api.get(`/grades/course/${courseId}/roster`);
       return Array.isArray(data) ? data : [];
     } catch (err) {
-      console.error(`gradeService.getCourseGradebook error:`, err);
+      console.error('gradeService.getCourseGradebook error:', err);
       return [];
     }
-  }
+  },
 };
 
 // ============================================================================
@@ -535,21 +550,24 @@ const adminService = {
       totalQuizzes: 0,
       totalSubmissions: 0,
       status: 'healthy',
-      uptime: '100%'
+      uptime: '100%',
     };
   },
 
   async createUser(userData) {
-    return await api.post('/users', userData);
+    await api.post('/users', userData);
+    return await this.fetchUsers();
   },
 
   async updateUser(id, updates) {
-    return await api.put(`/users/${id}`, updates);
+    await api.put(`/users/${id}`, updates);
+    return await this.fetchUsers();
   },
 
   async deleteUser(id) {
-    return await api.delete(`/users/${id}`);
-  }
+    await api.delete(`/users/${id}`);
+    return await this.fetchUsers();
+  },
 };
 
 export {
@@ -563,5 +581,5 @@ export {
   announcementService,
   notificationService,
   gradeService,
-  adminService
+  adminService,
 };

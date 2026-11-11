@@ -15,15 +15,14 @@ import SpotlightCard from '../components/common/SpotlightCard';
 function AssessmentsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const isStaff = user?.role === 'faculty' || user?.role === 'admin';
+  const isStaff = user?.role?.toLowerCase() === 'faculty' || user?.role?.toLowerCase() === 'admin';
   const [courses, setCourses] = useState([]);
   const [selectedCourseId, setSelectedCourseId] = useState('');
-  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'assignments' | 'quizzes'
+  const [activeTab, setActiveTab] = useState('all');
   const [assignments, setAssignments] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Modals
   const [submittingAssignment, setSubmittingAssignment] = useState(null);
   const [gradingAssignment, setGradingAssignment] = useState(null);
   const [activeAttemptQuiz, setActiveAttemptQuiz] = useState(null);
@@ -35,14 +34,9 @@ function AssessmentsPage() {
     const loadCourses = async () => {
       setLoading(true);
       try {
-        let list = isStaff
+        const list = isStaff
           ? await courseService.getCreated()
           : await courseService.getEnrolled();
-
-        // If student has 0 enrolled courses, fallback to catalog courses so they can explore
-        if ((!list || list.length === 0) && !isStaff) {
-          list = await courseService.getAll();
-        }
 
         if (isMounted) {
           const valid = Array.isArray(list) ? list : [];
@@ -60,7 +54,9 @@ function AssessmentsPage() {
       }
     };
     loadCourses();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [isStaff]);
 
   useEffect(() => {
@@ -77,7 +73,7 @@ function AssessmentsPage() {
     try {
       const [asmList, qzList] = await Promise.all([
         assignmentService.getByCourse(courseId),
-        quizService.fetchByCourse(courseId)
+        quizService.fetchByCourse(courseId),
       ]);
       setAssignments(Array.isArray(asmList) ? asmList : []);
       setQuizzes(Array.isArray(qzList) ? qzList : []);
@@ -88,28 +84,47 @@ function AssessmentsPage() {
     }
   };
 
-  const handleQuizAction = (quiz, actionType) => {
+  const handleQuizAction = async (quiz, actionType) => {
     if (actionType === 'View Results') {
-      setActiveResultsQuiz(quiz);
+      let attemptDetail = null;
+      if (quiz.latestAttemptId) {
+        attemptDetail = await quizService.getAttemptDetails(quiz.latestAttemptId);
+      } else {
+        const attempts = await quizService.getAttempts(quiz.id);
+        if (attempts.length > 0) {
+          attemptDetail = await quizService.getAttemptDetails(attempts[0].id);
+        }
+      }
+      setActiveResultsQuiz({
+        ...quiz,
+        ...(attemptDetail ? { score: attemptDetail.score, answers: attemptDetail.answers } : {}),
+      });
     } else {
-      setActiveAttemptQuiz(quiz);
+      const fullQuiz = await quizService.getById(quiz.id);
+      setActiveAttemptQuiz({
+        ...quiz,
+        ...(fullQuiz || {}),
+      });
     }
   };
 
-  const handleQuizSubmit = async ({ quizId, answers, score }) => {
+  const handleQuizSubmit = async ({ quizId, answers }) => {
+    let res = null;
     try {
-      await quizService.submitAttempt(quizId, answers || {});
+      res = await quizService.submitAttempt(quizId, answers || []);
     } catch (err) {
       console.error('submitAttempt error:', err);
     }
     await loadAssessments(selectedCourseId);
     setActiveAttemptQuiz(null);
-    const target = quizzes.find(q => q.id === quizId);
+    const target = quizzes.find((q) => q.id === quizId);
     if (target) {
       setActiveResultsQuiz({
         ...target,
         status: 'Completed',
-        score: score ?? target.score ?? 85
+        score: res?.score ?? target.score ?? 0,
+        totalMarks: res?.totalMarks ?? target.totalMarks ?? 20,
+        answers: res?.answers || [],
       });
     }
   };
@@ -118,7 +133,7 @@ function AssessmentsPage() {
     try {
       await quizService.create({
         ...newQuiz,
-        courseId: selectedCourseId
+        courseId: selectedCourseId,
       });
       await loadAssessments(selectedCourseId);
       setIsCreateQuizOpen(false);
@@ -127,12 +142,11 @@ function AssessmentsPage() {
     }
   };
 
-  const selectedCourse = courses.find(c => c.id === selectedCourseId) || courses[0];
-  const completedQuizzesCount = quizzes.filter(q => q.status === 'Completed').length;
+  const selectedCourse = courses.find((c) => c.id === selectedCourseId) || courses[0];
+  const completedQuizzesCount = quizzes.filter((q) => q.status === 'Completed').length;
 
   return (
     <main className="mx-auto max-w-[1440px] px-4 py-8 sm:px-8 lg:py-10 w-full font-sans transition-colors duration-200">
-      {/* Header */}
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <Badge variant="info" className="mb-2">
@@ -146,10 +160,8 @@ function AssessmentsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2.5">
-          {isStaff && (
-            <Button onClick={() => setIsCreateQuizOpen(true)}>
-              + Author New Quiz
-            </Button>
+          {isStaff && selectedCourseId && (
+            <Button onClick={() => setIsCreateQuizOpen(true)}>+ Author New Quiz</Button>
           )}
           <Button variant="outline" onClick={() => navigate('/grades')}>
             View Gradebook →
@@ -157,7 +169,6 @@ function AssessmentsPage() {
         </div>
       </div>
 
-      {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         <SpotlightCard className="p-4">
           <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-400">
@@ -185,7 +196,7 @@ function AssessmentsPage() {
         </SpotlightCard>
         <SpotlightCard className="p-4">
           <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-400">
-            Enrolled Courses
+            Active Courses
           </p>
           <p className="text-2xl font-black text-purple-600 dark:text-purple-400 mt-1">
             {courses.length}
@@ -193,7 +204,6 @@ function AssessmentsPage() {
         </SpotlightCard>
       </div>
 
-      {/* Course Selector Pills */}
       {courses.length > 0 ? (
         <div className="flex flex-wrap items-center gap-2 mb-6">
           {courses.map((c) => (
@@ -213,7 +223,7 @@ function AssessmentsPage() {
       ) : (
         <div className="p-8 text-center rounded-2xl bg-white dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/10 mb-6">
           <p className="text-sm font-bold text-slate-900 dark:text-white">
-            {loading ? 'Loading courses from database…' : 'No enrolled courses found.'}
+            {loading ? 'Loading courses from database…' : 'No active courses found.'}
           </p>
           {!loading && (
             <button
@@ -226,7 +236,6 @@ function AssessmentsPage() {
         </div>
       )}
 
-      {/* Filter Tabs */}
       <div className="flex items-center gap-2 mb-6 border-b border-slate-200 dark:border-white/10 pb-3">
         {[
           { id: 'all', label: 'All Assessments' },
@@ -247,9 +256,7 @@ function AssessmentsPage() {
         ))}
       </div>
 
-      {/* Main Content Area */}
       <div className="space-y-8">
-        {/* Assignments Section */}
         {(activeTab === 'all' || activeTab === 'assignments') && (
           <section className="space-y-4">
             <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">
@@ -267,9 +274,7 @@ function AssessmentsPage() {
                             <Badge variant="info">
                               {selectedCourse?.courseCode || 'Course'}
                             </Badge>
-                            <Badge variant="neutral">
-                              Max {asm.maxMarks} Marks
-                            </Badge>
+                            <Badge variant="neutral">Max {asm.maxMarks} Marks</Badge>
                             {mySub && (
                               <Badge variant={mySub.status === 'LATE' ? 'danger' : 'active'}>
                                 {mySub.status}
@@ -289,7 +294,7 @@ function AssessmentsPage() {
                         <div className="flex items-center gap-3 shrink-0">
                           {isStaff ? (
                             <Button onClick={() => setGradingAssignment(asm)}>
-                              Review Submissions ({asm.submissions?.length || 0})
+                              Review Submissions ({asm._count?.submissions ?? asm.submissions?.length ?? 0})
                             </Button>
                           ) : (
                             <Button onClick={() => setSubmittingAssignment(asm)}>
@@ -310,7 +315,6 @@ function AssessmentsPage() {
           </section>
         )}
 
-        {/* Quizzes Section */}
         {(activeTab === 'all' || activeTab === 'quizzes') && (
           <section className="space-y-4">
             <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">
@@ -336,7 +340,6 @@ function AssessmentsPage() {
         )}
       </div>
 
-      {/* Modals */}
       <AssignmentSubmissionModal
         assignment={submittingAssignment}
         isOpen={Boolean(submittingAssignment)}
@@ -362,9 +365,10 @@ function AssessmentsPage() {
         quiz={activeResultsQuiz}
         isOpen={Boolean(activeResultsQuiz)}
         onClose={() => setActiveResultsQuiz(null)}
-        onRetake={(q) => {
+        onRetake={async (q) => {
           setActiveResultsQuiz(null);
-          setActiveAttemptQuiz(q);
+          const fullQuiz = await quizService.getById(q.id);
+          setActiveAttemptQuiz({ ...q, ...(fullQuiz || {}) });
         }}
       />
 
