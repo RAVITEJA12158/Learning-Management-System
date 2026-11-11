@@ -330,6 +330,7 @@ async function main() {
   const MOD_2_ID = 'm0000000-0000-4000-8000-000000000002';
   const MOD_3_ID = 'm0000000-0000-4000-8000-000000000003';
   const MOD_WEB_1_ID = 'm0000000-0000-4000-8000-000000000004';
+  const MOD_DL_1_ID = 'm0000000-0000-4000-8000-000000000005';
 
   const modules = [
     {
@@ -368,6 +369,15 @@ async function main() {
       isPublished: true,
       releaseAt: new Date('2026-09-01T08:00:00Z'),
     },
+    {
+      id: MOD_DL_1_ID,
+      courseId: COURSE_DL_ID,
+      title: 'Deep Learning Foundations & Neural Network Training',
+      description: 'Published MIT OpenCourseWare lessons introducing deep learning, stochastic gradient descent, and backpropagation.',
+      position: 1,
+      isPublished: true,
+      releaseAt: new Date('2026-09-01T08:00:00Z'),
+    },
   ];
 
   for (const m of modules) {
@@ -395,6 +405,8 @@ async function main() {
   const CNT_303_ID = 'cnt00000-0000-4000-8000-000000000303';
   const CNT_WEB_101_ID = 'cnt00000-0000-4000-8000-000000000401';
   const CNT_WEB_102_ID = 'cnt00000-0000-4000-8000-000000000402';
+  const CNT_DL_101_ID = 'cnt00000-0000-4000-8000-000000000501';
+  const CNT_DL_102_ID = 'cnt00000-0000-4000-8000-000000000502';
 
   const contents = [
     {
@@ -528,6 +540,28 @@ async function main() {
       position: 2,
       isPublished: true,
       createdById: FACULTY_TIM_ID,
+    },
+    {
+      id: CNT_DL_101_ID,
+      moduleId: MOD_DL_1_ID,
+      title: 'MIT OCW Lecture: Introduction to Deep Learning',
+      type: 'VIDEO',
+      description: 'MIT 6.7960 Lecture 1 introduces deep neural networks and their building blocks.',
+      contentUrl: 'https://www.youtube-nocookie.com/embed/6FkRvTtUc-o',
+      position: 1,
+      isPublished: true,
+      createdById: FACULTY_TURING_ID,
+    },
+    {
+      id: CNT_DL_102_ID,
+      moduleId: MOD_DL_1_ID,
+      title: 'MIT OCW Lecture: Training Neural Networks with SGD and Backpropagation',
+      type: 'VIDEO',
+      description: 'MIT 6.7960 Lecture 2 explains stochastic gradient descent, backpropagation, and automatic differentiation.',
+      contentUrl: 'https://www.youtube-nocookie.com/embed/vidCX_dMCu0',
+      position: 2,
+      isPublished: true,
+      createdById: FACULTY_TURING_ID,
     },
   ];
 
