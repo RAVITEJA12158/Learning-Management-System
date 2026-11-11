@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const {
   register,
-  sendRegistrationOtp,
   login,
   googleLogin,
   verifyEmail,
@@ -18,10 +17,7 @@ const {
 const { authLimiter, otpLimiter } = require('../Middleware/rateLimiter');
 
 // POST /api/auth/register
-router.post('/register', otpLimiter, validateRegister, register);
-
-// POST /api/auth/phone/send-registration-otp
-router.post('/phone/send-registration-otp', otpLimiter, sendRegistrationOtp);
+router.post('/register', authLimiter, validateRegister, register);
 
 // POST /api/auth/login
 router.post('/login', authLimiter, validateLogin, login);

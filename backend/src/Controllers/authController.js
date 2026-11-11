@@ -20,37 +20,6 @@ function normalizePhoneNumber(phoneNumber) {
   return String(phoneNumber || '').replace(/[\s()-]/g, '');
 }
 
-function isE164PhoneNumber(phoneNumber) {
-  return /^\+[1-9]\d{7,14}$/.test(phoneNumber);
-}
-
-function maskPhoneNumber(phoneNumber) {
-  return `••••${phoneNumber.slice(-4)}`;
-}
-
-const sendRegistrationOtp = async (req, res) => {
-  const phoneNumber = normalizePhoneNumber(req.body?.mobile_number || req.body?.mobileNumber);
-  if (!isE164PhoneNumber(phoneNumber)) {
-    return res.status(400).json({ error: 'Enter your mobile number in international format, such as +919876543210.' });
-  }
-  if (!isSmsVerificationConfigured()) {
-    return res.status(503).json({ error: 'Mobile verification is unavailable until Twilio Verify is configured.' });
-  }
-
-  try {
-    const existingUser = await prisma.user.findFirst({ where: { mobileNumber: phoneNumber } });
-    if (existingUser) return res.status(409).json({ error: 'Mobile number already in use.' });
-
-    const sent = await sendSmsVerification(phoneNumber);
-    if (!sent) return res.status(502).json({ error: 'The verification code could not be sent. Please try again.' });
-
-    return res.json({ message: `A verification code was sent to the mobile ending in ${phoneNumber.slice(-4)}.` });
-  } catch (error) {
-    console.error('Registration SMS dispatch failed:', error.message);
-    return res.status(502).json({ error: 'The verification code could not be sent. Check the number and try again.' });
-  }
-};
-
 const register = async (req, res) => {
   try {
     const { name, username, email, password, confirmPassword, mobile_number, role, secretCode } = req.body;
@@ -66,14 +35,8 @@ const register = async (req, res) => {
     }
 
     const cleanedMobile = normalizePhoneNumber(mobile_number);
-    if (!isE164PhoneNumber(cleanedMobile)) {
-      return res.status(400).json({ error: 'Phone number must include a country code in international format, such as +919876543210.' });
-    }
-    if (!/^\d{6}$/.test(String(req.body.phoneOtpCode || ''))) {
-      return res.status(400).json({ error: 'Enter the 6-digit mobile verification code.' });
-    }
-    if (!isSmsVerificationConfigured()) {
-      return res.status(503).json({ error: 'Mobile verification is unavailable until Twilio Verify is configured.' });
+    if (!/^\+?\d{10,15}$/.test(cleanedMobile)) {
+      return res.status(400).json({ error: 'Phone number must be 10 to 15 digits (plus sign allowed)' });
     }
     if (!STRONG_PASSWORD_REGEX.test(password)) {
       return res.status(400).json({
@@ -116,11 +79,6 @@ const register = async (req, res) => {
         return res.status(409).json({ error: 'Mobile number already in use' });
       }
       return res.status(409).json({ error: 'Email or username already in use' });
-    }
-
-    const phoneCodeApproved = await checkSmsVerification(cleanedMobile, String(req.body.phoneOtpCode));
-    if (!phoneCodeApproved) {
-      return res.status(400).json({ error: 'Invalid or expired mobile verification code.' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -349,6 +307,9 @@ const googleLogin = async (req, res) => {
     if (error.code === 'P2002') {
       return res.status(409).json({ error: 'An account with this email or Google identity already exists.' });
     }
+    if (error.code === 'P2022') {
+      return res.status(503).json({ error: 'Google sign-in database changes are pending. Run the backend Prisma migrations, then retry.' });
+    }
     console.error('Google login error:', error.message);
     return res.status(500).json({ error: 'Google sign-in failed. Please try again.' });
   }
@@ -529,7 +490,6 @@ const resetPassword = async (req, res) => {
 
 module.exports = {
   register,
-  sendRegistrationOtp,
   login,
   googleLogin,
   verifyEmail,

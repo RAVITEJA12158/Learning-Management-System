@@ -32,7 +32,6 @@ const registration = {
   password: "Password1!",
   confirmPassword: "Password1!",
   mobile_number: "+919876543210",
-  phoneOtpCode: "123456",
   role: "student",
 };
 

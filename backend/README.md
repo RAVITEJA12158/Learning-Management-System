@@ -19,7 +19,7 @@ This directory contains the Express REST API and Prisma PostgreSQL database laye
    - `GOOGLE_CLIENT_ID`: Google OAuth Web Client ID used to verify Google ID tokens (set the same client ID in frontend `VITE_GOOGLE_CLIENT_ID`).
    - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`: Media attachments and photo uploads.
    - `FRONTEND_ORIGINS`: Allowed CORS origins (e.g. `http://localhost:5173,http://localhost:3000`).
-   - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SERVICE_SID`: Twilio Verify credentials for registration phone OTPs and password reset SMS. Phone numbers must use E.164 format (for example, `+919876543210`). SMS verification cannot be used until these are configured.
+   - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SERVICE_SID`: Optional Twilio Verify credentials for password reset SMS.
 
 3. **Prisma Setup**:
    ```sh
@@ -50,8 +50,6 @@ All endpoints are prefixed with `/api` and protected by rate-limiting and helmet
 
 ### 1. Authentication (`/api/auth`)
 - `POST /api/auth/register`: Register student/faculty account. Returns JWT and user payload.
-- `POST /api/auth/phone/send-registration-otp`: Send a registration verification code to a mobile number.
-- Registration requires the 6-digit SMS code sent to the submitted mobile number.
 - `POST /api/auth/forgot-password`: Sends the reset code to the account's registered mobile when Twilio Verify is configured; otherwise uses the existing email reset flow.
 - `POST /api/auth/login`: Authenticate email/password. Enforces secret code for `ADMIN` role.
 - `POST /api/auth/google`: Verify a Google ID token and issue the normal LMS JWT. New Google accounts receive the `STUDENT` role; existing accounts keep their LMS role and password. Admin accounts must also provide the existing administrator access code.

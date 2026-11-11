@@ -26,7 +26,6 @@ describe('Authentication Integration Flow', () => {
     password: 'Password1!',
     confirmPassword: 'Password1!',
     mobile_number: '+11234567890',
-    phoneOtpCode: '123456',
   };
 
   beforeAll(() => {

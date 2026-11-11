@@ -85,12 +85,6 @@ const authApi = {
       body: JSON.stringify(payload),
     });
   },
-  async sendRegistrationOtp(payload) {
-    return await apiRequest('/auth/phone/send-registration-otp', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-  },
   async forgotPassword(payload) {
     return await apiRequest('/auth/forgot-password', {
       method: 'POST',
