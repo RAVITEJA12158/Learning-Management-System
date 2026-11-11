@@ -1,8 +1,33 @@
 import React from 'react';
 import Badge from './common/Badge';
 
+function getYouTubeEmbedUrl(url) {
+  if (!url) return null;
+
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.replace(/^www\./, '').toLowerCase();
+    let videoId = null;
+
+    if (hostname === 'youtu.be') {
+      videoId = parsed.pathname.split('/').filter(Boolean)[0];
+    } else if (hostname === 'youtube.com' || hostname === 'youtube-nocookie.com') {
+      if (parsed.pathname === '/watch') {
+        videoId = parsed.searchParams.get('v');
+      } else if (parsed.pathname.startsWith('/embed/')) {
+        videoId = parsed.pathname.split('/')[2];
+      }
+    }
+
+    return videoId ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?rel=0` : null;
+  } catch {
+    return null;
+  }
+}
+
 function ContentViewerModal({ content, isOpen, onClose, onToggleComplete, isCompleted }) {
   if (!isOpen || !content) return null;
+  const youtubeEmbedUrl = content.type === 'VIDEO' ? getYouTubeEmbedUrl(content.contentUrl) : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 animate-fade-in">
@@ -58,7 +83,16 @@ function ContentViewerModal({ content, isOpen, onClose, onToggleComplete, isComp
 
           {content.type === 'VIDEO' && (
             <div className="h-[60vh] w-full flex items-center justify-center rounded-xl overflow-hidden bg-black border border-slate-200 dark:border-white/10">
-              {content.contentUrl ? (
+              {youtubeEmbedUrl ? (
+                <iframe
+                  title={content.title}
+                  src={youtubeEmbedUrl}
+                  className="h-full w-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              ) : content.contentUrl ? (
                 <video
                   controls
                   className="max-h-full max-w-full rounded-xl"

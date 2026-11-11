@@ -160,14 +160,17 @@ def test_student_enrollment_material_quiz_attendance_and_progress(driver, base_u
     select_course_tab(driver, "Modules & Content")
     wait_for(driver, lambda browser: "Course Curriculum" in browser.find_element(By.TAG_NAME, "body").text)
     body = driver.find_element(By.TAG_NAME, "body").text
-    assert "Video Lecture" in body or "Recorded Lecture" in body
+    assert "MIT OCW Lecture" in body or "Video Lecture" in body or "Recorded Lecture" in body
     video_title = wait_for(
         driver,
-        EC.visibility_of_element_located((By.XPATH, "//*[contains(text(), 'Recorded Lecture: Bayesian Inference')][1]")),
+        EC.visibility_of_element_located((By.XPATH, "//*[contains(text(), 'MIT OCW Lecture: Artificial Intelligence and Machine Learning')][1]")),
     )
     video_title.click()
-    wait_for(driver, EC.visibility_of_element_located((By.CSS_SELECTOR, "video[controls]")))
-    assert driver.find_element(By.CSS_SELECTOR, "video[controls]").get_attribute("src")
+    video_player = wait_for(
+        driver,
+        EC.visibility_of_element_located((By.CSS_SELECTOR, "iframe[title^='MIT OCW Lecture']")),
+    )
+    assert video_player.get_attribute("src").startswith("https://www.youtube-nocookie.com/embed/")
     driver.find_element(By.CSS_SELECTOR, 'button[aria-label="Close modal"]').click()
 
     select_course_tab(driver, "Timed Quizzes")
