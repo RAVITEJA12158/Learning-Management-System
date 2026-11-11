@@ -1,67 +1,69 @@
+
 const emailjs = require('@emailjs/nodejs');
 
-function isEmailJsConfigured() {
+function isEmailJsConfigured(templateId) {
   return Boolean(
     process.env.EMAILJS_SERVICE_ID &&
-    process.env.EMAILJS_TEMPLATE_ID &&
+    templateId &&
     process.env.EMAILJS_PUBLIC_KEY &&
     process.env.EMAILJS_PRIVATE_KEY
   );
 }
 
 function getEmailJsAuthOptions() {
-  const options = {
+  return {
     publicKey: process.env.EMAILJS_PUBLIC_KEY,
+    privateKey: process.env.EMAILJS_PRIVATE_KEY,
   };
-  // @emailjs/nodejs requires `privateKey` for server-side API requests
-  if (process.env.EMAILJS_PRIVATE_KEY) {
-    options.privateKey = process.env.EMAILJS_PRIVATE_KEY;
-  }
-  return options;
 }
 
-const sendVerificationEmail = async ({ email, name, verificationLink }) => {
-  if (!isEmailJsConfigured()) {
-    console.warn(
-      `[EmailJS] Skipping verification email to ${email}: EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, or EMAILJS_PUBLIC_KEY is not configured in .env.`
-    );
+// Send welcome email after successful registration
+const sendWelcomeEmail = async ({ email, name }) => {
+  const serviceId = process.env.EMAILJS_SERVICE_ID;
+  const templateId = process.env.EMAILJS_TEMPLATE_ID;
+
+  if (!isEmailJsConfigured(templateId)) {
+    console.warn('[EmailJS] Welcome email skipped: configuration missing.');
     return { skipped: true };
   }
 
   try {
+    const frontendBase = (
+      process.env.FRONTEND_URL || 'http://localhost:3000'
+    ).replace(/\/+$/, '');
+
     await emailjs.send(
-      process.env.EMAILJS_SERVICE_ID,
-      process.env.EMAILJS_TEMPLATE_ID,
+      serviceId,
+      templateId,
       {
-        name,
-        to_name: name,
-        email,
         to_email: email,
-        verification_link: verificationLink,
-        action_url: verificationLink,
-        subject: 'Verify your CourseHub LMS account',
-        message: `Welcome to CourseHub, ${name}! Please verify your account using this link: ${verificationLink}`,
+        to_name: name,
+        login_link: `${frontendBase}/login`,
       },
       getEmailJsAuthOptions()
     );
 
-    console.log(`Verification email sent to ${email}`);
+    console.log(`[EmailJS] Welcome email sent to ${email}`);
+
     return { sent: true };
   } catch (error) {
-    console.error('EmailJS verification email error:', error);
-    throw new Error('Failed to send verification email');
+    console.error('[EmailJS] Welcome email error:', error);
+    throw error;
   }
 };
 
-const sendPasswordResetEmail = async ({ email, name, resetToken, resetLink }) => {
+// Send password reset email
+const sendPasswordResetEmail = async ({
+  email,
+  name,
+  resetToken,
+  resetLink,
+}) => {
   const serviceId = process.env.EMAILJS_SERVICE_ID;
-  const templateId = process.env.EMAILJS_RESET_TEMPLATE_ID || process.env.EMAILJS_TEMPLATE_ID;
-  const publicKey = process.env.EMAILJS_PUBLIC_KEY;
+  const templateId = process.env.EMAILJS_RESET_TEMPLATE_ID;
 
-  if (!serviceId || !templateId || !publicKey) {
-    console.warn(
-      `[EmailJS] Skipping password reset email to ${email}: EmailJS environment variables are not configured.`
-    );
+  if (!isEmailJsConfigured(templateId)) {
+    console.warn('[EmailJS] Password reset email skipped: configuration missing.');
     return { skipped: true };
   }
 
@@ -70,28 +72,25 @@ const sendPasswordResetEmail = async ({ email, name, resetToken, resetLink }) =>
       serviceId,
       templateId,
       {
-        name,
-        to_name: name,
-        email,
         to_email: email,
+        to_name: name,
         reset_code: resetToken,
         reset_link: resetLink,
-        verification_link: resetLink,
-        action_url: resetLink,
-        subject: 'CourseHub LMS Password Reset Code',
-        message: `Your CourseHub password reset code is ${resetToken} (valid for 15 minutes). You can also reset directly at: ${resetLink}`,
+        message: `Your Course Hub password reset code is ${resetToken}. It is valid for 15 minutes.`,
       },
       getEmailJsAuthOptions()
     );
 
-    console.log(`Password reset email sent to ${email}`);
+    console.log(`[EmailJS] Password reset email sent to ${email}`);
+
     return { sent: true };
   } catch (error) {
-    console.error('EmailJS password reset error:', error);
-    throw new Error('Failed to send password reset email');
+    console.error('[EmailJS] Password reset email error:', error);
+    throw error;
   }
 };
 
-module.exports = sendVerificationEmail;
-module.exports.sendVerificationEmail = sendVerificationEmail;
+module.exports = sendWelcomeEmail;
+module.exports.sendWelcomeEmail = sendWelcomeEmail;
+module.exports.sendVerificationEmail = sendWelcomeEmail;
 module.exports.sendPasswordResetEmail = sendPasswordResetEmail;
