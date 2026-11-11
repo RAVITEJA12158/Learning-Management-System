@@ -314,6 +314,10 @@ async function main() {
     { courseId: COURSE_MATH_ID, studentId: STUDENT_ISHITA_ID, status: 'ACTIVE' },
     { courseId: COURSE_DSA_ID, studentId: STUDENT_ALEX_ID, status: 'ACTIVE' },
     { courseId: COURSE_DSA_ID, studentId: STUDENT_ARJUN_ID, status: 'ACTIVE' },
+    { courseId: COURSE_DL_ID, studentId: STUDENT_SARAH_ID, status: 'ACTIVE' },
+    { courseId: COURSE_DL_ID, studentId: STUDENT_ISHITA_ID, status: 'ACTIVE' },
+    { courseId: COURSE_ANALYTICS_ID, studentId: STUDENT_ISHITA_ID, status: 'ACTIVE' },
+    { courseId: COURSE_ANALYTICS_ID, studentId: STUDENT_SARAH_ID, status: 'ACTIVE' },
   ];
 
   for (const enr of enrollments) {
@@ -331,6 +335,9 @@ async function main() {
   const MOD_3_ID = 'm0000000-0000-4000-8000-000000000003';
   const MOD_WEB_1_ID = 'm0000000-0000-4000-8000-000000000004';
   const MOD_DL_1_ID = 'm0000000-0000-4000-8000-000000000005';
+  const MOD_MATH_1_ID = 'm0000000-0000-4000-8000-000000000006';
+  const MOD_DSA_1_ID = 'm0000000-0000-4000-8000-000000000007';
+  const MOD_ANALYTICS_1_ID = 'm0000000-0000-4000-8000-000000000008';
 
   const modules = [
     {
@@ -378,6 +385,33 @@ async function main() {
       isPublished: true,
       releaseAt: new Date('2026-09-01T08:00:00Z'),
     },
+    {
+      id: MOD_MATH_1_ID,
+      courseId: COURSE_MATH_ID,
+      title: 'Matrix Decompositions & Eigenvalue Methods',
+      description: 'Review eigenvalues, orthogonal projections, positive-definite matrices, and singular value decomposition.',
+      position: 1,
+      isPublished: true,
+      releaseAt: new Date('2026-09-01T08:00:00Z'),
+    },
+    {
+      id: MOD_DSA_1_ID,
+      courseId: COURSE_DSA_ID,
+      title: 'Core Data Structures & Algorithm Design',
+      description: 'Explore data structures, graph traversal, sorting, and algorithmic complexity with MIT OpenCourseWare lectures.',
+      position: 1,
+      isPublished: true,
+      releaseAt: new Date('2026-09-01T08:00:00Z'),
+    },
+    {
+      id: MOD_ANALYTICS_1_ID,
+      courseId: COURSE_ANALYTICS_ID,
+      title: 'Predictive Modeling & Business Decisions',
+      description: 'Apply regression, classification, and data-driven decision methods to business cases.',
+      position: 1,
+      isPublished: true,
+      releaseAt: new Date('2026-09-01T08:00:00Z'),
+    },
   ];
 
   for (const m of modules) {
@@ -407,6 +441,12 @@ async function main() {
   const CNT_WEB_102_ID = 'cnt00000-0000-4000-8000-000000000402';
   const CNT_DL_101_ID = 'cnt00000-0000-4000-8000-000000000501';
   const CNT_DL_102_ID = 'cnt00000-0000-4000-8000-000000000502';
+  const CNT_MATH_101_ID = 'cnt00000-0000-4000-8000-000000000601';
+  const CNT_MATH_102_ID = 'cnt00000-0000-4000-8000-000000000602';
+  const CNT_DSA_101_ID = 'cnt00000-0000-4000-8000-000000000701';
+  const CNT_DSA_102_ID = 'cnt00000-0000-4000-8000-000000000702';
+  const CNT_ANALYTICS_101_ID = 'cnt00000-0000-4000-8000-000000000801';
+  const CNT_ANALYTICS_102_ID = 'cnt00000-0000-4000-8000-000000000802';
 
   const contents = [
     {
@@ -562,6 +602,72 @@ async function main() {
       position: 2,
       isPublished: true,
       createdById: FACULTY_TURING_ID,
+    },
+    {
+      id: CNT_MATH_101_ID,
+      moduleId: MOD_MATH_1_ID,
+      title: 'MIT OCW Lecture: Eigenvalues and Eigenvectors',
+      type: 'VIDEO',
+      description: 'Prof. Gilbert Strang introduces eigenvalues and eigenvectors in MIT 18.06 Linear Algebra.',
+      contentUrl: 'https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-21-eigenvalues-and-eigenvectors/',
+      position: 1,
+      isPublished: true,
+      createdById: FACULTY_JOHNSON_ID,
+    },
+    {
+      id: CNT_MATH_102_ID,
+      moduleId: MOD_MATH_1_ID,
+      title: 'MIT OCW Lecture: Singular Value Decomposition',
+      type: 'VIDEO',
+      description: 'MIT 18.06 lecture covering singular value decomposition and its matrix applications.',
+      contentUrl: 'https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-29-singular-value-decomposition/',
+      position: 2,
+      isPublished: true,
+      createdById: FACULTY_JOHNSON_ID,
+    },
+    {
+      id: CNT_DSA_101_ID,
+      moduleId: MOD_DSA_1_ID,
+      title: 'MIT OCW Lecture: Algorithms and Computation',
+      type: 'VIDEO',
+      description: 'MIT 6.006 introduces algorithmic problem solving, computation models, and data structures.',
+      contentUrl: 'https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/resources/lecture-1-algorithms-and-computation/',
+      position: 1,
+      isPublished: true,
+      createdById: FACULTY_HOPPER_ID,
+    },
+    {
+      id: CNT_DSA_102_ID,
+      moduleId: MOD_DSA_1_ID,
+      title: 'MIT OCW Lecture: Data Structures and Dynamic Arrays',
+      type: 'VIDEO',
+      description: 'MIT 6.006 lecture on sequence and set interfaces, data structures, and dynamic arrays.',
+      contentUrl: 'https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/resources/lecture-2-data-structures-and-dynamic-arrays/',
+      position: 2,
+      isPublished: true,
+      createdById: FACULTY_HOPPER_ID,
+    },
+    {
+      id: CNT_ANALYTICS_101_ID,
+      moduleId: MOD_ANALYTICS_1_ID,
+      title: 'MIT OCW Lecture: Introduction to The Analytics Edge',
+      type: 'VIDEO',
+      description: 'MIT 15.071 lecture introducing business analytics and its applications to intelligence, health, and decision-making.',
+      contentUrl: 'https://www.youtube-nocookie.com/embed/-mW-DYFyGqg',
+      position: 1,
+      isPublished: true,
+      createdById: FACULTY_JOHNSON_ID,
+    },
+    {
+      id: CNT_ANALYTICS_102_ID,
+      moduleId: MOD_ANALYTICS_1_ID,
+      title: 'MIT OCW Lecture: Linear Regression and Business Analytics',
+      type: 'VIDEO',
+      description: 'MIT 15.071 The Analytics Edge lesson applies linear regression to business data and prediction.',
+      contentUrl: 'https://ocw.mit.edu/courses/15-071-the-analytics-edge-spring-2017/pages/linear-regression/the-statistical-sommelier-an-introduction-to-linear-regression/',
+      position: 2,
+      isPublished: true,
+      createdById: FACULTY_JOHNSON_ID,
     },
   ];
 
@@ -937,6 +1043,129 @@ async function main() {
           isCorrect: opt.isCorrect,
         },
       });
+    }
+  }
+
+  // Add assessment coverage for the remaining seeded subjects so every course
+  // has at least one published quiz with questions and answer options.
+  const additionalQuizzes = [
+    {
+      id: 'q0000000-0000-4000-8000-000000000003',
+      courseId: COURSE_DL_ID,
+      title: 'Deep Learning Foundations Quiz',
+      description: 'Check your understanding of neural networks, backpropagation, and gradient descent.',
+      createdById: FACULTY_TURING_ID,
+      questions: [
+        ['A neuron typically applies which operation to its weighted inputs?', 'An activation function', 'A database join', 'A sorting pass', 'A file compression step', 0],
+        ['Backpropagation is primarily used to calculate:', 'Gradients of the loss with respect to model parameters', 'The number of training examples', 'The image dimensions only', 'The final class label without a model', 0],
+        ['Gradient descent updates parameters in which direction?', 'Opposite the loss gradient', 'Along the loss gradient', 'Toward the largest input feature', 'At a fixed random direction', 0],
+      ],
+    },
+    {
+      id: 'q0000000-0000-4000-8000-000000000004',
+      courseId: COURSE_WEB_ID,
+      title: 'Full-Stack Web Systems Quiz',
+      description: 'Review HTTP APIs, client-server architecture, and secure web application design.',
+      createdById: FACULTY_TIM_ID,
+      questions: [
+        ['What is the primary role of a REST API in a web application?', 'Expose resources and operations over HTTP', 'Render GPU shaders', 'Store passwords in the browser', 'Replace the database engine', 0],
+        ['Where should authorization checks for protected API operations be enforced?', 'On the server', 'Only in a hidden frontend button', 'Only in browser local storage', 'In the CSS stylesheet', 0],
+        ['Which HTTP method is commonly used to retrieve a resource?', 'GET', 'PATCH', 'DELETE', 'CONNECT', 0],
+      ],
+    },
+    {
+      id: 'q0000000-0000-4000-8000-000000000005',
+      courseId: COURSE_MATH_ID,
+      title: 'Linear Algebra and Matrix Methods Quiz',
+      description: 'Practice eigenvalues, projections, and matrix decompositions.',
+      createdById: FACULTY_JOHNSON_ID,
+      questions: [
+        ['An eigenvector of a matrix is a nonzero vector whose direction is preserved by:', 'Multiplication by that matrix', 'Addition of any scalar', 'Taking its transpose', 'Sorting its components', 0],
+        ['A common application of singular value decomposition is:', 'Low-rank approximation and dimensionality reduction', 'Encrypting a network connection', 'Balancing a binary tree', 'Parsing a JSON document', 0],
+        ['Orthogonal projection onto a subspace produces a residual that is:', 'Orthogonal to the subspace', 'Always the zero vector', 'Equal to the original vector', 'A scalar multiple of every basis vector', 0],
+      ],
+    },
+    {
+      id: 'q0000000-0000-4000-8000-000000000006',
+      courseId: COURSE_DSA_ID,
+      title: 'Data Structures and Algorithms Quiz',
+      description: 'Review dynamic arrays, graph traversal, and algorithm complexity.',
+      createdById: FACULTY_HOPPER_ID,
+      questions: [
+        ['What is the average time complexity of lookup in a well-designed hash table?', 'O(1)', 'O(log n)', 'O(n log n)', 'O(n²)', 0],
+        ['Breadth-first search explores a graph using which data structure?', 'Queue', 'Stack only', 'Heap only', 'Hash function only', 0],
+        ['The worst-case time complexity of merge sort is:', 'O(n log n)', 'O(1)', 'O(log n)', 'O(n² log n)', 0],
+      ],
+    },
+    {
+      id: 'q0000000-0000-4000-8000-000000000007',
+      courseId: COURSE_ANALYTICS_ID,
+      title: 'Business and Predictive Analytics Quiz',
+      description: 'Check core concepts in regression, classification, and model evaluation.',
+      createdById: FACULTY_JOHNSON_ID,
+      questions: [
+        ['In a regression problem, the target variable is generally:', 'A numeric value', 'A set of database permissions', 'A graph traversal order', 'A CSS selector', 0],
+        ['Logistic regression is commonly used to estimate:', 'Class probabilities', 'A matrix determinant only', 'A video bitrate', 'An API route path', 0],
+        ['Why should model performance be evaluated on held-out data?', 'To estimate performance on unseen examples', 'To guarantee zero training error', 'To remove all input features', 'To increase the number of labels', 0],
+      ],
+    },
+  ];
+
+  let additionalOptionId = 55;
+  let additionalQuestionId = 15;
+  for (const quizData of additionalQuizzes) {
+    const { questions, ...quizFields } = quizData;
+    await prisma.quiz.upsert({
+      where: { id: quizFields.id },
+      update: {
+        title: quizFields.title,
+        description: quizFields.description,
+        durationMinutes: 15,
+        maxAttempts: 3,
+        totalMarks: 15,
+      },
+      create: {
+        ...quizFields,
+        durationMinutes: 15,
+        maxAttempts: 3,
+        totalMarks: 15,
+        startTime: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        endTime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    for (let questionIndex = 0; questionIndex < questions.length; questionIndex += 1) {
+      const [questionText, ...answerFields] = questions[questionIndex];
+      const correctIndex = answerFields.pop();
+      const questionId = `qu000000-0000-4000-8000-${String(additionalQuestionId).padStart(12, '0')}`;
+      const options = answerFields.map((optionText, optionIndex) => ({
+        id: `opt00000-0000-4000-8000-${String(additionalOptionId++).padStart(12, '0')}`,
+        optionText,
+        isCorrect: optionIndex === correctIndex,
+      }));
+
+      await prisma.question.upsert({
+        where: { id: questionId },
+        update: { questionText, questionType: 'MCQ', marks: 5, position: questionIndex + 1 },
+        create: {
+          id: questionId,
+          quizId: quizFields.id,
+          questionText,
+          questionType: 'MCQ',
+          marks: 5,
+          position: questionIndex + 1,
+        },
+      });
+
+      for (const option of options) {
+        await prisma.questionOption.upsert({
+          where: { id: option.id },
+          update: { optionText: option.optionText, isCorrect: option.isCorrect },
+          create: { ...option, questionId },
+        });
+      }
+
+      additionalQuestionId += 1;
     }
   }
 

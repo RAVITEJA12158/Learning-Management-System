@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   register,
+  sendRegistrationOtp,
   login,
   verifyEmail,
   forgotPassword,
@@ -13,10 +14,13 @@ const {
   validateForgotPassword,
   validateResetPassword,
 } = require('../Middleware/validate');
-const { authLimiter } = require('../Middleware/rateLimiter');
+const { authLimiter, otpLimiter } = require('../Middleware/rateLimiter');
 
 // POST /api/auth/register
-router.post('/register', authLimiter, validateRegister, register);
+router.post('/register', otpLimiter, validateRegister, register);
+
+// POST /api/auth/phone/send-registration-otp
+router.post('/phone/send-registration-otp', otpLimiter, sendRegistrationOtp);
 
 // POST /api/auth/login
 router.post('/login', authLimiter, validateLogin, login);
@@ -25,7 +29,7 @@ router.post('/login', authLimiter, validateLogin, login);
 router.get('/verify/:token', verifyEmail);
 
 // POST /api/auth/forgot-password
-router.post('/forgot-password', authLimiter, validateForgotPassword, forgotPassword);
+router.post('/forgot-password', otpLimiter, validateForgotPassword, forgotPassword);
 
 // POST /api/auth/reset-password
 router.post('/reset-password', authLimiter, validateResetPassword, resetPassword);

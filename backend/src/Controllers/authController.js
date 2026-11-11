@@ -4,11 +4,51 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sendVerificationEmail = require('../../utils/sendVerificationEmail');
 const { sendPasswordResetEmail } = require('../../utils/sendVerificationEmail');
+const {
+  isSmsVerificationConfigured,
+  sendSmsVerification,
+  checkSmsVerification,
+} = require('../utils/smsVerification');
 
 const ROLE_VALUES = { student: 'STUDENT', faculty: 'FACULTY', admin: 'ADMIN' };
 
 // Requires at least 8 characters, 1 uppercase, 1 lowercase, 1 digit, and 1 special character (any non-alphanumeric symbol)
 const STRONG_PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8,}$/;
+
+function normalizePhoneNumber(phoneNumber) {
+  return String(phoneNumber || '').replace(/[\s()-]/g, '');
+}
+
+function isE164PhoneNumber(phoneNumber) {
+  return /^\+[1-9]\d{7,14}$/.test(phoneNumber);
+}
+
+function maskPhoneNumber(phoneNumber) {
+  return `••••${phoneNumber.slice(-4)}`;
+}
+
+const sendRegistrationOtp = async (req, res) => {
+  const phoneNumber = normalizePhoneNumber(req.body?.mobile_number || req.body?.mobileNumber);
+  if (!isE164PhoneNumber(phoneNumber)) {
+    return res.status(400).json({ error: 'Enter your mobile number in international format, such as +919876543210.' });
+  }
+  if (!isSmsVerificationConfigured()) {
+    return res.status(503).json({ error: 'Mobile verification is unavailable until Twilio Verify is configured.' });
+  }
+
+  try {
+    const existingUser = await prisma.user.findFirst({ where: { mobileNumber: phoneNumber } });
+    if (existingUser) return res.status(409).json({ error: 'Mobile number already in use.' });
+
+    const sent = await sendSmsVerification(phoneNumber);
+    if (!sent) return res.status(502).json({ error: 'The verification code could not be sent. Please try again.' });
+
+    return res.json({ message: `A verification code was sent to the mobile ending in ${phoneNumber.slice(-4)}.` });
+  } catch (error) {
+    console.error('Registration SMS dispatch failed:', error.message);
+    return res.status(502).json({ error: 'The verification code could not be sent. Check the number and try again.' });
+  }
+};
 
 const register = async (req, res) => {
   try {
@@ -24,9 +64,15 @@ const register = async (req, res) => {
       return res.status(400).json({ error: 'Please enter a valid email address' });
     }
 
-    const cleanedMobile = String(mobile_number).replace(/[\s\-()]/g, '');
-    if (!/^\+?\d{10,15}$/.test(cleanedMobile)) {
-      return res.status(400).json({ error: 'Phone number must be 10 to 15 digits (plus sign allowed)' });
+    const cleanedMobile = normalizePhoneNumber(mobile_number);
+    if (!isE164PhoneNumber(cleanedMobile)) {
+      return res.status(400).json({ error: 'Phone number must include a country code in international format, such as +919876543210.' });
+    }
+    if (!/^\d{6}$/.test(String(req.body.phoneOtpCode || ''))) {
+      return res.status(400).json({ error: 'Enter the 6-digit mobile verification code.' });
+    }
+    if (!isSmsVerificationConfigured()) {
+      return res.status(503).json({ error: 'Mobile verification is unavailable until Twilio Verify is configured.' });
     }
     if (!STRONG_PASSWORD_REGEX.test(password)) {
       return res.status(400).json({
@@ -69,6 +115,11 @@ const register = async (req, res) => {
         return res.status(409).json({ error: 'Mobile number already in use' });
       }
       return res.status(409).json({ error: 'Email or username already in use' });
+    }
+
+    const phoneCodeApproved = await checkSmsVerification(cleanedMobile, String(req.body.phoneOtpCode));
+    if (!phoneCodeApproved) {
+      return res.status(400).json({ error: 'Invalid or expired mobile verification code.' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -242,6 +293,24 @@ const forgotPassword = async (req, res) => {
       });
     }
 
+    if (isSmsVerificationConfigured() && user.mobileNumber) {
+      try {
+        const sent = await sendSmsVerification(user.mobileNumber);
+        if (!sent) throw new Error('SMS verification was not accepted by the provider.');
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { resetPasswordToken: null, resetPasswordExpires: null },
+        });
+        return res.json({
+          message: `A 6-digit password reset code was sent to your registered mobile ending in ${user.mobileNumber.slice(-4)}.`,
+          delivery: 'sms',
+        });
+      } catch (smsError) {
+        console.error('Password reset SMS dispatch failed:', smsError.message);
+        return res.status(502).json({ error: 'Could not send a reset code by SMS. Please try again later.' });
+      }
+    }
+
     // Generate a 6-digit numeric reset code (valid for 15 minutes)
     const resetToken = String(crypto.randomInt(100000, 999999));
     const resetExpires = new Date(Date.now() + 15 * 60 * 1000);
@@ -274,6 +343,7 @@ const forgotPassword = async (req, res) => {
       message: emailDispatched
         ? 'A 6-digit password reset code has been sent to your email address.'
         : 'Password reset code generated. Check your email (or use the development reset code if EmailJS is not configured).',
+      delivery: 'email',
       emailDispatched,
     };
 
@@ -307,14 +377,24 @@ const resetPassword = async (req, res) => {
 
     const cleanEmail = email.trim().toLowerCase();
     const user = await prisma.user.findUnique({ where: { email: cleanEmail } });
+    let codeIsValid = Boolean(
+      user &&
+      user.resetPasswordToken &&
+      user.resetPasswordToken === String(token).trim() &&
+      user.resetPasswordExpires &&
+      new Date(user.resetPasswordExpires) >= new Date()
+    );
 
-    if (
-      !user ||
-      !user.resetPasswordToken ||
-      user.resetPasswordToken !== String(token).trim() ||
-      !user.resetPasswordExpires ||
-      new Date(user.resetPasswordExpires) < new Date()
-    ) {
+    if (user && isSmsVerificationConfigured() && user.mobileNumber) {
+      try {
+        codeIsValid = await checkSmsVerification(user.mobileNumber, String(token).trim());
+      } catch (smsError) {
+        console.error('Password reset SMS verification failed:', smsError.message);
+        return res.status(502).json({ error: 'Could not verify the reset code right now. Please try again.' });
+      }
+    }
+
+    if (!codeIsValid || !user) {
       return res.status(400).json({ error: 'Invalid or expired password reset code' });
     }
 
@@ -337,6 +417,7 @@ const resetPassword = async (req, res) => {
 
 module.exports = {
   register,
+  sendRegistrationOtp,
   login,
   verifyEmail,
   forgotPassword,
