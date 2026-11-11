@@ -7,6 +7,7 @@ const { upload } = require('../Middleware/upload');
 // User profile routes
 router.get('/profile', authenticate, userController.getProfile);
 router.put('/profile', authenticate, userController.updateProfile);
+router.put('/change-password', authenticate, userController.changePassword);
 router.post('/profile/photo', authenticate, upload.single('file'), userController.updateProfilePhoto);
 router.delete('/profile/photo', authenticate, userController.deleteProfilePhoto);
 

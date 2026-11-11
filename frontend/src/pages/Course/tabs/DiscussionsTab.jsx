@@ -10,59 +10,92 @@ function DiscussionsTab({
   isCreatorOrStaff = false,
   user
 }) {
-  const [threads, setThreads] = (0, useState)(() => discussionService.getByCourse(courseId));
-  const [expandedThreadId, setExpandedThreadId] = (0, useState)('thread-1');
-  const [isStartingThread, setIsStartingThread] = (0, useState)(false);
-  const [searchQuery, setSearchQuery] = (0, useState)('');
-  const [title, setTitle] = (0, useState)('');
-  const [body, setBody] = (0, useState)('');
-  const [replyTextMap, setReplyTextMap] = (0, useState)({});
-  (0, useEffect)(() => {
-    setThreads(discussionService.getByCourse(courseId));
+  const [threads, setThreads] = useState(() => discussionService.getByCourse(courseId));
+  const [expandedThreadId, setExpandedThreadId] = useState('thread-1');
+  const [isStartingThread, setIsStartingThread] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [replyTextMap, setReplyTextMap] = useState({});
+
+  useEffect(() => {
+    let isMounted = true;
+    discussionService.fetchByCourse(courseId).then(list => {
+      if (isMounted && Array.isArray(list)) {
+        setThreads(list);
+        if (list.length > 0) {
+          setExpandedThreadId(prev => list.some(t => t.id === prev) ? prev : list[0].id);
+        }
+      }
+    });
+    return () => { isMounted = false; };
   }, [courseId]);
+
   const updateThreads = next => {
     setThreads(next);
     discussionService.saveForCourse(courseId, next);
   };
-  const handleCreateThread = e => {
+
+  const handleCreateThread = async e => {
     e.preventDefault();
     if (!title.trim() || !body.trim()) return;
-    const newThread = {
-      id: `thread-${Date.now()}`,
-      courseId,
-      title: title.trim(),
-      author: user?.name || 'Sarah Jensen',
-      authorRole: isCreatorOrStaff ? 'Instructor' : 'Student',
-      time: 'Just now',
-      pinned: false,
-      resolved: false,
-      likes: 1,
-      likedByMe: true,
-      content: body.trim(),
-      replies: []
-    };
-    updateThreads([newThread, ...threads]);
-    setExpandedThreadId(newThread.id);
+    try {
+      const created = await discussionService.createThread(courseId, {
+        title: title.trim(),
+        content: body.trim()
+      });
+      if (created) {
+        setThreads(prev => [created, ...prev.filter(t => t.id !== created.id)]);
+        setExpandedThreadId(created.id);
+      }
+    } catch {
+      const newThread = {
+        id: `thread-${Date.now()}`,
+        courseId,
+        title: title.trim(),
+        author: user?.name || 'Sarah Jensen',
+        authorRole: isCreatorOrStaff ? 'Instructor' : 'Student',
+        time: 'Just now',
+        pinned: false,
+        resolved: false,
+        likes: 1,
+        likedByMe: true,
+        content: body.trim(),
+        replies: []
+      };
+      updateThreads([newThread, ...threads]);
+      setExpandedThreadId(newThread.id);
+    }
     setTitle('');
     setBody('');
     setIsStartingThread(false);
   };
-  const handleAddReply = (threadId, e) => {
+
+  const handleAddReply = async (threadId, e) => {
     e.preventDefault();
     const content = (replyTextMap[threadId] || '').trim();
     if (!content) return;
-    const newReply = {
-      id: `rep-${Date.now()}`,
-      author: user?.name || 'Sarah Jensen',
-      authorRole: isCreatorOrStaff ? 'Instructor' : 'Student',
-      time: 'Just now',
-      content
-    };
-    const next = threads.map(t => t.id === threadId ? {
-      ...t,
-      replies: [...(t.replies || []), newReply]
-    } : t);
-    updateThreads(next);
+    try {
+      const newReply = await discussionService.createReply(threadId, content);
+      const next = threads.map(t => t.id === threadId ? {
+        ...t,
+        replies: [...(t.replies || []), newReply]
+      } : t);
+      updateThreads(next);
+    } catch {
+      const newReply = {
+        id: `rep-${Date.now()}`,
+        author: user?.name || 'Sarah Jensen',
+        authorRole: isCreatorOrStaff ? 'Instructor' : 'Student',
+        time: 'Just now',
+        content
+      };
+      const next = threads.map(t => t.id === threadId ? {
+        ...t,
+        replies: [...(t.replies || []), newReply]
+      } : t);
+      updateThreads(next);
+    }
     setReplyTextMap(prev => ({
       ...prev,
       [threadId]: ''

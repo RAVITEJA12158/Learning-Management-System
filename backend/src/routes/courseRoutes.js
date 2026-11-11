@@ -16,8 +16,9 @@ router.get('/faculty/created', authenticate, requireRole(['FACULTY']), courseCon
 router.post('/', authenticate, requireRole(['FACULTY', 'ADMIN']), courseController.createCourse);
 
 // Parameterized routes (must come after static routes)
-router.get('/', authenticate, courseController.getAllCourses);
-router.get('/:id', authenticate, courseController.getCourseById);
+// Course catalog & syllabus are publicly readable by all visitors & students
+router.get('/', courseController.getAllCourses);
+router.get('/:id', courseController.getCourseById);
 router.put('/:id', authenticate, requireRole(['FACULTY', 'ADMIN']), courseController.updateCourse);
 router.delete('/:id', authenticate, requireRole(['FACULTY', 'ADMIN']), courseController.deleteCourse);
 router.post('/:id/enroll', authenticate, requireRole(['STUDENT']), courseController.enrollStudent);

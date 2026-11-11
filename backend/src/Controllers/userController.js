@@ -411,3 +411,40 @@ exports.getSystemStats = async (req, res) => {
     res.status(500).json({ error: 'Failed to retrieve system statistics.' });
   }
 };
+
+/**
+ * PUT /api/users/change-password
+ * Change current user password with old password verification and bcrypt hash.
+ */
+exports.changePassword = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required.' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters.' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+
+    const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Current password is incorrect.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: hashedPassword },
+    });
+
+    res.json({ message: 'Password updated successfully.' });
+  } catch (error) {
+    console.error('changePassword error:', error);
+    res.status(500).json({ error: 'Failed to update password.' });
+  }
+};

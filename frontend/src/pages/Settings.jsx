@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { MoonIcon, SunIcon } from '../components/common/Icons';
 import Button from '../components/common/Button';
+import { userService } from '../services/userService';
 
 function Settings() {
   const {
@@ -22,9 +23,13 @@ function Settings() {
     setSavedFeedback('Preferences and notification channels saved successfully!');
     setTimeout(() => setSavedFeedback(''), 3000);
   };
-  const handlePasswordUpdate = e => {
+  const handlePasswordUpdate = async e => {
     e.preventDefault();
     setPasswordError('');
+    if (!currentPassword) {
+      setPasswordError('Current password is required.');
+      return;
+    }
     if (newPassword.length < 6) {
       setPasswordError('New password must be at least 6 characters.');
       return;
@@ -33,11 +38,16 @@ function Settings() {
       setPasswordError('New password and confirmation do not match.');
       return;
     }
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setSavedFeedback('Password updated securely using bcrypt hash!');
-    setTimeout(() => setSavedFeedback(''), 3000);
+    try {
+      await userService.changePassword(currentPassword, newPassword);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setSavedFeedback('Password updated securely with bcrypt hash!');
+      setTimeout(() => setSavedFeedback(''), 4000);
+    } catch (err) {
+      setPasswordError(err.message || 'Failed to update password.');
+    }
   };
   return /*#__PURE__*/React.createElement("main", {
     className: "mx-auto max-w-[1440px] px-5 py-10 sm:px-8 w-full font-sans"

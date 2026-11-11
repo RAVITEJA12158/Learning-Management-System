@@ -1,11 +1,11 @@
 import React from 'react';
 
-const API_BASE_URL = {}.VITE_API_URL || '/api';
+const API_BASE_URL = import.meta.env?.VITE_API_URL || '/api';
 async function apiRequest(endpoint, options = {}) {
   let token = null;
   try {
     token = localStorage.getItem('lms_token') || localStorage.getItem('token');
-  } catch {}
+  } catch { }
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
   const headers = {
     ...(isFormData ? {} : {
@@ -61,49 +61,16 @@ const api = {
 };
 const authApi = {
   async login(payload) {
-    try {
-      return await apiRequest('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
-    } catch {
-      // Standalone frontend fallback when backend server is offline
-      const role = payload.role || (payload.secretCode ? 'admin' : payload.email?.includes('faculty') || payload.email?.includes('turing') ? 'faculty' : 'student');
-      const defaultNames = {
-        student: 'Sarah Jensen',
-        faculty: 'Dr. Alan Turing',
-        admin: 'Dean Robert Vance'
-      };
-      const nameFromEmail = payload.email ? payload.email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : defaultNames[role];
-      return {
-        token: `jwt-demo-${role}-${Date.now()}`,
-        userId: `user-${role}-1`,
-        name: payload.name || defaultNames[role] || nameFromEmail,
-        username: payload.email?.split('@')[0] || `${role}_user`,
-        email: payload.email || `${role}@university.edu`,
-        role
-      };
-    }
+    return await apiRequest('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
   },
   async register(payload) {
-    try {
-      return await apiRequest('/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
-    } catch {
-      // Standalone frontend fallback when backend server is offline
-      return {
-        message: 'Account registered successfully',
-        user: {
-          id: `user-${Date.now()}`,
-          name: payload.name,
-          username: payload.username,
-          email: payload.email,
-          role: payload.role || 'student'
-        }
-      };
-    }
+    return await apiRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
   }
 };
 

@@ -1,38 +1,49 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { QuizCard } from '../components/QuizCard';
 import { QuizAttemptModal } from '../components/QuizAttemptModal';
 import { QuizResultsModal } from '../components/QuizResultsModal';
 import { CreateQuizModal } from '../components/CreateQuizModal';
+import { quizService } from '../../../services/courseService';
 import { MOCK_COURSE_QUIZZES } from '../../../utils/mockData';
 
-"use strict";
-
 function QuizzesTab({
-  courseId: _courseId,
+  courseId,
   isCreatorOrStaff,
   isEnrolled = true
 }) {
-  const [quizzes, setQuizzes] = (0, useState)(MOCK_COURSE_QUIZZES);
+  const [quizzes, setQuizzes] = useState(() => quizService.getByCourse(courseId));
 
   // Search & Filter state
-  const [searchQuery, setSearchQuery] = (0, useState)('');
-  const [filterTab, setFilterTab] = (0, useState)('All'); // 'All' | 'Active' | 'Completed'
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterTab, setFilterTab] = useState('All'); // 'All' | 'Active' | 'Completed'
 
   // Modals state
-  const [activeAttemptQuiz, setActiveAttemptQuiz] = (0, useState)(null);
-  const [activeResultsQuiz, setActiveResultsQuiz] = (0, useState)(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = (0, useState)(false);
-  const filteredQuizzes = (0, useMemo)(() => {
+  const [activeAttemptQuiz, setActiveAttemptQuiz] = useState(null);
+  const [activeResultsQuiz, setActiveResultsQuiz] = useState(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    quizService.fetchByCourse(courseId).then(list => {
+      if (isMounted && Array.isArray(list)) {
+        setQuizzes(list);
+      }
+    });
+    return () => { isMounted = false; };
+  }, [courseId]);
+
+  const filteredQuizzes = useMemo(() => {
     return quizzes.filter(quiz => {
       if (filterTab === 'Active' && quiz.status === 'Completed') return false;
       if (filterTab === 'Completed' && quiz.status !== 'Completed') return false;
       const query = searchQuery.toLowerCase().trim();
       if (!query) return true;
-      const titleMatch = quiz.title.toLowerCase().includes(query);
-      const numberMatch = quiz.quizNumber.toLowerCase().includes(query);
+      const titleMatch = quiz.title?.toLowerCase().includes(query);
+      const numberMatch = quiz.quizNumber?.toLowerCase().includes(query);
       return titleMatch || numberMatch;
     });
   }, [quizzes, searchQuery, filterTab]);
+
   const handleQuizAction = (quiz, actionType) => {
     if (actionType === 'View Results') {
       setActiveResultsQuiz(quiz);
@@ -40,45 +51,65 @@ function QuizzesTab({
       setActiveAttemptQuiz(quiz);
     }
   };
-  const handleAttemptSubmit = ({
+
+  const handleAttemptSubmit = async ({
     quizId,
+    answers,
     score
   }) => {
-    setQuizzes(prev => prev.map(q => {
-      if (q.id === quizId) {
-        const newUsed = Math.min(q.attemptsAllowed, (q.attemptsUsed || 0) + 1);
-        return {
-          ...q,
-          status: 'Completed',
-          attemptsUsed: newUsed,
-          score,
-          buttonText: 'View Results'
-        };
-      }
-      return q;
-    }));
+    try {
+      await quizService.submitAttempt(quizId, answers || {});
+      const refreshed = await quizService.fetchByCourse(courseId);
+      setQuizzes(refreshed);
+    } catch {
+      setQuizzes(prev => prev.map(q => {
+        if (q.id === quizId) {
+          const newUsed = Math.min(q.attemptsAllowed, (q.attemptsUsed || 0) + 1);
+          return {
+            ...q,
+            status: 'Completed',
+            attemptsUsed: newUsed,
+            score,
+            buttonText: 'View Results'
+          };
+        }
+        return q;
+      }));
+    }
     const completedQuiz = quizzes.find(q => q.id === quizId);
     setActiveAttemptQuiz(null);
     if (completedQuiz) {
       setActiveResultsQuiz({
         ...completedQuiz,
         status: 'Completed',
-        score,
+        score: score ?? completedQuiz.score ?? 85,
         attemptsUsed: (completedQuiz.attemptsUsed || 0) + 1
       });
     }
   };
+
   const handleRetakeQuiz = quiz => {
     setActiveResultsQuiz(null);
     setActiveAttemptQuiz(quiz);
   };
-  const handleCreateQuiz = newQuiz => {
-    const quizCount = quizzes.length + 1;
-    const fullQuiz = {
-      ...newQuiz,
-      quizNumber: `Quiz ${quizCount}`
-    };
-    setQuizzes(prev => [...prev, fullQuiz]);
+
+  const handleCreateQuiz = async newQuiz => {
+    try {
+      await quizService.create({
+        ...newQuiz,
+        courseId
+      });
+      const refreshed = await quizService.fetchByCourse(courseId);
+      setQuizzes(refreshed);
+    } catch {
+      const quizCount = quizzes.length + 1;
+      const fullQuiz = {
+        ...newQuiz,
+        quizNumber: `Quiz ${quizCount}`
+      };
+      setQuizzes(prev => [...prev, fullQuiz]);
+    }
+    setIsCreateModalOpen(false);
   };
   return /*#__PURE__*/React.createElement("div", {
     className: "p-6 max-w-7xl mx-auto space-y-6 transition-colors duration-200"

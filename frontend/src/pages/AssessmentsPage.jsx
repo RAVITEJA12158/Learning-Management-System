@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { assignmentService } from '../services/courseService';
-import { MOCK_COURSE_QUIZZES } from '../utils/mockData';
+import { assignmentService, quizService, courseService } from '../services/courseService';
+import { MOCK_STUDENT_COURSES } from '../utils/mockData';
 import AssignmentSubmissionModal from '../components/AssignmentSubmissionModal';
 import InstructorGradingModal from '../components/InstructorGradingModal';
 import { QuizCard } from './Course/components/QuizCard';
@@ -13,31 +13,64 @@ import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
 import SpotlightCard from '../components/common/SpotlightCard';
 
-"use strict";
-
 function AssessmentsPage() {
-  const {
-    user
-  } = (0, useAuth)();
-  const navigate = (0, useNavigate)();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const isStaff = user?.role === 'faculty' || user?.role === 'admin';
-  const [activeTab, setActiveTab] = (0, useState)('all'); // 'all' | 'assignments' | 'quizzes'
-  const [assignments, setAssignments] = (0, useState)([]);
-  const [quizzes, setQuizzes] = (0, useState)(MOCK_COURSE_QUIZZES);
+  const [courses, setCourses] = useState([]);
+  const [selectedCourseId, setSelectedCourseId] = useState('');
+  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'assignments' | 'quizzes'
+  const [assignments, setAssignments] = useState([]);
+  const [quizzes, setQuizzes] = useState([]);
 
   // Modals
-  const [submittingAssignment, setSubmittingAssignment] = (0, useState)(null);
-  const [gradingAssignment, setGradingAssignment] = (0, useState)(null);
-  const [activeAttemptQuiz, setActiveAttemptQuiz] = (0, useState)(null);
-  const [activeResultsQuiz, setActiveResultsQuiz] = (0, useState)(null);
-  const [isCreateQuizOpen, setIsCreateQuizOpen] = (0, useState)(false);
-  (0, useEffect)(() => {
-    loadAssignments();
-  }, []);
-  const loadAssignments = async () => {
-    const list = await assignmentService.getByCourse('mock-1');
-    setAssignments(list || []);
+  const [submittingAssignment, setSubmittingAssignment] = useState(null);
+  const [gradingAssignment, setGradingAssignment] = useState(null);
+  const [activeAttemptQuiz, setActiveAttemptQuiz] = useState(null);
+  const [activeResultsQuiz, setActiveResultsQuiz] = useState(null);
+  const [isCreateQuizOpen, setIsCreateQuizOpen] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadCourses = async () => {
+      try {
+        const list = isStaff
+          ? await courseService.getCreated()
+          : await courseService.getEnrolled();
+        if (isMounted) {
+          const valid = Array.isArray(list) && list.length > 0 ? list : MOCK_STUDENT_COURSES;
+          setCourses(valid);
+          setSelectedCourseId(valid[0]?.id || 'mock-1');
+        }
+      } catch {
+        if (isMounted) {
+          setCourses(MOCK_STUDENT_COURSES);
+          setSelectedCourseId(MOCK_STUDENT_COURSES[0].id);
+        }
+      }
+    };
+    loadCourses();
+    return () => { isMounted = false; };
+  }, [isStaff]);
+
+  useEffect(() => {
+    if (!selectedCourseId) return;
+    loadAssessments(selectedCourseId);
+  }, [selectedCourseId]);
+
+  const loadAssessments = async (courseId) => {
+    try {
+      const [asmList, qzList] = await Promise.all([
+        assignmentService.getByCourse(courseId),
+        quizService.fetchByCourse(courseId)
+      ]);
+      setAssignments(Array.isArray(asmList) ? asmList : []);
+      setQuizzes(Array.isArray(qzList) ? qzList : []);
+    } catch {
+      // Fallback
+    }
   };
+
   const handleQuizAction = (quiz, actionType) => {
     if (actionType === 'View Results') {
       setActiveResultsQuiz(quiz);
@@ -45,33 +78,43 @@ function AssessmentsPage() {
       setActiveAttemptQuiz(quiz);
     }
   };
-  const handleQuizSubmit = ({
-    quizId,
-    score
-  }) => {
-    setQuizzes(prev => prev.map(q => q.id === quizId ? {
-      ...q,
-      status: 'Completed',
-      attemptsUsed: Math.min(q.attemptsAllowed, (q.attemptsUsed || 0) + 1),
-      score,
-      buttonText: 'View Results'
-    } : q));
-    const completed = quizzes.find(q => q.id === quizId);
+
+  const handleQuizSubmit = async ({ quizId, answers, score }) => {
+    try {
+      await quizService.submitAttempt(quizId, answers || {});
+    } catch {
+      // Fallback
+    }
+    await loadAssessments(selectedCourseId);
     setActiveAttemptQuiz(null);
-    if (completed) {
+    const target = quizzes.find(q => q.id === quizId);
+    if (target) {
       setActiveResultsQuiz({
-        ...completed,
+        ...target,
         status: 'Completed',
-        score
+        score: score ?? target.score ?? 85
       });
     }
   };
-  const handleCreateQuiz = newQuiz => {
-    setQuizzes(prev => [...prev, {
-      ...newQuiz,
-      quizNumber: `Quiz ${prev.length + 1}`
-    }]);
+
+  const handleCreateQuiz = async (newQuiz) => {
+    try {
+      await quizService.create({
+        ...newQuiz,
+        courseId: selectedCourseId
+      });
+      await loadAssessments(selectedCourseId);
+      setIsCreateQuizOpen(false);
+    } catch {
+      // Fallback
+      setQuizzes(prev => [...prev, {
+        ...newQuiz,
+        quizNumber: `Quiz ${prev.length + 1}`
+      }]);
+    }
   };
+
+  const selectedCourse = courses.find(c => c.id === selectedCourseId) || courses[0];
   return /*#__PURE__*/React.createElement("main", {
     className: "mx-auto max-w-[1440px] px-4 py-8 sm:px-8 lg:py-10 w-full font-sans transition-colors duration-200"
   }, /*#__PURE__*/React.createElement("div", {
@@ -117,6 +160,12 @@ function AssessmentsPage() {
   }, "Average Score"), /*#__PURE__*/React.createElement("p", {
     className: "text-2xl font-black text-purple-600 dark:text-purple-400 mt-1"
   }, "93.8%"))), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-2 mb-6"
+  }, courses.map(c => /*#__PURE__*/React.createElement("button", {
+    key: c.id,
+    onClick: () => setSelectedCourseId(c.id),
+    className: `px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${selectedCourseId === c.id ? 'bg-[#0066FF] text-white shadow-[0_0_15px_rgba(0,102,255,0.4)]' : 'bg-white dark:bg-white/[0.03] text-slate-600 dark:text-gray-400 border border-slate-200/80 dark:border-white/10 hover:text-slate-900 dark:hover:text-white'}`
+  }, c.courseCode, ": ", c.title))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-6 border-b border-slate-200 dark:border-white/10 pb-3"
   }, [{
     id: 'all',
@@ -150,7 +199,7 @@ function AssessmentsPage() {
       className: "flex items-center gap-2 mb-2"
     }, /*#__PURE__*/React.createElement(Badge, {
       variant: "info"
-    }, "CS401"), /*#__PURE__*/React.createElement(Badge, {
+    }, selectedCourse?.courseCode || 'Course'), /*#__PURE__*/React.createElement(Badge, {
       variant: "neutral"
     }, "Max ", asm.maxMarks, " Marks"), mySub && /*#__PURE__*/React.createElement(Badge, {
       variant: mySub.status === 'LATE' ? 'danger' : 'active'

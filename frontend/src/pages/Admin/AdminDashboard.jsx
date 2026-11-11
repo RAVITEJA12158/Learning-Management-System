@@ -8,68 +8,111 @@ import Modal from '../../components/common/Modal';
 import { PlusIcon, UsersIcon, BookIcon, ShieldCheckIcon, ChartIcon, SearchIcon } from '../../components/common/Icons';
 
 function AdminDashboard() {
-  const navigate = (0, useNavigate)();
-  const [activeTab, setActiveTab] = (0, useState)('overview'); // 'overview' | 'users' | 'courses' | 'broadcast'
-  const [users, setUsers] = (0, useState)(() => adminService.getUsers());
-  const [courses, setCourses] = (0, useState)([]);
-  const [userSearch, setUserSearch] = (0, useState)('');
-  const [roleFilter, setRoleFilter] = (0, useState)('all');
-  const [feedback, setFeedback] = (0, useState)('');
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'courses' | 'broadcast'
+  const [users, setUsers] = useState(() => adminService.getUsers());
+  const [courses, setCourses] = useState([]);
+  const [systemStats, setSystemStats] = useState(null);
+  const [userSearch, setUserSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [feedback, setFeedback] = useState('');
 
   // New User Modal
-  const [showAddUserModal, setShowAddUserModal] = (0, useState)(false);
-  const [newUserName, setNewUserName] = (0, useState)('');
-  const [newUserEmail, setNewUserEmail] = (0, useState)('');
-  const [newUserRole, setNewUserRole] = (0, useState)('student');
-  const [newUserDept, setNewUserDept] = (0, useState)('Computer Science & Engineering');
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [newUserName, setNewUserName] = useState('');
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserRole, setNewUserRole] = useState('student');
+  const [newUserDept, setNewUserDept] = useState('Computer Science & Engineering');
 
   // Broadcast state
-  const [broadcastTitle, setBroadcastTitle] = (0, useState)('');
-  const [broadcastMessage, setBroadcastMessage] = (0, useState)('');
-  const [broadcastType, setBroadcastType] = (0, useState)('ANNOUNCEMENT');
-  (0, useEffect)(() => {
-    courseService.getAll().then(list => setCourses(list || []));
+  const [broadcastTitle, setBroadcastTitle] = useState('');
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [broadcastType, setBroadcastType] = useState('ANNOUNCEMENT');
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      try {
+        const [userList, courseList, stats] = await Promise.all([
+          adminService.fetchUsers(),
+          courseService.getAll(),
+          adminService.getSystemStats()
+        ]);
+        if (isMounted) {
+          if (Array.isArray(userList)) setUsers(userList);
+          if (Array.isArray(courseList)) setCourses(courseList);
+          if (stats) setSystemStats(stats);
+        }
+      } catch (err) {
+        console.error('Failed to load admin dashboard data:', err);
+      }
+    };
+    loadData();
+    return () => { isMounted = false; };
   }, []);
+
   const showBanner = msg => {
     setFeedback(msg);
     setTimeout(() => setFeedback(''), 3000);
   };
-  const handleRoleChange = (userId, newRole) => {
-    const updated = adminService.updateUser(userId, {
-      role: newRole
-    });
-    setUsers(updated);
-    showBanner(`Updated user role to ${newRole.toUpperCase()}.`);
+
+  const handleRoleChange = async (userId, newRole) => {
+    try {
+      const updated = await adminService.updateUser(userId, {
+        role: newRole
+      });
+      setUsers(updated);
+      showBanner(`Updated user role to ${newRole.toUpperCase()}.`);
+    } catch {
+      showBanner('Failed to update role.');
+    }
   };
-  const handleStatusToggle = user => {
+
+  const handleStatusToggle = async (user) => {
     const nextStatus = user.status === 'suspended' ? 'active' : 'suspended';
-    const updated = adminService.updateUser(user.id, {
-      status: nextStatus
-    });
-    setUsers(updated);
-    showBanner(`Account ${user.name} marked as ${nextStatus.toUpperCase()}.`);
+    try {
+      const updated = await adminService.updateUser(user.id, {
+        status: nextStatus
+      });
+      setUsers(updated);
+      showBanner(`Account ${user.name} marked as ${nextStatus.toUpperCase()}.`);
+    } catch {
+      showBanner('Failed to update status.');
+    }
   };
-  const handleDeleteUser = user => {
-    const updated = adminService.deleteUser(user.id);
-    setUsers(updated);
-    showBanner(`Removed user ${user.name}.`);
+
+  const handleDeleteUser = async (user) => {
+    try {
+      const updated = await adminService.deleteUser(user.id);
+      setUsers(updated);
+      showBanner(`Removed user ${user.name}.`);
+    } catch {
+      showBanner('Failed to delete user.');
+    }
   };
-  const handleCreateUser = e => {
+
+  const handleCreateUser = async (e) => {
     e.preventDefault();
     if (!newUserName.trim() || !newUserEmail.trim()) return;
-    const updated = adminService.createUser({
-      name: newUserName.trim(),
-      username: newUserEmail.trim().split('@')[0],
-      email: newUserEmail.trim().toLowerCase(),
-      role: newUserRole,
-      department: newUserDept,
-      semester: 'Fall 2026'
-    });
-    setUsers(updated);
-    setNewUserName('');
-    setNewUserEmail('');
-    setShowAddUserModal(false);
-    showBanner(`Created ${newUserRole.toUpperCase()} account for ${newUserName}.`);
+    try {
+      const updated = await adminService.createUser({
+        name: newUserName.trim(),
+        username: newUserEmail.trim().split('@')[0],
+        email: newUserEmail.trim().toLowerCase(),
+        role: newUserRole,
+        department: newUserDept,
+        semester: 'Fall 2026'
+      });
+      setUsers(updated);
+      const refreshedStats = await adminService.getSystemStats();
+      setSystemStats(refreshedStats);
+      setNewUserName('');
+      setNewUserEmail('');
+      setShowAddUserModal(false);
+      showBanner(`Created ${newUserRole.toUpperCase()} account for ${newUserName}.`);
+    } catch {
+      showBanner('Failed to provision user.');
+    }
   };
   const handleAssignInstructor = async (courseId, instructorName) => {
     await courseService.update(courseId, {
@@ -138,7 +181,7 @@ function AdminDashboard() {
     className: "text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400"
   }, "Total Accounts"), /*#__PURE__*/React.createElement("p", {
     className: "text-lg font-black text-slate-900 dark:text-white"
-  }, users.length, " Active Users"))), /*#__PURE__*/React.createElement(SpotlightCard, {
+  }, systemStats?.totalUsers ?? users.length, " Active Users"))), /*#__PURE__*/React.createElement(SpotlightCard, {
     onClick: () => setActiveTab('courses'),
     className: "p-5 flex items-center gap-4 cursor-pointer"
   }, /*#__PURE__*/React.createElement("div", {
@@ -149,7 +192,7 @@ function AdminDashboard() {
     className: "text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400"
   }, "Course Catalog"), /*#__PURE__*/React.createElement("p", {
     className: "text-lg font-black text-slate-900 dark:text-white"
-  }, courses.length, " Courses Active"))), /*#__PURE__*/React.createElement(SpotlightCard, {
+  }, systemStats?.totalCourses ?? courses.length, " Courses Active"))), /*#__PURE__*/React.createElement(SpotlightCard, {
     className: "p-5 flex items-center gap-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "h-11 w-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-transparent dark:border-emerald-500/20"
@@ -157,9 +200,9 @@ function AdminDashboard() {
     className: "w-5 h-5"
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400"
-  }, "JWT & RBAC Security"), /*#__PURE__*/React.createElement("p", {
+  }, "Active Enrollments"), /*#__PURE__*/React.createElement("p", {
     className: "text-lg font-black text-emerald-600 dark:text-emerald-400"
-  }, "Enforced \xB7 100%"))), /*#__PURE__*/React.createElement(SpotlightCard, {
+  }, systemStats?.activeEnrollments ?? 8, " Active"))), /*#__PURE__*/React.createElement(SpotlightCard, {
     className: "p-5 flex items-center gap-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "h-11 w-11 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-transparent dark:border-amber-500/20"
@@ -167,9 +210,9 @@ function AdminDashboard() {
     className: "w-5 h-5"
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400"
-  }, "Redis & Neon DB"), /*#__PURE__*/React.createElement("p", {
+  }, "Supabase PostgreSQL & Cache"), /*#__PURE__*/React.createElement("p", {
     className: "text-lg font-black text-slate-900 dark:text-white"
-  }, "99.98% Uptime")))), /*#__PURE__*/React.createElement("div", {
+  }, systemStats?.uptime ?? "99.98% Uptime")))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center gap-2 mb-6 border-b border-slate-200 dark:border-white/10 pb-3"
   }, [{
     id: 'overview',
@@ -214,7 +257,7 @@ function AdminDashboard() {
   }, {
     layer: 'Primary Relational Database',
     tech: 'PostgreSQL + Prisma ORM',
-    host: 'Neon Serverless Postgres',
+    host: 'Supabase PostgreSQL Cloud',
     status: 'Connected · Pool Active'
   }, {
     layer: 'Caching & Media Storage',

@@ -57,6 +57,12 @@ const userService = {
         profileImage: null
       };
     }
+  },
+  async changePassword(currentPassword, newPassword) {
+    return await api.put('/users/change-password', {
+      currentPassword,
+      newPassword
+    });
   }
 };
 var _default = userService;

@@ -10,36 +10,57 @@ function AnnouncementsTab({
   instructorsText,
   isCreatorOrStaff
 }) {
-  const [announcements, setAnnouncements] = (0, useState)(() => announcementService.getByCourse(courseId));
-  const [isPosting, setIsPosting] = (0, useState)(false);
-  const [newTitle, setNewTitle] = (0, useState)('');
-  const [newContent, setNewContent] = (0, useState)('');
-  const [pinOnPost, setPinOnPost] = (0, useState)(false);
-  (0, useEffect)(() => {
-    setAnnouncements(announcementService.getByCourse(courseId));
+  const [announcements, setAnnouncements] = useState(() => announcementService.getByCourse(courseId));
+  const [isPosting, setIsPosting] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newContent, setNewContent] = useState('');
+  const [pinOnPost, setPinOnPost] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    announcementService.fetchByCourse(courseId).then(list => {
+      if (isMounted && Array.isArray(list)) {
+        setAnnouncements(list);
+      }
+    });
+    return () => { isMounted = false; };
   }, [courseId]);
+
   const updateList = next => {
     setAnnouncements(next);
     announcementService.saveForCourse(courseId, next);
   };
-  const handlePost = e => {
+
+  const handlePost = async e => {
     e.preventDefault();
     if (!newTitle.trim() || !newContent.trim()) return;
-    const next = [{
-      id: `ann-${Date.now()}`,
-      courseId,
-      title: newTitle.trim(),
-      author: instructorsText || 'Dr. Alan Turing',
-      time: 'Just now',
-      content: newContent.trim(),
-      pinned: pinOnPost
-    }, ...announcements];
-    updateList(next);
+    try {
+      const created = await announcementService.createAnnouncement(courseId, {
+        title: newTitle.trim(),
+        message: newContent.trim(),
+        content: newContent.trim()
+      });
+      if (created) {
+        setAnnouncements(prev => [created, ...prev.filter(a => a.id !== created.id)]);
+      }
+    } catch {
+      const next = [{
+        id: `ann-${Date.now()}`,
+        courseId,
+        title: newTitle.trim(),
+        author: instructorsText || 'Dr. Alan Turing',
+        time: 'Just now',
+        content: newContent.trim(),
+        pinned: pinOnPost
+      }, ...announcements];
+      updateList(next);
+    }
     setNewTitle('');
     setNewContent('');
     setPinOnPost(false);
     setIsPosting(false);
   };
+
   const handleTogglePin = id => {
     const next = announcements.map(a => a.id === id ? {
       ...a,
@@ -47,7 +68,13 @@ function AnnouncementsTab({
     } : a);
     updateList(next);
   };
-  const handleDelete = id => {
+
+  const handleDelete = async id => {
+    try {
+      await announcementService.deleteAnnouncement(id);
+    } catch {
+      // Fallback
+    }
     const next = announcements.filter(a => a.id !== id);
     updateList(next);
   };

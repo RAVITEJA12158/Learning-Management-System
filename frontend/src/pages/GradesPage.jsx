@@ -1,23 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { courseService } from '../services/courseService';
+import { gradeService, courseService } from '../services/courseService';
 import { MOCK_STUDENT_COURSES } from '../utils/mockData';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
 import SpotlightCard from '../components/common/SpotlightCard';
 
-"use strict";
-
 function GradesPage() {
-  const navigate = (0, useNavigate)();
-  const [courses, setCourses] = (0, useState)([]);
-  const [exportedBanner, setExportedBanner] = (0, useState)(false);
-  (0, useEffect)(() => {
-    courseService.getEnrolled().then(list => {
-      setCourses(Array.isArray(list) && list.length > 0 ? list : MOCK_STUDENT_COURSES);
+  const navigate = useNavigate();
+  const [overview, setOverview] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [exportedBanner, setExportedBanner] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    gradeService.getStudentOverview().then(data => {
+      if (isMounted && data && Array.isArray(data.courses) && data.courses.length > 0) {
+        setOverview(data);
+        setCourses(data.courses);
+      } else {
+        courseService.getEnrolled().then(list => {
+          if (isMounted) {
+            setCourses(Array.isArray(list) && list.length > 0 ? list : MOCK_STUDENT_COURSES);
+          }
+        });
+      }
     });
+    return () => { isMounted = false; };
   }, []);
-  const gradeRows = (courses.length > 0 ? courses : MOCK_STUDENT_COURSES).map((c, idx) => {
+
+  const gradeRows = courses.map((c, idx) => {
+    if (c.weighted !== undefined && c.letter !== undefined) {
+      return c;
+    }
     const assignments = 94 - idx % 3 * 3;
     const quizzes = 91 - idx % 2 * 4;
     const midExam = 89 + idx % 3 * 2;
@@ -36,6 +51,13 @@ function GradesPage() {
       letter
     };
   });
+
+  const cumulativeGpa = overview?.gpa || '3.88 / 4.00';
+  const creditsEarned = overview?.creditsEarned || gradeRows.length * 4;
+  const avgWeighted = gradeRows.length > 0
+    ? (gradeRows.reduce((acc, r) => acc + Number(r.weighted || 0), 0) / gradeRows.length).toFixed(1)
+    : '91.8';
+
   const handleExportTranscript = () => {
     setExportedBanner(true);
     setTimeout(() => setExportedBanner(false), 3000);
@@ -63,15 +85,15 @@ function GradesPage() {
     className: "text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-400"
   }, "Cumulative GPA"), /*#__PURE__*/React.createElement("p", {
     className: "text-2xl font-black text-blue-600 dark:text-cyan-400 mt-1"
-  }, "3.88 / 4.00"), /*#__PURE__*/React.createElement("p", {
+  }, cumulativeGpa), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-500 dark:text-gray-400 mt-0.5"
-  }, "Dean's Honor List")), /*#__PURE__*/React.createElement(SpotlightCard, {
+  }, "Academic Standing: Good")), /*#__PURE__*/React.createElement(SpotlightCard, {
     className: "p-5"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-400"
   }, "Weighted Semester Avg"), /*#__PURE__*/React.createElement("p", {
     className: "text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1"
-  }, "91.8% (A)"), /*#__PURE__*/React.createElement("p", {
+  }, `${avgWeighted}%`), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-500 dark:text-gray-400 mt-0.5"
   }, "Across ", gradeRows.length, " Courses")), /*#__PURE__*/React.createElement(SpotlightCard, {
     className: "p-5"
@@ -79,15 +101,15 @@ function GradesPage() {
     className: "text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-400"
   }, "Content Progress"), /*#__PURE__*/React.createElement("p", {
     className: "text-2xl font-black text-slate-900 dark:text-white mt-1"
-  }, "75.0%"), /*#__PURE__*/React.createElement("p", {
+  }, `${gradeRows.length > 0 ? Math.round(gradeRows.reduce((a, b) => a + (b.progress || 75), 0) / gradeRows.length) : 75}%`), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-500 dark:text-gray-400 mt-0.5"
-  }, "51 / 68 Modules Completed")), /*#__PURE__*/React.createElement(SpotlightCard, {
+  }, "Active Syllabus Completion")), /*#__PURE__*/React.createElement(SpotlightCard, {
     className: "p-5"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-400"
   }, "Credits Earned"), /*#__PURE__*/React.createElement("p", {
     className: "text-2xl font-black text-purple-600 dark:text-purple-400 mt-1"
-  }, "24 Credits"), /*#__PURE__*/React.createElement("p", {
+  }, `${creditsEarned} Credits`), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-500 dark:text-gray-400 mt-0.5"
   }, "Fall 2026 Semester"))), /*#__PURE__*/React.createElement("div", {
     className: "bg-white dark:bg-white/[0.02] backdrop-blur-xl rounded-2xl border border-slate-200/80 dark:border-white/10 p-6 shadow-xs space-y-4"

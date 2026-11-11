@@ -22,19 +22,16 @@ function StudentDashboard() {
   const fetchEnrolledCourses = async () => {
     try {
       const courses = await courseService.getEnrolled();
-      if (Array.isArray(courses) && courses.length > 0) {
+      if (Array.isArray(courses)) {
         setEnrolledCourses(courses);
-      } else {
-        setEnrolledCourses(MOCK_STUDENT_COURSES);
       }
     } catch (err) {
       console.error('Failed to fetch enrolled courses:', err);
-      setEnrolledCourses(MOCK_STUDENT_COURSES);
     } finally {
       setLoading(false);
     }
   };
-  const coursesList = enrolledCourses.length > 0 ? enrolledCourses : MOCK_STUDENT_COURSES;
+  const coursesList = enrolledCourses;
   const userInitial = user?.name ? user.name.trim().charAt(0).toUpperCase() : 'S';
   return /*#__PURE__*/React.createElement("main", {
     className: "mx-auto max-w-[1440px] px-4 py-8 sm:px-8 lg:py-10 w-full transition-colors duration-200"
@@ -141,7 +138,12 @@ function StudentDashboard() {
     className: "text-xs font-semibold text-blue-600 dark:text-cyan-400 hover:text-blue-700 dark:hover:text-cyan-300 bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 px-3 py-1.5 rounded-lg transition cursor-pointer"
   }, "Browse Catalog \u2192")), loading ? /*#__PURE__*/React.createElement("div", {
     className: "bg-white dark:bg-white/[0.02] rounded-2xl border border-slate-200/80 dark:border-white/5 p-8 text-center text-xs font-bold text-slate-400 dark:text-gray-500"
-  }, "Loading your courses...") : /*#__PURE__*/React.createElement("div", {
+  }, "Loading your courses...") : coursesList.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "bg-white dark:bg-white/[0.02] rounded-2xl border border-slate-200/80 dark:border-white/5 p-8 text-center text-xs font-bold text-slate-500 dark:text-gray-400 space-y-3"
+  }, /*#__PURE__*/React.createElement("p", null, "You are not enrolled in any courses yet."), /*#__PURE__*/React.createElement(Link, {
+    to: "/courses",
+    className: "inline-block px-4 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition"
+  }, "Explore Course Catalog \u2192")) : /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
   }, coursesList.map((course, idx) => /*#__PURE__*/React.createElement(CourseCard, {
     key: course.id || idx,

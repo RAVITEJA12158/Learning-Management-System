@@ -7,7 +7,13 @@ export function GradesTab({ courseId = 'mock-1', overallCompletionPercent = 75 }
   const [weights, setWeights] = useState(() => gradeService.getWeights(courseId));
 
   useEffect(() => {
-    setWeights(gradeService.getWeights(courseId));
+    let isMounted = true;
+    gradeService.fetchWeights(courseId).then(data => {
+      if (isMounted && Array.isArray(data)) {
+        setWeights(data);
+      }
+    });
+    return () => { isMounted = false; };
   }, [courseId]);
 
   const studentScores = { ASSIGNMENTS: 94, QUIZZES: 89, MID_EXAM: 91, FINAL_EXAM: 93, PARTICIPATION: 96 };

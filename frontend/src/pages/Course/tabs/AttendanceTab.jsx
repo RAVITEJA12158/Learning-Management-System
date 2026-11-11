@@ -15,40 +15,46 @@ export function AttendanceTab({ courseId = 'mock-1', isCreatorOrStaff = false, u
   const [newTopic, setNewTopic] = useState('');
 
   useEffect(() => {
-    const loaded = attendanceService.getSessions(courseId);
-    setSessions(loaded);
-    if (loaded.length > 0 && !loaded.some((s) => s.id === selectedSessionId)) {
-      setSelectedSessionId(loaded[0].id);
-    }
-  }, [courseId]);
+    let isMounted = true;
+    attendanceService.fetchSessions(courseId, isCreatorOrStaff).then(loaded => {
+      if (isMounted && Array.isArray(loaded)) {
+        setSessions(loaded);
+        if (loaded.length > 0) {
+          setSelectedSessionId(prev => loaded.some(s => s.id === prev) ? prev : loaded[0].id);
+        }
+      }
+    });
+    return () => { isMounted = false; };
+  }, [courseId, isCreatorOrStaff]);
 
-  const handleCreateSession = (e) => {
+  const handleCreateSession = async (e) => {
     e.preventDefault();
-    const created = attendanceService.createSession(courseId, {
+    const created = await attendanceService.createSession(courseId, {
       date: newDate,
       topic: newTopic.trim() || `Lecture Session (${newDate})`,
       createdBy: user?.name || 'Dr. Alan Turing',
     });
-    const refreshed = attendanceService.getSessions(courseId);
+    const refreshed = await attendanceService.fetchSessions(courseId, isCreatorOrStaff);
     setSessions(refreshed);
-    setSelectedSessionId(created.id);
+    if (created && created.id) {
+      setSelectedSessionId(created.id);
+    }
     setNewTopic('');
     setIsCreatingSession(false);
   };
 
-  const handleStatusChange = (sessionId, studentId, status) => {
-    const updated = attendanceService.updateRecord(courseId, sessionId, studentId, status);
-    setSessions(updated);
+  const handleStatusChange = async (sessionId, studentId, status) => {
+    const updated = await attendanceService.updateRecord(courseId, sessionId, studentId, status);
+    if (Array.isArray(updated)) {
+      setSessions(updated);
+    }
   };
 
-  const handleMarkAllPresent = (sessionId) => {
-    const target = sessions.find((s) => s.id === sessionId);
-    if (!target) return;
-    let updated = sessions;
-    target.records.forEach((r) => {
-      updated = attendanceService.updateRecord(courseId, sessionId, r.studentId, 'PRESENT');
-    });
-    setSessions([...updated]);
+  const handleMarkAllPresent = async (sessionId) => {
+    const updated = await attendanceService.markAllPresent(courseId, sessionId);
+    if (Array.isArray(updated)) {
+      setSessions(updated);
+    }
   };
 
   const currentStudentId = user?.id?.includes('student') ? user.id : 'user-student-1';

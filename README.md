@@ -155,11 +155,23 @@ cd Learning-Management-System
    CLOUDINARY_API_SECRET="your_api_secret"
    ```
 
-4. **Generate Prisma Client & Run Migrations**:
+4. **Generate Prisma Client, Run Migrations & Seed Sample Data**:
    ```bash
    npm run prisma:generate
    npm run prisma:migrate
+   npm run seed
    ```
+   > **Note**: `npm run seed` runs an idempotent database seed script (`backend/prisma/seed.js`) that populates the Supabase PostgreSQL database with realistic courses, instructors, enrollments, modules, content, assignments, student submissions, timed quizzes, attendance records, discussion threads, announcements, and grade rubrics.
+
+#### 🔑 Seeded Demo Credentials
+
+| Role | Email | Password | Details |
+|---|---|---|---|
+| **Admin** | `admin@university.edu` | `Admin123!` | System oversight, user provisioning, system metrics |
+| **Faculty** | `alan.turing@university.edu` | `Faculty123!` | Lead instructor (Machine Learning, Advanced Algorithms) |
+| **Faculty** | `grace.hopper@university.edu` | `Faculty123!` | Lead instructor (Cloud Architecture, Full Stack) |
+| **Student** | `sarah.jensen@university.edu` | `Student123!` | Enrolled student with active coursework and submissions |
+| **Student** | `arjun.rao@university.edu` | `Student123!` | Enrolled student with active attendance & quiz attempts |
 
 5. **Start the backend development server**:
    ```bash
@@ -200,26 +212,33 @@ The backend exposes the following RESTful API endpoints under `/api`:
 | `POST` | `/api/auth/register` | Public | Register a new user (`STUDENT`, `FACULTY`, `ADMIN`) |
 | `POST` | `/api/auth/login` | Public | Authenticate user and receive JWT token |
 
-### 👤 User Profile (`/api/users`)
+### 👤 User Profile & Administration (`/api/users`)
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
 | `GET` | `/api/users/profile` | Authenticated | Retrieve current user profile details |
+| `PUT` | `/api/users/profile` | Authenticated | Update user name and mobile number |
+| `PUT` | `/api/users/change-password` | Authenticated | Change password with current password verification |
 | `POST` | `/api/users/profile/photo` | Authenticated | Upload new user avatar (Cloudinary) |
 | `DELETE` | `/api/users/profile/photo` | Authenticated | Remove profile photo |
+| `GET` | `/api/users/stats` | Admin | Retrieve institution-wide system metrics |
+| `GET` | `/api/users` | Admin | List all user accounts with search & role filters |
+| `POST` | `/api/users` | Admin | Provision a new user account |
+| `PUT` | `/api/users/:id` | Admin | Update user status or role |
+| `DELETE` | `/api/users/:id` | Admin | Delete a user account |
 
 ### 📖 Courses (`/api/courses`)
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
-| `GET` | `/api/courses` | Authenticated | List all available courses |
-| `GET` | `/api/courses/:id` | Authenticated | Fetch course details by ID |
+| `GET` | `/api/courses` | Public | List all available courses (with optional `?search=`) |
+| `GET` | `/api/courses/:id` | Public | Fetch course details and syllabus modules |
 | `POST` | `/api/courses` | Faculty, Admin | Create a new course |
 | `PUT` | `/api/courses/:id` | Faculty, Admin | Update course metadata |
 | `DELETE` | `/api/courses/:id` | Faculty, Admin | Delete a course |
-| `GET` | `/api/courses/student/enrolled` | Student | List courses the student is enrolled in |
+| `GET` | `/api/courses/student/enrolled` | Student | List courses the student is actively enrolled in |
 | `GET` | `/api/courses/faculty/created` | Faculty | List courses created by instructor |
 | `POST` | `/api/courses/:id/enroll` | Student | Enroll in a course |
 | `DELETE` | `/api/courses/:id/enroll` | Student | Drop/unenroll from a course |
-| `GET` | `/api/courses/:id/roster` | Faculty, Admin | View enrolled student roster |
+| `GET` | `/api/courses/:id/roster` | Faculty, Admin | View enrolled student roster with progress & grades |
 | `POST` | `/api/courses/:id/instructors` | Faculty, Admin | Assign co-instructor to course |
 | `DELETE` | `/api/courses/:id/instructors/:facultyId` | Faculty, Admin | Remove co-instructor |
 
@@ -246,11 +265,67 @@ The backend exposes the following RESTful API endpoints under `/api`:
 | `GET` | `/api/assignments/:id/submissions` | Faculty, Admin | View all student submissions |
 | `PUT` | `/api/assignments/submissions/:submissionId/grade` | Faculty, Admin | Assign marks and feedback |
 
+### ⏱️ Quizzes & Timed Assessments (`/api/quizzes`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/api/quizzes/course/:courseId` | Authenticated | List all quizzes with student attempt statistics |
+| `GET` | `/api/quizzes/:id` | Authenticated | Get quiz details with questions & options |
+| `POST` | `/api/quizzes` | Faculty, Admin | Author a new quiz with multiple-choice questions |
+| `PUT` | `/api/quizzes/:id` | Faculty, Admin | Update quiz details |
+| `DELETE` | `/api/quizzes/:id` | Faculty, Admin | Delete quiz |
+| `POST` | `/api/quizzes/:id/attempt` | Student | Submit timed quiz answers & calculate instant score |
+| `GET` | `/api/quizzes/:id/attempts` | Authenticated | View attempt history for a quiz |
+| `GET` | `/api/quizzes/attempts/:attemptId` | Authenticated | View question-by-question attempt review |
+
+### 📅 Attendance & Roll-Call (`/api/attendance`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/api/attendance/course/:courseId` | Faculty, Admin | Retrieve attendance sessions & student records |
+| `POST` | `/api/attendance/session` | Faculty, Admin | Create a new roll-call lecture session |
+| `PUT` | `/api/attendance/session/:sessionId/record` | Faculty, Admin | Update individual student attendance (`PRESENT`, `LATE`, `ABSENT`) |
+| `POST` | `/api/attendance/session/:sessionId/mark-all` | Faculty, Admin | Mark all enrolled students present |
+| `GET` | `/api/attendance/student/course/:courseId` | Authenticated | View student's personal derived attendance percentage |
+
+### 📊 Gradebook & GPA (`/api/grades`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/api/grades/course/:courseId/components` | Authenticated | Retrieve course grading rubric & weights |
+| `POST` | `/api/grades/course/:courseId/components` | Faculty, Admin | Save or customize weighted grading rubric |
+| `GET` | `/api/grades/course/:courseId/roster` | Faculty, Admin | Retrieve complete course gradebook across all students |
+| `GET` | `/api/grades/student/overview` | Student | Retrieve student's cumulative GPA, credits, and course breakdown |
+
+### 📢 Announcements (`/api/announcements`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/api/announcements/course/:courseId` | Authenticated | List all announcements for a course |
+| `POST` | `/api/announcements` | Faculty, Admin | Publish course announcement (notifies enrolled students) |
+| `PUT` | `/api/announcements/:id` | Faculty, Admin | Edit announcement |
+| `DELETE` | `/api/announcements/:id` | Faculty, Admin | Delete announcement |
+
+### 💬 Discussion Forums (`/api/discussions`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/api/discussions/course/:courseId` | Authenticated | List all discussion threads with replies |
+| `GET` | `/api/discussions/:id` | Authenticated | Get single thread details |
+| `POST` | `/api/discussions` | Authenticated | Post a new discussion thread |
+| `POST` | `/api/discussions/:id/replies` | Authenticated | Post a reply to a thread |
+| `DELETE` | `/api/discussions/:id` | Authenticated | Delete thread (author or staff) |
+| `DELETE` | `/api/discussions/replies/:replyId` | Authenticated | Delete reply (author or staff) |
+
 ### 📈 Progress Tracking (`/api/progress`)
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
 | `PUT` | `/api/progress/content/:contentId` | Student | Toggle completion of a content item |
 | `GET` | `/api/progress/course/:courseId` | Student | Get user's completion status & percentage |
+
+### 🔔 Notifications (`/api/notifications`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/api/notifications` | Authenticated | List user notifications |
+| `PUT` | `/api/notifications/:id/read` | Authenticated | Mark notification as read |
+| `PUT` | `/api/notifications/read-all` | Authenticated | Mark all notifications as read |
+| `DELETE` | `/api/notifications/:id` | Authenticated | Delete a notification |
+| `POST` | `/api/notifications/broadcast` | Admin | Broadcast campus-wide notification to all users |
 
 ### 🩺 Health Check
 | Method | Endpoint | Access | Description |
