@@ -28,6 +28,7 @@ function getYouTubeEmbedUrl(url) {
 function ContentViewerModal({ content, isOpen, onClose, onToggleComplete, isCompleted }) {
   if (!isOpen || !content) return null;
   const youtubeEmbedUrl = content.type === 'VIDEO' ? getYouTubeEmbedUrl(content.contentUrl) : null;
+  const directVideoUrl = content.contentUrl && /\.(mp4|webm|ogg)(\?.*)?$/i.test(content.contentUrl);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 animate-fade-in">
@@ -92,7 +93,7 @@ function ContentViewerModal({ content, isOpen, onClose, onToggleComplete, isComp
                   referrerPolicy="strict-origin-when-cross-origin"
                   allowFullScreen
                 />
-              ) : content.contentUrl ? (
+              ) : directVideoUrl ? (
                 <video
                   controls
                   className="max-h-full max-w-full rounded-xl"
@@ -100,6 +101,20 @@ function ContentViewerModal({ content, isOpen, onClose, onToggleComplete, isComp
                 >
                   Your browser does not support the video tag.
                 </video>
+              ) : content.contentUrl ? (
+                <div className="p-8 text-center text-white">
+                  <p className="mb-4 text-sm text-white/75">
+                    This class video is hosted by the course provider.
+                  </p>
+                  <a
+                    href={content.contentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex rounded-xl bg-[#0066FF] px-6 py-2.5 text-xs font-bold text-white hover:bg-blue-600"
+                  >
+                    Open lecture video
+                  </a>
+                </div>
               ) : (
                 <div className="text-sm font-bold text-white/50">
                   No Video URL available.

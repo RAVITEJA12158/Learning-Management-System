@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const prisma = require('../lib/prisma');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const sendVerificationEmail = require('../../utils/sendVerificationEmail');
 const { sendPasswordResetEmail } = require('../../utils/sendVerificationEmail');
 const {
@@ -199,6 +200,10 @@ const login = async (req, res) => {
       return res.status(403).json({ error: 'Your account has been suspended. Please contact an administrator.' });
     }
 
+    if (!user.passwordHash) {
+      return res.status(401).json({ error: 'This account uses Google sign-in. Use Google or reset your password to set one.' });
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid password' });
@@ -239,6 +244,113 @@ const login = async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     return res.status(500).json({ error: 'Error logging in' });
+  }
+};
+
+const googleLogin = async (req, res) => {
+  const { credential, secretCode } = req.body || {};
+  if (typeof credential !== 'string' || !credential.trim()) {
+    return res.status(400).json({ error: 'Google credential is required.' });
+  }
+
+  const googleClientId = process.env.GOOGLE_CLIENT_ID;
+  if (!googleClientId) {
+    return res.status(503).json({ error: 'Google sign-in is not configured on the server.' });
+  }
+
+  let tokenVerified = false;
+  try {
+    const client = new OAuth2Client(googleClientId);
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: googleClientId,
+    });
+    const payload = ticket.getPayload();
+    tokenVerified = true;
+
+    if (!payload?.sub || !payload.email || payload.email_verified !== true) {
+      return res.status(401).json({ error: 'Google account must have a verified email address.' });
+    }
+
+    const email = payload.email.trim().toLowerCase();
+    const [existingByEmail, existingByGoogleId] = await Promise.all([
+      prisma.user.findUnique({ where: { email } }),
+      prisma.user.findUnique({ where: { googleId: payload.sub } }),
+    ]);
+
+    if (existingByGoogleId && existingByGoogleId.email.toLowerCase() !== email) {
+      return res.status(409).json({
+        error: 'This Google account is linked to a different LMS email. Contact an administrator to update the link.',
+      });
+    }
+
+    let user = existingByEmail || existingByGoogleId;
+    if (user) {
+      if (user.googleId && user.googleId !== payload.sub) {
+        return res.status(409).json({ error: 'This LMS account is linked to a different Google account.' });
+      }
+      if (user.status && user.status.toUpperCase() === 'SUSPENDED') {
+        return res.status(403).json({ error: 'Your account has been suspended. Please contact an administrator.' });
+      }
+      if (user.role === 'ADMIN' && (!secretCode || secretCode !== process.env.ADMIN_SECRET_CODE)) {
+        return res.status(403).json({ error: 'Admin accounts must provide the administrator access code.' });
+      }
+
+      // A verified Google email can link to the same-email LMS account. Keep its
+      // password, role, and profile details unchanged.
+      if (!user.googleId) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { googleId: payload.sub, isVerified: true },
+        });
+      }
+    } else {
+      const googleUsername = `google_${payload.sub.replace(/[^a-zA-Z0-9_]/g, '').slice(-24)}`;
+      user = await prisma.user.create({
+        data: {
+          name: payload.name?.trim() || email.split('@')[0],
+          username: googleUsername,
+          email,
+          googleId: payload.sub,
+          passwordHash: null,
+          role: 'STUDENT',
+          status: 'ACTIVE',
+          profileImage: payload.picture || null,
+          isVerified: true,
+        },
+      });
+    }
+
+    if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET not configured');
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
+
+    const response = {
+      message: 'Login successful',
+      token,
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      username: user.username,
+      role: user.role,
+      department: user.department || null,
+      semester: user.semester || null,
+      bio: user.bio || null,
+    };
+    if (user.profileImage) response.profileImage = user.profileImage;
+    return res.status(200).json(response);
+  } catch (error) {
+    if (!tokenVerified) {
+      return res.status(401).json({ error: 'Google credential is invalid or expired.' });
+    }
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'An account with this email or Google identity already exists.' });
+    }
+    console.error('Google login error:', error.message);
+    return res.status(500).json({ error: 'Google sign-in failed. Please try again.' });
   }
 };
 
@@ -419,6 +531,7 @@ module.exports = {
   register,
   sendRegistrationOtp,
   login,
+  googleLogin,
   verifyEmail,
   forgotPassword,
   resetPassword,

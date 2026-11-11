@@ -24,7 +24,12 @@
   "jest": {
     "testEnvironment": "node",
     "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov", "html", "json-summary"],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html",
+      "json-summary"
+    ],
     "collectCoverageFrom": [
       "src/Controllers/**/*.js",
       "src/Middleware/**/*.js",
@@ -33,7 +38,9 @@
       "!src/lib/**",
       "!src/config/**"
     ],
-    "testPathIgnorePatterns": ["/node_modules/"]
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ]
   },
   "dependencies": {
     "@emailjs/nodejs": "^5.0.2",
@@ -44,6 +51,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.22.2",
     "express-rate-limit": "^8.7.0",
+    "google-auth-library": "^11.3.4",
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "2.5.0",

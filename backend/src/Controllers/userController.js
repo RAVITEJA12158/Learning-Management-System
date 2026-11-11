@@ -537,6 +537,9 @@ exports.changePassword = async (req, res) => {
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return res.status(404).json({ error: 'User not found.' });
+    if (!user.passwordHash) {
+      return res.status(400).json({ error: 'No password is set for this account. Use password reset to create one.' });
+    }
 
     const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
     if (!isMatch) {

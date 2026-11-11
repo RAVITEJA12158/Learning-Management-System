@@ -42,6 +42,10 @@ function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
+  const [phoneOtpCode, setPhoneOtpCode] = useState('');
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [phoneOtpMessage, setPhoneOtpMessage] = useState('');
+  const [phoneOtpLoading, setPhoneOtpLoading] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [secretCode, setSecretCode] = useState('');
@@ -66,6 +70,32 @@ function Register() {
 
   const passwordStrength = getPasswordStrength(password);
 
+  async function handleSendPhoneOtp() {
+    const cleanedMobile = mobileNumber.replace(/[\s()-]/g, '');
+    if (!/^\+[1-9]\d{7,14}$/.test(cleanedMobile)) {
+      setErrors((current) => ({
+        ...current,
+        mobileNumber: 'Enter a mobile number with country code, such as +919876543210',
+      }));
+      return;
+    }
+
+    setPhoneOtpLoading(true);
+    setPhoneOtpMessage('');
+    setPhoneOtpCode('');
+    try {
+      const result = await authApi.sendRegistrationOtp({ mobile_number: cleanedMobile });
+      setPhoneOtpSent(true);
+      setPhoneOtpMessage(result.message || 'Verification code sent to your mobile number.');
+      setErrors((current) => ({ ...current, mobileNumber: '' }));
+    } catch (error) {
+      setPhoneOtpSent(false);
+      setPhoneOtpMessage(error.message || 'Could not send the verification code.');
+    } finally {
+      setPhoneOtpLoading(false);
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -88,8 +118,14 @@ function Register() {
     const cleanedMobile = mobileNumber.replace(/[\s\-()]/g, '');
     if (!mobileNumber.trim()) {
       newErrors.mobileNumber = 'Mobile number is required';
-    } else if (!/^\+?\d{10,15}$/.test(cleanedMobile)) {
-      newErrors.mobileNumber = 'Enter a valid 10 to 15 digit mobile number';
+    } else if (!/^\+[1-9]\d{7,14}$/.test(cleanedMobile)) {
+      newErrors.mobileNumber = 'Enter your number with country code, such as +919876543210';
+    }
+
+    if (!phoneOtpSent) {
+      newErrors.phoneOtpCode = 'Send a code to your mobile number and enter it before registering';
+    } else if (!/^\d{6}$/.test(phoneOtpCode)) {
+      newErrors.phoneOtpCode = 'Enter the 6-digit code sent to your mobile number';
     }
 
     if (!password) {
@@ -139,6 +175,7 @@ function Register() {
         password,
         confirmPassword,
         mobile_number: cleanedMobile,
+        phoneOtpCode,
         role: selectedRole.id,
         ...(selectedRole.id === 'admin' ? { secretCode: secretCode.trim() } : {}),
       });
@@ -334,16 +371,58 @@ function Register() {
                     </label>
                     <input
                       type="tel"
-                      placeholder="9876543210"
+                      placeholder="+919876543210"
                       value={mobileNumber}
-                      onChange={(e) => setMobileNumber(e.target.value)}
+                      onChange={(e) => {
+                        setMobileNumber(e.target.value);
+                        setPhoneOtpSent(false);
+                        setPhoneOtpCode('');
+                        setPhoneOtpMessage('');
+                      }}
                       className="w-full rounded-xl border-2 border-slate-200 dark:border-white/10 bg-white dark:bg-[#030712] px-3.5 py-2.5 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] dark:focus:border-cyan-400 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-cyan-500/10"
                     />
                     {errors.mobileNumber && (
                       <p className="mt-1 text-xs font-medium text-rose-600 dark:text-rose-400">{errors.mobileNumber}</p>
                     )}
+                    <button
+                      type="button"
+                      onClick={handleSendPhoneOtp}
+                      disabled={phoneOtpLoading || !mobileNumber.trim()}
+                      className="mt-2 rounded-lg border border-blue-200 dark:border-cyan-800 px-3 py-1.5 text-[11px] font-bold text-blue-700 dark:text-cyan-300 disabled:opacity-50"
+                    >
+                      {phoneOtpLoading ? 'Sending code…' : phoneOtpSent ? 'Resend verification code' : 'Send verification code'}
+                    </button>
+                    {phoneOtpMessage && (
+                      <p className={`mt-1 text-[11px] ${phoneOtpSent ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                        {phoneOtpMessage}
+                      </p>
+                    )}
                   </div>
                 </div>
+
+                {phoneOtpSent && (
+                  <div>
+                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-gray-300">
+                      MOBILE VERIFICATION CODE
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      maxLength={6}
+                      placeholder="Enter 6-digit code"
+                      value={phoneOtpCode}
+                      onChange={(e) => setPhoneOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="w-full rounded-xl border-2 border-slate-200 dark:border-white/10 bg-white dark:bg-[#030712] px-3.5 py-2.5 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500 outline-none focus:border-[#1a6ef5] dark:focus:border-cyan-400"
+                    />
+                    {errors.phoneOtpCode && (
+                      <p className="mt-1 text-xs font-medium text-rose-600 dark:text-rose-400">{errors.phoneOtpCode}</p>
+                    )}
+                  </div>
+                )}
+                {!phoneOtpSent && errors.phoneOtpCode && (
+                  <p className="text-xs font-medium text-rose-600 dark:text-rose-400">{errors.phoneOtpCode}</p>
+                )}
 
                 {selectedRole.id === 'admin' && (
                   <div className="animate-auth-fade">
@@ -507,7 +586,7 @@ function Register() {
                     </div>
                   ) : (
                     <div key={selectedRole.id} className="animate-cta-swap flex items-center gap-1.5">
-                      <span>Register as {selectedRole.label}</span>
+                      <span>Verify & Register as {selectedRole.label}</span>
                       <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
                     </div>
                   )}

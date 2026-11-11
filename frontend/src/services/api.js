@@ -73,8 +73,20 @@ const authApi = {
       body: JSON.stringify(payload),
     });
   },
+  async googleLogin(payload) {
+    return await apiRequest('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
   async register(payload) {
     return await apiRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+  async sendRegistrationOtp(payload) {
+    return await apiRequest('/auth/phone/send-registration-otp', {
       method: 'POST',
       body: JSON.stringify(payload),
     });

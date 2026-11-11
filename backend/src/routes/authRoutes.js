@@ -4,6 +4,7 @@ const {
   register,
   sendRegistrationOtp,
   login,
+  googleLogin,
   verifyEmail,
   forgotPassword,
   resetPassword,
@@ -24,6 +25,9 @@ router.post('/phone/send-registration-otp', otpLimiter, sendRegistrationOtp);
 
 // POST /api/auth/login
 router.post('/login', authLimiter, validateLogin, login);
+
+// POST /api/auth/google
+router.post('/google', authLimiter, googleLogin);
 
 // GET /api/auth/verify/:token
 router.get('/verify/:token', verifyEmail);

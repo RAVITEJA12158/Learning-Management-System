@@ -16,6 +16,7 @@ This directory contains the Express REST API and Prisma PostgreSQL database laye
    - `DIRECT_URL`: Direct PostgreSQL connection used for Prisma migrations.
    - `JWT_SECRET` & `JWT_EXPIRES_IN`: Secret key and expiry (e.g. `7d`).
    - `ADMIN_SECRET_CODE`: Required for admin account authentication.
+   - `GOOGLE_CLIENT_ID`: Google OAuth Web Client ID used to verify Google ID tokens (set the same client ID in frontend `VITE_GOOGLE_CLIENT_ID`).
    - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`: Media attachments and photo uploads.
    - `FRONTEND_ORIGINS`: Allowed CORS origins (e.g. `http://localhost:5173,http://localhost:3000`).
    - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SERVICE_SID`: Twilio Verify credentials for registration phone OTPs and password reset SMS. Phone numbers must use E.164 format (for example, `+919876543210`). SMS verification cannot be used until these are configured.
@@ -37,6 +38,10 @@ This directory contains the Express REST API and Prisma PostgreSQL database laye
    npm test -- --testPathIgnorePatterns=Integration
    ```
 
+### Google Sign-In Setup
+
+Create a Google OAuth Web Client ID, then use the same ID as `VITE_GOOGLE_CLIENT_ID` in Vercel/frontend `.env` and `GOOGLE_CLIENT_ID` in Render/backend `.env`. Add the local and deployed frontend origins to the OAuth client's authorized JavaScript origins. Apply the new database migration with `npm run prisma:deploy` against the intended database before enabling Google sign-in. New Google accounts are Students; existing account roles are retained, and Admin Google sign-in also requires the configured administrator access code.
+
 ---
 
 ## 📡 REST API Endpoint Reference
@@ -49,6 +54,7 @@ All endpoints are prefixed with `/api` and protected by rate-limiting and helmet
 - Registration requires the 6-digit SMS code sent to the submitted mobile number.
 - `POST /api/auth/forgot-password`: Sends the reset code to the account's registered mobile when Twilio Verify is configured; otherwise uses the existing email reset flow.
 - `POST /api/auth/login`: Authenticate email/password. Enforces secret code for `ADMIN` role.
+- `POST /api/auth/google`: Verify a Google ID token and issue the normal LMS JWT. New Google accounts receive the `STUDENT` role; existing accounts keep their LMS role and password. Admin accounts must also provide the existing administrator access code.
 
 ### 2. User & Profile Management (`/api/users`)
 - `GET /api/users/profile`: Current authenticated user's profile details.

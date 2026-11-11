@@ -4,6 +4,9 @@ import { authApi } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import SpotlightCard from '../../components/common/SpotlightCard';
 import Modal from '../../components/common/Modal';
+import { GoogleLogin } from '@react-oauth/google';
+
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const roles = [
   {
@@ -211,6 +214,42 @@ function Login() {
     }
   }
 
+  async function handleGoogleLoginSuccess(credentialResponse) {
+    if (!credentialResponse?.credential) {
+      setMessage('Google did not return an ID token. Please try again.');
+      return;
+    }
+
+    setLoading(true);
+    setMessage('');
+    try {
+      const data = await authApi.googleLogin({
+        credential: credentialResponse.credential,
+        ...(selectedRole.id === 'admin' ? { secretCode: secretCode.trim() } : {}),
+      });
+      const returnedRole = (data.role || 'STUDENT').toLowerCase();
+      login({
+        token: data.token,
+        user: {
+          id: data.userId,
+          name: data.name || 'Scholar',
+          username: data.username,
+          email: data.email,
+          role: returnedRole,
+          department: data.department,
+          semester: data.semester,
+          bio: data.bio,
+          profileImage: data.profileImage,
+        },
+      });
+      navigate(returnedRole === 'student' ? '/student' : `/${returnedRole}`, { replace: true });
+    } catch (error) {
+      setMessage(error.message || 'Google sign-in failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const handleRequestResetCode = async (e) => {
     e.preventDefault();
     setRecoveryError('');
@@ -225,7 +264,7 @@ function Login() {
       setRecoveryInfo(
         res.devResetToken
           ? `${res.message} (Dev Reset Code: ${res.devResetToken})`
-          : res.message || 'Reset code sent to your email.'
+          : res.message || 'Reset code sent to your registered contact method.'
       );
       if (res.devResetToken) {
         setResetToken(res.devResetToken);
@@ -584,6 +623,31 @@ function Login() {
                 </button>
               </form>
 
+              <div className="mt-5">
+                <div className="mb-4 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-gray-500">
+                  <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
+                  Or continue with
+                  <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
+                </div>
+                {googleClientId ? (
+                  <div className="flex justify-center">
+                    <GoogleLogin
+                      onSuccess={handleGoogleLoginSuccess}
+                      onError={() => setMessage('Google sign-in was cancelled or could not be completed.')}
+                      theme="outline"
+                      size="large"
+                      shape="rectangular"
+                      text="continue_with"
+                      width="300"
+                    />
+                  </div>
+                ) : (
+                  <p className="rounded-lg bg-slate-50 dark:bg-white/[0.03] px-3 py-2 text-center text-[11px] text-slate-500 dark:text-gray-400">
+                    Google sign-in is unavailable until VITE_GOOGLE_CLIENT_ID is configured.
+                  </p>
+                )}
+              </div>
+
               {demoEnabled && (
                 <div className="mt-5 pt-4 border-t border-slate-100 dark:border-white/5">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-center text-slate-400 dark:text-gray-500 mb-2.5">
@@ -628,7 +692,7 @@ function Login() {
         title="Reset Your Password"
         subtitle={
           recoveryStep === 'request'
-            ? 'Enter your university email to receive a 6-digit password reset code'
+            ? 'Enter your university email. When SMS is configured, the code goes to your registered mobile number.'
             : recoveryStep === 'reset'
             ? 'Enter your 6-digit reset code and choose a new strong password'
             : 'Your password has been updated'
