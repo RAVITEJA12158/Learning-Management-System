@@ -10,7 +10,7 @@ import { PlusIcon, UsersIcon, BookIcon, ShieldCheckIcon, ChartIcon, SearchIcon }
 function AdminDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'courses' | 'broadcast'
-  const [users, setUsers] = useState(() => adminService.getUsers());
+  const [users, setUsers] = useState([]);
   const [courses, setCourses] = useState([]);
   const [systemStats, setSystemStats] = useState(null);
   const [userSearch, setUserSearch] = useState('');

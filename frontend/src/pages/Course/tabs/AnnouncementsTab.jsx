@@ -6,11 +6,11 @@ import Button from '../../../components/common/Button';
 "use strict";
 
 function AnnouncementsTab({
-  courseId = 'mock-1',
+  courseId,
   instructorsText,
   isCreatorOrStaff
 }) {
-  const [announcements, setAnnouncements] = useState(() => announcementService.getByCourse(courseId));
+  const [announcements, setAnnouncements] = useState([]);
   const [isPosting, setIsPosting] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');

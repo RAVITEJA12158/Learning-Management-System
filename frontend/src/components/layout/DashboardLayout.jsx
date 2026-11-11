@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { authApi } from '../../services/api';
 import { notificationService } from '../../services/courseService';
 import BrandMark from '../common/BrandMark';
 import Footer from './Footer';
@@ -24,7 +25,7 @@ import {
 function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, isAuthenticated, updateUser } = useAuth();
+  const { user, login, logout, isAuthenticated, updateUser } = useAuth();
   const { isDark, toggleTheme } = useTheme();
 
   const [profileOpen, setProfileOpen] = useState(false);
@@ -62,6 +63,14 @@ function DashboardLayout() {
     return <Navigate to="/login" replace />;
   }
 
+  // When visiting the landing page as an unauthenticated guest, Landing.jsx provides
+  // its dedicated marketing navbar (Discover, Features, etc.) and footer.
+  // Suppress the dashboard workspace header and footer to prevent duplicate navbars.
+  const isGuestLanding = !isAuthenticated && (location.pathname === '/' || location.pathname === '');
+  if (isGuestLanding) {
+    return <Outlet />;
+  }
+
   const handleLogout = () => {
     setProfileOpen(false);
     logout();
@@ -76,13 +85,33 @@ function DashboardLayout() {
     return '/student';
   };
 
-  const handleQuickRoleSwitch = (newRole) => {
-    const defaultProfiles = {
-      student: { name: 'Sarah Jensen', email: 'sarah.jensen@university.edu', role: 'student' },
-      faculty: { name: 'Dr. Alan Turing', email: 'alan.turing@university.edu', role: 'faculty' },
-      admin: { name: 'Dean Robert Vance', email: 'admin@university.edu', role: 'admin' },
+  const handleQuickRoleSwitch = async (newRole) => {
+    const demoCredentials = {
+      student: { email: 'sarah.jensen@university.edu', password: 'Student123!' },
+      faculty: { email: 'alan.turing@university.edu', password: 'Faculty123!' },
+      admin: { email: 'admin@university.edu', password: 'Admin123!', secretCode: 'admin@lms' },
     };
-    updateUser(defaultProfiles[newRole] || { role: newRole });
+    const creds = demoCredentials[newRole];
+    if (creds) {
+      try {
+        const response = await authApi.login(creds);
+        login({
+          token: response.token,
+          user: {
+            id: response.userId,
+            name: response.name,
+            username: response.username,
+            role: response.role.toLowerCase(),
+            department: response.department,
+            semester: response.semester,
+            bio: response.bio,
+            profileImage: response.profileImage,
+          },
+        });
+      } catch (err) {
+        console.error('Quick role switch login error:', err);
+      }
+    }
     setProfileOpen(false);
     navigate(getDashboardPath(newRole));
   };

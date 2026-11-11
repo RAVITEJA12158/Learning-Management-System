@@ -4,12 +4,9 @@ import Badge from '../../../components/common/Badge';
 import Button from '../../../components/common/Button';
 import SpotlightCard from '../../../components/common/SpotlightCard';
 
-export function AttendanceTab({ courseId = 'mock-1', isCreatorOrStaff = false, user }) {
-  const [sessions, setSessions] = useState(() => attendanceService.getSessions(courseId));
-  const [selectedSessionId, setSelectedSessionId] = useState(() => {
-    const initial = attendanceService.getSessions(courseId);
-    return initial[0]?.id || null;
-  });
+export function AttendanceTab({ courseId, isCreatorOrStaff = false, user }) {
+  const [sessions, setSessions] = useState([]);
+  const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [newDate, setNewDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [newTopic, setNewTopic] = useState('');

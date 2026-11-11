@@ -6,12 +6,12 @@ import Button from '../../../components/common/Button';
 "use strict";
 
 function DiscussionsTab({
-  courseId = 'mock-1',
+  courseId,
   isCreatorOrStaff = false,
   user
 }) {
-  const [threads, setThreads] = useState(() => discussionService.getByCourse(courseId));
-  const [expandedThreadId, setExpandedThreadId] = useState('thread-1');
+  const [threads, setThreads] = useState([]);
+  const [expandedThreadId, setExpandedThreadId] = useState(null);
   const [isStartingThread, setIsStartingThread] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [title, setTitle] = useState('');

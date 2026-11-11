@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { courseService } from '../services/courseService';
-import { MOCK_CATALOG_COURSES } from '../utils/mockData';
 import { CourseCard, RecommendedCourseItem } from '../components/common/CourseCard';
 import Modal from '../components/common/Modal';
 import Button from '../components/common/Button';
@@ -39,17 +38,17 @@ function CourseCatalog() {
     setLoading(true);
     try {
       const [allData, enrolledData] = await Promise.allSettled([courseService.getAll(), courseService.getEnrolled()]);
-      if (allData.status === 'fulfilled' && Array.isArray(allData.value) && allData.value.length > 0) {
+      if (allData.status === 'fulfilled' && Array.isArray(allData.value)) {
         setDbCourses(allData.value);
       } else {
-        setDbCourses(MOCK_CATALOG_COURSES);
+        setDbCourses([]);
       }
       if (enrolledData.status === 'fulfilled' && Array.isArray(enrolledData.value)) {
         setEnrolledCourseIds(new Set(enrolledData.value.map(c => c.id)));
       }
     } catch (err) {
       console.error('Failed to load courses:', err);
-      setDbCourses(MOCK_CATALOG_COURSES);
+      setDbCourses([]);
     } finally {
       setLoading(false);
     }

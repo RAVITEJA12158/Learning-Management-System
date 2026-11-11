@@ -6,7 +6,6 @@ import { CourseCard } from '../../components/common/CourseCard';
 import SpotlightCard from '../../components/common/SpotlightCard';
 import Badge from '../../components/common/Badge';
 import { BookIcon, ChartIcon, CalendarIcon, AcademicCapIcon, DocumentIcon, ClipboardCheckIcon, BellIcon } from '../../components/common/Icons';
-import { MOCK_STUDENT_COURSES } from '../../utils/mockData';
 
 function StudentDashboard() {
   const {
@@ -79,7 +78,7 @@ function StudentDashboard() {
   }, "|"), ' ', /*#__PURE__*/React.createElement("span", {
     className: "text-blue-600 dark:text-cyan-300"
   }, "Active"))))), /*#__PURE__*/React.createElement(SpotlightCard, {
-    onClick: () => navigate(`/courses/${coursesList[0]?.id || 'mock-1'}`),
+    onClick: () => navigate(coursesList[0]?.id ? `/courses/${coursesList[0].id}` : '/courses'),
     className: "p-5 flex items-center justify-between cursor-pointer"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3.5"
@@ -205,7 +204,7 @@ function StudentDashboard() {
   }, "View all")), /*#__PURE__*/React.createElement("div", {
     className: "space-y-2.5"
   }, /*#__PURE__*/React.createElement("div", {
-    onClick: () => navigate(`/courses/${coursesList[0]?.id || 'mock-1'}`),
+    onClick: () => navigate(coursesList[0]?.id ? `/courses/${coursesList[0].id}` : '/assignments'),
     className: "flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 hover:border-purple-400 dark:hover:border-purple-500/40 transition cursor-pointer"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3"
@@ -220,7 +219,7 @@ function StudentDashboard() {
   }, "10 Questions \xB7 20 mins"))), /*#__PURE__*/React.createElement(Badge, {
     variant: "active"
   }, "Active")), /*#__PURE__*/React.createElement("div", {
-    onClick: () => navigate(`/courses/${coursesList[2]?.id || 'mock-3'}`),
+    onClick: () => navigate(coursesList[1]?.id ? `/courses/${coursesList[1].id}` : '/assignments'),
     className: "flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 hover:border-purple-400 dark:hover:border-purple-500/40 transition cursor-pointer"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3"

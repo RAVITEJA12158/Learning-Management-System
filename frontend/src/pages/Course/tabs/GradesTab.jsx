@@ -3,7 +3,7 @@ import { gradeService } from '../../../services/courseService';
 import Badge from '../../../components/common/Badge';
 import SpotlightCard from '../../../components/common/SpotlightCard';
 
-export function GradesTab({ courseId = 'mock-1', overallCompletionPercent = 75 }) {
+export function GradesTab({ courseId, overallCompletionPercent = 75 }) {
   const [weights, setWeights] = useState(() => gradeService.getWeights(courseId));
 
   useEffect(() => {

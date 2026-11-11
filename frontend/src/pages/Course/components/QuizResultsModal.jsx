@@ -1,5 +1,4 @@
 import React from 'react';
-import { MOCK_QUIZ_REVIEW_ITEMS } from '../../../utils/mockData';
 
 export function QuizResultsModal({ quiz, isOpen, onClose, onRetake }) {
   if (!isOpen || !quiz) return null;
@@ -8,7 +7,7 @@ export function QuizResultsModal({ quiz, isOpen, onClose, onRetake }) {
   const maxPoints = quiz.points || 16;
   const percentage = Math.round((score / maxPoints) * 100);
   const isPassed = percentage >= 70;
-  const reviewItems = quiz.reviewItems || MOCK_QUIZ_REVIEW_ITEMS;
+  const reviewItems = quiz.reviewItems || [];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in">

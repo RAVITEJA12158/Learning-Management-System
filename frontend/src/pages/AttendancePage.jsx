@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { courseService } from '../services/courseService';
-import { MOCK_STUDENT_COURSES } from '../utils/mockData';
 import { AttendanceTab } from './Course/tabs/AttendanceTab';
 import Badge from '../components/common/Badge';
 
@@ -17,18 +16,21 @@ function AttendancePage() {
     let isMounted = true;
     const loadCourses = async () => {
       try {
-        const list = isStaff
+        let list = isStaff
           ? await courseService.getCreated()
           : await courseService.getEnrolled();
+        if ((!list || list.length === 0) && !isStaff) {
+          list = await courseService.getAll();
+        }
         if (isMounted) {
-          const valid = Array.isArray(list) && list.length > 0 ? list : MOCK_STUDENT_COURSES;
+          const valid = Array.isArray(list) ? list : [];
           setCourses(valid);
-          setSelectedCourseId(valid[0]?.id || 'mock-1');
+          setSelectedCourseId(valid[0]?.id || '');
         }
       } catch {
         if (isMounted) {
-          setCourses(MOCK_STUDENT_COURSES);
-          setSelectedCourseId(MOCK_STUDENT_COURSES[0].id);
+          setCourses([]);
+          setSelectedCourseId('');
         }
       }
     };
@@ -45,25 +47,37 @@ function AttendancePage() {
           <p className="text-xs sm:text-sm text-slate-500 dark:text-gray-400 mt-1">Select a course below to inspect derived attendance percentages or record a live roll-call session.</p>
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        {courses.map(c => (
+      {courses.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          {courses.map(c => (
+            <button
+              key={c.id}
+              onClick={() => setSelectedCourseId(c.id)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${selectedCourseId === c.id ? 'bg-[#0066FF] text-white shadow-[0_0_15px_rgba(0,102,255,0.4)]' : 'bg-white dark:bg-white/[0.03] text-slate-600 dark:text-gray-400 border border-slate-200/80 dark:border-white/10 hover:text-slate-900 dark:hover:text-white'}`}
+            >
+              {c.courseCode}: {c.title}
+            </button>
+          ))}
+          {selectedCourseId && (
+            <button
+              onClick={() => navigate(`/courses/${selectedCourseId}`)}
+              className="ml-auto text-xs font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
+            >
+              Open Full Course Workspace →
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="p-8 text-center rounded-2xl bg-white dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/10 mb-6">
+          <p className="text-sm font-bold text-slate-900 dark:text-white">No courses available for attendance tracking.</p>
           <button
-            key={c.id}
-            onClick={() => setSelectedCourseId(c.id)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${selectedCourseId === c.id ? 'bg-[#0066FF] text-white shadow-[0_0_15px_rgba(0,102,255,0.4)]' : 'bg-white dark:bg-white/[0.03] text-slate-600 dark:text-gray-400 border border-slate-200/80 dark:border-white/10 hover:text-slate-900 dark:hover:text-white'}`}
+            onClick={() => navigate('/courses')}
+            className="mt-2 text-xs font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
           >
-            {c.courseCode}: {c.title}
+            Explore Course Catalog →
           </button>
-        ))}
-        {selectedCourseId && (
-          <button
-            onClick={() => navigate(`/courses/${selectedCourseId}`)}
-            className="ml-auto text-xs font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
-          >
-            Open Full Course Workspace →
-          </button>
-        )}
-      </div>
+        </div>
+      )}
       <div className="-mx-6">
         {selectedCourseId && (
           <AttendanceTab

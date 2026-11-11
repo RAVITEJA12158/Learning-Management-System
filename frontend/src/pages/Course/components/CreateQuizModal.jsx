@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { MOCK_QUIZ_QUESTIONS } from '../../../utils/mockData';
 
 "use strict";
 
@@ -54,7 +53,7 @@ function CreateQuizModal({
   const handleSubmit = e => {
     e.preventDefault();
     if (!title.trim()) return;
-    const finalQuestions = customQuestions.length > 0 ? customQuestions : MOCK_QUIZ_QUESTIONS;
+    const finalQuestions = customQuestions;
     onCreate({
       id: `quiz-${Date.now()}`,
       title: title.trim(),

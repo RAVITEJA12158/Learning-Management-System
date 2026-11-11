@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { MOCK_QUIZ_QUESTIONS, MOCK_EXAM_INSTRUCTIONS } from '../../../utils/mockData';
 import { QuizSubmitConfirmModal } from './QuizSubmitConfirmModal';
 import { useTheme } from '../../../context/ThemeContext';
+
+const EXAM_INSTRUCTIONS = [
+  { id: 1, title: 'Fullscreen Environment', desc: 'This examination runs in mandatory fullscreen. Exiting or switching tabs may register a proctoring alert.' },
+  { id: 2, title: 'Timed Duration', desc: 'The clock counts down continuously. Unanswered questions submit automatically when time expires.' },
+  { id: 3, title: 'Honor Code & Integrity', desc: 'No external notes, tabs, or unauthorized collaboration are permitted during the attempt.' },
+  { id: 4, title: 'One Question at a Time', desc: 'Navigate forward or back using the question palette and review flagged questions before final submission.' },
+];
 
 export function QuizAttemptModal({ quiz, isOpen, onClose, onSubmit }) {
   const { isDark, toggleTheme } = useTheme();
@@ -18,7 +24,7 @@ export function QuizAttemptModal({ quiz, isOpen, onClose, onSubmit }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
 
-  const questionsList = quiz?.questionsList || MOCK_QUIZ_QUESTIONS;
+  const questionsList = quiz?.questionsList || quiz?.questions || [];
 
   // Initialize timer and duration when quiz changes or opens
   useEffect(() => {
@@ -249,7 +255,7 @@ export function QuizAttemptModal({ quiz, isOpen, onClose, onSubmit }) {
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 mb-2">
               Examination Instructions & Protocol
             </h4>
-            {MOCK_EXAM_INSTRUCTIONS.map((inst, idx) => (
+            {EXAM_INSTRUCTIONS.map((inst, idx) => (
               <div
                 key={inst.id}
                 className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-slate-50/70 dark:bg-white/[0.02] border border-slate-200/70 dark:border-white/5 transition-colors"

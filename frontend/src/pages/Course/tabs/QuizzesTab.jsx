@@ -4,14 +4,13 @@ import { QuizAttemptModal } from '../components/QuizAttemptModal';
 import { QuizResultsModal } from '../components/QuizResultsModal';
 import { CreateQuizModal } from '../components/CreateQuizModal';
 import { quizService } from '../../../services/courseService';
-import { MOCK_COURSE_QUIZZES } from '../../../utils/mockData';
 
 function QuizzesTab({
   courseId,
   isCreatorOrStaff,
   isEnrolled = true
 }) {
-  const [quizzes, setQuizzes] = useState(() => quizService.getByCourse(courseId));
+  const [quizzes, setQuizzes] = useState([]);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');

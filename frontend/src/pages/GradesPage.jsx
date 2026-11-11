@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gradeService, courseService } from '../services/courseService';
-import { MOCK_STUDENT_COURSES } from '../utils/mockData';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
 import SpotlightCard from '../components/common/SpotlightCard';
@@ -21,7 +20,14 @@ function GradesPage() {
       } else {
         courseService.getEnrolled().then(list => {
           if (isMounted) {
-            setCourses(Array.isArray(list) && list.length > 0 ? list : MOCK_STUDENT_COURSES);
+            const valid = Array.isArray(list) ? list : [];
+            if (valid.length === 0) {
+              courseService.getAll().then(all => {
+                if (isMounted && Array.isArray(all)) setCourses(all);
+              });
+            } else {
+              setCourses(valid);
+            }
           }
         });
       }

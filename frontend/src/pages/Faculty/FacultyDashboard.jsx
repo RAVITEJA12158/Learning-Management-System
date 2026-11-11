@@ -28,31 +28,35 @@ function FacultyDashboard() {
       setLoading(false);
     }
   };
-  const pendingSubmissions = [{
-    id: 'sub-103',
-    student: 'Ishita Nair',
-    courseCode: 'CS401',
-    courseId: 'mock-1',
-    assignment: 'Assignment 1: Bayesian Classifier',
-    time: '3 hours ago',
-    status: 'SUBMITTED'
-  }, {
-    id: 'sub-201',
-    student: 'Arjun Rao',
-    courseCode: 'CS401',
-    courseId: 'mock-1',
-    assignment: 'Assignment 2: Ridge & Lasso Lab',
-    time: '5 hours ago',
-    status: 'SUBMITTED'
-  }, {
-    id: 'sub-301',
-    student: 'Alex Chen',
-    courseCode: 'CS350',
-    courseId: 'mock-3',
-    assignment: 'Project Milestone: REST API Auth',
-    time: 'Yesterday',
-    status: 'LATE'
-  }];
+  const pendingSubmissions = createdCourses.length > 0 ? [
+    {
+      id: 'sub-103',
+      student: 'Ishita Nair',
+      courseCode: createdCourses[0]?.courseCode || 'CS401',
+      courseId: createdCourses[0]?.id,
+      assignment: 'Assignment 1: Bayesian Classifier',
+      time: '3 hours ago',
+      status: 'SUBMITTED'
+    },
+    {
+      id: 'sub-201',
+      student: 'Arjun Rao',
+      courseCode: createdCourses[0]?.courseCode || 'CS401',
+      courseId: createdCourses[0]?.id,
+      assignment: 'Assignment 2: Optimization Lab',
+      time: '5 hours ago',
+      status: 'SUBMITTED'
+    },
+    ...(createdCourses[1] ? [{
+      id: 'sub-301',
+      student: 'Alex Chen',
+      courseCode: createdCourses[1]?.courseCode || 'AI201',
+      courseId: createdCourses[1]?.id,
+      assignment: 'Project Milestone: Convolutional Networks',
+      time: 'Yesterday',
+      status: 'LATE'
+    }] : [])
+  ] : [];
   return /*#__PURE__*/React.createElement("main", {
     className: "mx-auto max-w-[1440px] px-4 py-8 sm:px-8 lg:py-10 w-full font-sans transition-colors duration-200"
   }, /*#__PURE__*/React.createElement("div", {
@@ -193,7 +197,7 @@ function FacultyDashboard() {
     className: "space-y-3"
   }, pendingSubmissions.map(item => /*#__PURE__*/React.createElement("div", {
     key: item.id,
-    onClick: () => navigate(`/courses/${item.courseId}`),
+    onClick: () => navigate(item.courseId ? `/courses/${item.courseId}` : '/assignments'),
     className: "p-3.5 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/70 dark:border-white/5 hover:border-blue-500/40 dark:hover:border-cyan-400/40 transition cursor-pointer"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between gap-2"
