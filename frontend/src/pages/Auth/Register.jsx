@@ -5,24 +5,37 @@ import { useAuth } from '../../context/AuthContext';
 import SpotlightCard from '../../components/common/SpotlightCard';
 import GoogleSignInButton from '../../components/auth/GoogleSignInButton';
 
+function StudentIcon({ className = 'w-6 h-6' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" />
+      <path d="M22 10v6" />
+      <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
+    </svg>
+  );
+}
+
+function FacultyIcon({ className = 'w-6 h-6' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="12" rx="2" />
+      <path d="M7.5 11l2.5-2.5 2 2 4.5-4.5" />
+      <path d="M12 15v3.5" />
+      <path d="M9 18.5h6" />
+    </svg>
+  );
+}
+
 const roles = [
   {
     id: 'student',
     label: 'Student',
-    letter: 'S',
-    description: 'Learn & manage courses',
+    Icon: StudentIcon,
   },
   {
     id: 'faculty',
     label: 'Faculty',
-    letter: 'F',
-    description: 'Teach & assess',
-  },
-  {
-    id: 'admin',
-    label: 'Admin',
-    letter: 'A',
-    description: 'Manage institution',
+    Icon: FacultyIcon,
   },
 ];
 
@@ -45,7 +58,6 @@ function Register() {
   const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [secretCode, setSecretCode] = useState('');
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -106,10 +118,6 @@ function Register() {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    if (selectedRole.id === 'admin' && !secretCode.trim()) {
-      newErrors.secretCode = 'Administrator secret code is required';
-    }
-
     if (!acceptTerms) {
       newErrors.terms = 'Please accept the terms to continue';
     }
@@ -141,7 +149,6 @@ function Register() {
         confirmPassword,
         mobile_number: cleanedMobile,
         role: selectedRole.id,
-        ...(selectedRole.id === 'admin' ? { secretCode: secretCode.trim() } : {}),
       });
 
       const returnedRole = (data.role || selectedRole.id).toLowerCase();
@@ -194,7 +201,6 @@ function Register() {
     try {
       const data = await authApi.googleLogin({
         credential: credentialResponse.credential,
-        ...(selectedRole.id === 'admin' ? { secretCode: secretCode.trim() } : {}),
       });
       const returnedRole = (data.role || 'STUDENT').toLowerCase();
       login({
@@ -218,8 +224,6 @@ function Register() {
       setLoading(false);
     }
   }
-
-  const selectedIndex = roles.findIndex((r) => r.id === selectedRole.id);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#f8fafc] dark:bg-[#030712] transition-colors">
@@ -250,26 +254,16 @@ function Register() {
 
             <div className="animate-card-bloom mt-6 rounded-[24px] border border-slate-200/80 dark:border-white/10 bg-white dark:bg-white/[0.02] dark:backdrop-blur-xl p-6 shadow-[0_12px_40px_rgba(15,23,42,0.04)] dark:shadow-2xl dark:shadow-black/50 sm:p-7 transition-colors">
               <div>
-                <div className="mb-2.5 flex items-center justify-between">
+                <div className="mb-2.5">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-gray-300">
                     SELECT WORKSPACE
                   </p>
-                  <span className="text-[10px] font-semibold tracking-wider text-slate-400 dark:text-gray-500">
-                    STEP 01
-                  </span>
                 </div>
 
-                <div className="relative grid grid-cols-3 gap-2.5">
-                  <div
-                    className="pointer-events-none absolute inset-y-0 rounded-2xl bg-[#48566a] dark:bg-cyan-500/20 dark:border dark:border-cyan-500/40 shadow-sm transition-transform duration-300 ease-out"
-                    style={{
-                      width: 'calc((100% - 20px) / 3)',
-                      transform: `translateX(calc(${selectedIndex} * (100% + 10px)))`,
-                    }}
-                  />
-
+                <div className="grid grid-cols-2 gap-3">
                   {roles.map((role) => {
                     const isSelected = selectedRole.id === role.id;
+                    const IconComponent = role.Icon;
                     return (
                       <button
                         key={role.id}
@@ -279,39 +273,29 @@ function Register() {
                           setErrors({});
                           setMessage('');
                         }}
-                        className={`relative z-10 rounded-2xl p-3.5 text-left transition-colors duration-200 cursor-pointer ${
+                        className={`group flex flex-col items-center justify-center rounded-xl py-3.5 px-3 sm:py-4 transition-all duration-200 cursor-pointer ${
                           isSelected
-                            ? 'text-white'
-                            : 'bg-[#f0f3f6] dark:bg-white/5 text-slate-800 dark:text-gray-300 hover:bg-[#e7ecf1] dark:hover:bg-white/10'
+                            ? 'border-2 border-[#1a6ef5] dark:border-cyan-400 bg-blue-50/80 dark:bg-cyan-950/20 text-[#1a6ef5] dark:text-white shadow-sm dark:shadow-[0_0_12px_rgba(6,182,212,0.15)]'
+                            : 'border-2 border-slate-200/90 dark:border-white/10 bg-slate-50/60 dark:bg-white/[0.02] text-slate-500 dark:text-gray-400 hover:border-slate-300 dark:hover:border-white/20 hover:bg-slate-100/70 dark:hover:bg-white/[0.04] hover:text-slate-800 dark:hover:text-gray-200'
                         }`}
-                        style={{
-                          backgroundColor: isSelected ? 'transparent' : undefined,
-                        }}
                       >
-                        <span
-                          className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-colors duration-200 ${
+                        <div
+                          className={`transition-colors duration-200 ${
                             isSelected
-                              ? 'bg-[#283444] dark:bg-cyan-500 text-white'
-                              : 'bg-[#dce2e8] dark:bg-white/10 text-slate-500 dark:text-gray-400'
+                              ? 'text-[#1a6ef5] dark:text-white'
+                              : 'text-slate-400 dark:text-gray-400 group-hover:text-slate-600 dark:group-hover:text-gray-200'
                           }`}
                         >
-                          {role.letter}
-                        </span>
-
+                          <IconComponent className="w-5 h-5 sm:w-6 sm:h-6" />
+                        </div>
                         <span
-                          className={`mt-2.5 block text-xs font-bold transition-colors duration-200 ${
-                            isSelected ? 'text-white' : 'text-slate-800 dark:text-gray-200'
+                          className={`mt-2 text-xs sm:text-sm font-semibold transition-colors duration-200 ${
+                            isSelected
+                              ? 'text-slate-900 dark:text-white font-bold'
+                              : 'text-slate-600 dark:text-gray-300'
                           }`}
                         >
                           {role.label}
-                        </span>
-
-                        <span
-                          className={`mt-0.5 block text-[9px] leading-tight transition-colors duration-200 sm:text-[10px] ${
-                            isSelected ? 'text-slate-300 dark:text-gray-300' : 'text-slate-400 dark:text-gray-500'
-                          }`}
-                        >
-                          {role.description}
                         </span>
                       </button>
                     );
@@ -381,24 +365,6 @@ function Register() {
                     )}
                   </div>
                 </div>
-
-                {selectedRole.id === 'admin' && (
-                  <div className="animate-auth-fade">
-                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-gray-300">
-                      ADMIN SECRET CODE
-                    </label>
-                    <input
-                      type="password"
-                      placeholder="Enter institutional admin code"
-                      value={secretCode}
-                      onChange={(e) => setSecretCode(e.target.value)}
-                      className="w-full rounded-xl border-2 border-slate-200 dark:border-white/10 bg-white dark:bg-[#030712] px-3.5 py-2.5 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500 outline-none transition-all duration-200 ease-out focus:border-[#1a6ef5] dark:focus:border-cyan-400 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-cyan-500/10"
-                    />
-                    {errors.secretCode && (
-                      <p className="mt-1 text-xs font-medium text-rose-600 dark:text-rose-400">{errors.secretCode}</p>
-                    )}
-                  </div>
-                )}
 
                 <div>
                   <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-gray-300">

@@ -6,27 +6,54 @@ import SpotlightCard from '../../components/common/SpotlightCard';
 import Modal from '../../components/common/Modal';
 import GoogleSignInButton from '../../components/auth/GoogleSignInButton';
 
+function StudentIcon({ className = 'w-6 h-6' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" />
+      <path d="M22 10v6" />
+      <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
+    </svg>
+  );
+}
+
+function FacultyIcon({ className = 'w-6 h-6' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="12" rx="2" />
+      <path d="M7.5 11l2.5-2.5 2 2 4.5-4.5" />
+      <path d="M12 15v3.5" />
+      <path d="M9 18.5h6" />
+    </svg>
+  );
+}
+
+function AdminIcon({ className = 'w-6 h-6' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
 const roles = [
   {
     id: 'student',
     roleId: 1,
     label: 'Student',
-    description: 'Learn & manage courses',
-    letter: 'S',
+    Icon: StudentIcon,
   },
   {
     id: 'faculty',
     roleId: 2,
     label: 'Faculty',
-    description: 'Teach & assess',
-    letter: 'F',
+    Icon: FacultyIcon,
   },
   {
     id: 'admin',
     roleId: 3,
     label: 'Admin',
-    description: 'Manage institution',
-    letter: 'A',
+    Icon: AdminIcon,
   },
 ];
 
@@ -319,8 +346,6 @@ function Login() {
     setShowRecoveryModal(true);
   };
 
-  const selectedIndex = roles.findIndex((r) => r.id === selectedRole.id);
-
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#f8fafc] dark:bg-[#030712] transition-colors">
       <div className="grid min-h-screen lg:grid-cols-[0.9fr_1.1fr]">
@@ -453,25 +478,16 @@ function Login() {
 
             <div className="animate-card-bloom mt-6 rounded-[24px] border border-slate-200/80 dark:border-white/10 bg-white dark:bg-white/[0.02] dark:backdrop-blur-xl p-6 sm:p-7 shadow-xs dark:shadow-2xl dark:shadow-black/50 transition-colors">
               <div>
-                <div className="mb-2.5 flex items-center justify-between">
+                <div className="mb-2.5">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-gray-300">
                     SELECT WORKSPACE
                   </p>
-                  <span className="text-[10px] font-semibold tracking-wider text-slate-400 dark:text-gray-500">
-                    STEP 01
-                  </span>
                 </div>
 
-                <div className="relative grid grid-cols-3 gap-2.5">
-                  <div
-                    className="pointer-events-none absolute inset-y-0 rounded-2xl bg-[#48566a] dark:bg-cyan-500/20 dark:border dark:border-cyan-500/40 shadow-sm transition-transform duration-300 ease-out"
-                    style={{
-                      width: 'calc((100% - 20px) / 3)',
-                      transform: `translateX(calc(${selectedIndex} * (100% + 10px)))`,
-                    }}
-                  />
+                <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
                   {roles.map((role) => {
                     const isSelected = selectedRole.id === role.id;
+                    const IconComponent = role.Icon;
                     return (
                       <button
                         key={role.id}
@@ -481,37 +497,29 @@ function Login() {
                           setErrors({});
                           setMessage('');
                         }}
-                        className={`relative z-10 rounded-2xl p-3.5 text-left transition-colors duration-200 cursor-pointer ${
+                        className={`group flex flex-col items-center justify-center rounded-xl py-3.5 px-2 sm:py-4 transition-all duration-200 cursor-pointer ${
                           isSelected
-                            ? 'text-white'
-                            : 'bg-[#f0f3f6] dark:bg-white/5 text-slate-800 dark:text-gray-300 hover:bg-[#e7ecf1] dark:hover:bg-white/10'
+                            ? 'border-2 border-[#1a6ef5] dark:border-cyan-400 bg-blue-50/80 dark:bg-cyan-950/20 text-[#1a6ef5] dark:text-white shadow-sm dark:shadow-[0_0_12px_rgba(6,182,212,0.15)]'
+                            : 'border-2 border-slate-200/90 dark:border-white/10 bg-slate-50/60 dark:bg-white/[0.02] text-slate-500 dark:text-gray-400 hover:border-slate-300 dark:hover:border-white/20 hover:bg-slate-100/70 dark:hover:bg-white/[0.04] hover:text-slate-800 dark:hover:text-gray-200'
                         }`}
-                        style={{
-                          backgroundColor: isSelected ? 'transparent' : undefined,
-                        }}
                       >
-                        <span
-                          className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-colors duration-200 ${
+                        <div
+                          className={`transition-colors duration-200 ${
                             isSelected
-                              ? 'bg-[#283444] dark:bg-cyan-500 text-white'
-                              : 'bg-[#dce2e8] dark:bg-white/10 text-slate-500 dark:text-gray-400'
+                              ? 'text-[#1a6ef5] dark:text-white'
+                              : 'text-slate-400 dark:text-gray-400 group-hover:text-slate-600 dark:group-hover:text-gray-200'
                           }`}
                         >
-                          {role.letter}
-                        </span>
+                          <IconComponent className="w-5 h-5 sm:w-6 sm:h-6" />
+                        </div>
                         <span
-                          className={`mt-2.5 block text-xs font-bold transition-colors duration-200 ${
-                            isSelected ? 'text-white' : 'text-slate-800 dark:text-gray-200'
+                          className={`mt-2 text-xs sm:text-sm font-semibold transition-colors duration-200 ${
+                            isSelected
+                              ? 'text-slate-900 dark:text-white font-bold'
+                              : 'text-slate-600 dark:text-gray-300'
                           }`}
                         >
                           {role.label}
-                        </span>
-                        <span
-                          className={`mt-0.5 block text-[9px] leading-tight transition-colors duration-200 sm:text-[10px] ${
-                            isSelected ? 'text-slate-300 dark:text-gray-300' : 'text-slate-400 dark:text-gray-500'
-                          }`}
-                        >
-                          {role.description}
                         </span>
                       </button>
                     );
