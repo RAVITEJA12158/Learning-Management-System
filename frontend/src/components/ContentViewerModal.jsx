@@ -1,8 +1,34 @@
 import React from 'react';
 import Badge from './common/Badge';
 
+function getYouTubeEmbedUrl(url) {
+  if (!url) return null;
+
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.replace(/^www\./, '').toLowerCase();
+    let videoId = null;
+
+    if (hostname === 'youtu.be') {
+      videoId = parsed.pathname.split('/').filter(Boolean)[0];
+    } else if (hostname === 'youtube.com' || hostname === 'youtube-nocookie.com') {
+      if (parsed.pathname === '/watch') {
+        videoId = parsed.searchParams.get('v');
+      } else if (parsed.pathname.startsWith('/embed/')) {
+        videoId = parsed.pathname.split('/')[2];
+      }
+    }
+
+    return videoId ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?rel=0` : null;
+  } catch {
+    return null;
+  }
+}
+
 function ContentViewerModal({ content, isOpen, onClose, onToggleComplete, isCompleted }) {
   if (!isOpen || !content) return null;
+  const youtubeEmbedUrl = content.type === 'VIDEO' ? getYouTubeEmbedUrl(content.contentUrl) : null;
+  const directVideoUrl = content.contentUrl && /\.(mp4|webm|ogg)(\?.*)?$/i.test(content.contentUrl);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 animate-fade-in">
@@ -58,7 +84,16 @@ function ContentViewerModal({ content, isOpen, onClose, onToggleComplete, isComp
 
           {content.type === 'VIDEO' && (
             <div className="h-[60vh] w-full flex items-center justify-center rounded-xl overflow-hidden bg-black border border-slate-200 dark:border-white/10">
-              {content.contentUrl ? (
+              {youtubeEmbedUrl ? (
+                <iframe
+                  title={content.title}
+                  src={youtubeEmbedUrl}
+                  className="h-full w-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              ) : directVideoUrl ? (
                 <video
                   controls
                   className="max-h-full max-w-full rounded-xl"
@@ -66,6 +101,20 @@ function ContentViewerModal({ content, isOpen, onClose, onToggleComplete, isComp
                 >
                   Your browser does not support the video tag.
                 </video>
+              ) : content.contentUrl ? (
+                <div className="p-8 text-center text-white">
+                  <p className="mb-4 text-sm text-white/75">
+                    This class video is hosted by the course provider.
+                  </p>
+                  <a
+                    href={content.contentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex rounded-xl bg-[#0066FF] px-6 py-2.5 text-xs font-bold text-white hover:bg-blue-600"
+                  >
+                    Open lecture video
+                  </a>
+                </div>
               ) : (
                 <div className="text-sm font-bold text-white/50">
                   No Video URL available.

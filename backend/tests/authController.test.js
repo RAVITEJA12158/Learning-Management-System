@@ -7,6 +7,11 @@ jest.mock("../src/lib/prisma", () => ({
 }));
 jest.mock("bcryptjs", () => ({ hash: jest.fn(), compare: jest.fn() }));
 jest.mock("jsonwebtoken", () => ({ sign: jest.fn() }));
+jest.mock("../src/utils/smsVerification", () => ({
+  isSmsVerificationConfigured: jest.fn(() => true),
+  sendSmsVerification: jest.fn().mockResolvedValue(true),
+  checkSmsVerification: jest.fn().mockResolvedValue(true),
+}));
 
 const prisma = require("../src/lib/prisma");
 const bcrypt = require("bcryptjs");
@@ -26,7 +31,7 @@ const registration = {
   email: "test@example.com",
   password: "Password1!",
   confirmPassword: "Password1!",
-  mobile_number: "9876543210",
+  mobile_number: "+919876543210",
   role: "student",
 };
 
@@ -57,9 +62,10 @@ describe("authController", () => {
           name: "Test User",
           username: "testuser",
           email: "test@example.com",
-          mobileNumber: "9876543210",
+          mobileNumber: "+919876543210",
           passwordHash: "hashed-password",
           role: "STUDENT",
+          isVerified: true,
         },
       });
       expect(res.status).toHaveBeenCalledWith(201);
@@ -70,6 +76,9 @@ describe("authController", () => {
         name: "Test User",
         username: "testuser",
         role: "STUDENT",
+        department: null,
+        semester: null,
+        bio: null,
       });
     });
 
@@ -115,6 +124,9 @@ describe("authController", () => {
         name: "Test User",
         username: "testuser",
         role: "STUDENT",
+        department: null,
+        semester: null,
+        bio: null,
       });
     });
 

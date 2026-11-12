@@ -5,13 +5,42 @@
   "main": "src/server.js",
   "type": "commonjs",
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand",
+    "test:unit": "jest --runInBand --testPathIgnorePatterns=Integration",
+    "test:integration": "jest --runInBand tests/authIntegration.test.js tests/courseIntegration.test.js tests/moduleIntegration.test.js tests/assignmentIntegration.test.js tests/apiSafetyIntegration.test.js",
+    "test:coverage": "jest --runInBand --coverage",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:deploy": "prisma migrate deploy",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "prisma:push": "prisma db push",
+    "seed": "node prisma/seed.js"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html",
+      "json-summary"
+    ],
+    "collectCoverageFrom": [
+      "src/Controllers/**/*.js",
+      "src/Middleware/**/*.js",
+      "src/routes/**/*.js",
+      "src/server.js",
+      "!src/lib/**",
+      "!src/config/**"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ]
   },
   "dependencies": {
     "@emailjs/nodejs": "^5.0.2",
@@ -22,9 +51,10 @@
     "dotenv": "^16.4.5",
     "express": "^4.22.2",
     "express-rate-limit": "^8.7.0",
+    "google-auth-library": "^11.3.4",
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
-    "multer": "^2.4.0",
+    "multer": "2.5.0",
     "streamifier": "^0.1.1"
   },
   "devDependencies": {

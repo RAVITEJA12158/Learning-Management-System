@@ -1,28 +1,61 @@
-// Whitelist of origins allowed to call the API.
-// In production, replace with your actual deployment URL(s).
+
+
+const cors = require('cors');
+
+// Allowed frontend origins
 const localOrigins = [
-  'http://localhost:3000',  // Vite dev server
-  'http://localhost:5173',  // Vite default port (fallback)
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://learning-management-system-eight-lilac.vercel.app'
 ];
+
+// Read additional origins from Render environment variables
 const configuredOrigins = (process.env.FRONTEND_ORIGINS || '')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean);
-const whitelist = [...new Set([...localOrigins, ...configuredOrigins])];
+    .split(',')
+    .map(origin => origin.trim().replace(/\/+$/, ''))
+    .filter(Boolean);
+
+// Combine and remove duplicate origins
+const whitelist = [
+    ...new Set([...localOrigins, ...configuredOrigins])
+];
 
 const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, Postman, server-to-server)
-    if (!origin || whitelist.includes(origin)) {
-      callback(null, true);
-    } else {
-      const error = new Error('Not allowed by CORS');
-      error.code = 'CORS_DENIED';
-      callback(error);
-    }
-  },
-  credentials: true,
-  optionsSuccessStatus: 200,
+    origin: (origin, callback) => {
+        console.log('Incoming Origin:', origin);
+
+        // Allow requests without an Origin header
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        // Check whether the origin is allowed
+        if (whitelist.includes(origin)) {
+            return callback(null, true);
+        }
+
+        console.log('Blocked Origin:', origin);
+        return callback(null, false);
+    },
+
+    credentials: true,
+
+    methods: [
+        'GET',
+        'POST',
+        'PUT',
+        'PATCH',
+        'DELETE',
+        'OPTIONS'
+    ],
+
+    allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With'
+    ],
+
+    optionsSuccessStatus: 204
 };
 
 module.exports = corsOptions;

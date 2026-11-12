@@ -19,4 +19,13 @@ const authLimiter = rateLimit({
   message: { error: 'Too many authentication attempts. Please try again later.' },
 });
 
-module.exports = { apiLimiter, authLimiter };
+// Keep paid SMS verification endpoints stricter than the general auth routes.
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many verification code requests. Please try again later.' },
+});
+
+module.exports = { apiLimiter, authLimiter, otpLimiter };

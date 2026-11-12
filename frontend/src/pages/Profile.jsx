@@ -1,16 +1,26 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { userService } from '../services/userService';
+import Button from '../components/common/Button';
+import SpotlightCard from '../components/common/SpotlightCard';
 
-function Profile() {
+export default function Profile() {
   const { user, updateUser } = useAuth();
   const fileInputRef = useRef(null);
-
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [message, setMessage] = useState(null); // { type: 'success' | 'error', text: string }
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    username: user?.username || '',
+    email: user?.email || '',
+    department: user?.department || 'Computer Science & Engineering',
+    semester: user?.semester || 'Fall 2026',
+    mobileNumber: user?.mobileNumber || '',
+    bio: user?.bio || ''
+  });
 
-  // Sync profile on mount to get latest data from server
   useEffect(() => {
     async function loadFreshProfile() {
       try {
@@ -18,50 +28,60 @@ function Profile() {
         if (freshUser && freshUser.id) {
           updateUser(freshUser);
         }
-      } catch (err) {
-        // Silent fallback to context user
+      } catch {
+        // Fallback to existing AuthContext user
       }
     }
     loadFreshProfile();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name ?? prev.name,
+        username: user.username ?? prev.username,
+        email: user.email ?? prev.email,
+        department: user.department ?? prev.department,
+        semester: user.semester ?? prev.semester,
+        mobileNumber: user.mobileNumber ?? prev.mobileNumber,
+        bio: user.bio ?? prev.bio
+      }));
+    }
+  }, [user]);
 
   const handleAvatarClick = () => {
     if (uploading || deleting) return;
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (e) => {
+  const handleFileChange = async e => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Reset input so same file can be re-selected if needed
     e.target.value = '';
-
-    // Validate size (max 5MB for profile pictures)
     if (file.size > 5 * 1024 * 1024) {
-      setMessage({ type: 'error', text: 'Image file size must be less than 5MB.' });
+      setMessage({
+        type: 'error',
+        text: 'Image file size must be less than 5MB.'
+      });
       return;
     }
-
     setUploading(true);
     setMessage(null);
-
     try {
       const response = await userService.updateProfilePhoto(file);
       const newImageUrl = response.profileImage || response.user?.profileImage;
-
-      // Update Auth context and local storage
-      updateUser({ profileImage: newImageUrl });
-
+      updateUser({
+        profileImage: newImageUrl
+      });
       setMessage({
         type: 'success',
-        text: 'Profile photo uploaded to Cloudinary successfully!',
+        text: 'Profile photo updated successfully!'
       });
     } catch (err) {
-      console.error('Upload error:', err);
       setMessage({
         type: 'error',
-        text: err.message || 'Failed to upload image. Please try again.',
+        text: err.message || 'Failed to upload image. Please try again.'
       });
     } finally {
       setUploading(false);
@@ -69,49 +89,62 @@ function Profile() {
   };
 
   const handleDeletePhoto = async () => {
-    if (!window.confirm('Are you sure you want to remove your profile photo? It will be permanently deleted from Cloudinary.')) {
-      return;
-    }
-
     setDeleting(true);
     setMessage(null);
-
     try {
       await userService.deleteProfilePhoto();
-
-      // Update Auth context and local storage to null
-      updateUser({ profileImage: null });
-
+      updateUser({
+        profileImage: null
+      });
       setMessage({
         type: 'success',
-        text: 'Profile photo removed from Cloudinary. Default avatar restored.',
+        text: 'Profile photo removed. Default initial avatar restored.'
       });
     } catch (err) {
-      console.error('Delete error:', err);
       setMessage({
         type: 'error',
-        text: err.message || 'Failed to remove profile photo.',
+        text: err.message || 'Failed to remove profile photo.'
       });
     } finally {
       setDeleting(false);
     }
   };
 
-  const userInitial = user?.name ? user.name.trim().charAt(0).toUpperCase() : 'U';
+  const handleSaveProfile = async e => {
+    e.preventDefault();
+    setSavingProfile(true);
+    setMessage(null);
+    try {
+      const res = await userService.updateProfile(formData);
+      updateUser(res?.user || formData);
+      setMessage({
+        type: 'success',
+        text: 'Account profile information saved successfully!'
+      });
+    } catch (err) {
+      setMessage({
+        type: 'error',
+        text: err.message || 'Failed to save profile changes.'
+      });
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const userInitial = formData.name ? formData.name.trim().charAt(0).toUpperCase() : 'U';
   const hasCustomPhoto = Boolean(user?.profileImage);
 
   return (
     <main className="mx-auto max-w-[1440px] px-5 py-10 sm:px-8 w-full font-sans transition-colors duration-200">
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-slate-900 dark:text-zinc-50 tracking-tight transition-colors">
-          User Profile
+        <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight transition-colors">
+          User Profile & Academic Identity
         </h1>
-        <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1 transition-colors">
-          Manage your account information, profile picture, and preferences
+        <p className="text-sm text-slate-500 dark:text-gray-400 mt-1 transition-colors">
+          Manage your personal information, Cloudinary profile photo, and academic metadata
         </p>
       </div>
 
-      {/* Status Alert Notification */}
       {message && (
         <div
           className={`mb-6 p-4 rounded-xl text-xs font-bold transition flex items-center justify-between gap-3 ${
@@ -130,10 +163,43 @@ function Profile() {
         </div>
       )}
 
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <SpotlightCard className="p-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-400">
+            Account Role
+          </p>
+          <p className="text-lg font-black text-blue-600 dark:text-cyan-400 uppercase mt-1">
+            {user?.role || 'STUDENT'}
+          </p>
+        </SpotlightCard>
+        <SpotlightCard className="p-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-400">
+            Department
+          </p>
+          <p className="text-sm font-bold text-slate-900 dark:text-white truncate mt-1">
+            {formData.department || 'Not specified'}
+          </p>
+        </SpotlightCard>
+        <SpotlightCard className="p-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-400">
+            Active Term
+          </p>
+          <p className="text-lg font-black text-slate-900 dark:text-white mt-1">
+            {formData.semester || 'Fall 2026'}
+          </p>
+        </SpotlightCard>
+        <SpotlightCard className="p-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-400">
+            Standing
+          </p>
+          <p className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1">
+            {user?.status || 'Active'}
+          </p>
+        </SpotlightCard>
+      </div>
+
       <div className="bg-white dark:bg-white/[0.02] backdrop-blur-xl rounded-2xl border border-slate-200/80 dark:border-white/5 p-6 sm:p-8 shadow-xs dark:shadow-md dark:shadow-black/40 space-y-8 transition-colors">
-        {/* AVATAR + BASIC INFO HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-6 pb-8 border-b border-slate-100 dark:border-white/5">
-          {/* Interactive Profile Picture Container with Spinning Gradient Ring */}
           <div className="relative group shrink-0">
             <div className="relative p-[2.5px] rounded-full dark:bg-gradient-to-r dark:from-cyan-400 dark:via-blue-500 dark:to-purple-600 dark:animate-spin-ring">
               <div
@@ -144,7 +210,7 @@ function Profile() {
                 {hasCustomPhoto ? (
                   <img
                     src={user.profileImage}
-                    alt={user?.name || 'User Avatar'}
+                    alt={formData.name}
                     className="h-full w-full object-cover transition duration-200 group-hover:scale-105"
                   />
                 ) : (
@@ -152,57 +218,11 @@ function Profile() {
                     {userInitial}
                   </div>
                 )}
-
-                {/* Hover Overlay */}
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white p-2 text-center select-none">
-                  <svg
-                    className="w-5 h-5 mb-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
-                    <circle cx="12" cy="13" r="4" />
-                  </svg>
-                  <span className="text-[10px] font-bold uppercase tracking-wider">
-                    Change Photo
-                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Change Photo</span>
                 </div>
-
-                {/* Loading / Uploading Spinner Overlay */}
-                {(uploading || deleting) && (
-                  <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center text-white z-10">
-                    <svg
-                      className="w-6 h-6 animate-spin text-cyan-400 mb-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    <span className="text-[9px] font-bold">
-                      {uploading ? 'Uploading…' : 'Deleting…'}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
-
-            {/* Hidden native file input */}
             <input
               ref={fileInputRef}
               type="file"
@@ -212,44 +232,27 @@ function Profile() {
             />
           </div>
 
-          {/* User Details & Direct Action Controls */}
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight truncate">
-                {user?.name || 'User'}
+                {formData.name}
               </h2>
               <span className="inline-block rounded-md bg-blue-50 dark:bg-purple-950/60 px-2.5 py-0.5 text-xs font-bold text-blue-600 dark:text-cyan-400 uppercase tracking-wider border border-blue-200/60 dark:border-purple-800/40">
                 {user?.role || 'Student'}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-gray-400 mt-1">
-              {user?.email || 'email@example.com'}
+              {formData.email}
             </p>
-
-            {/* Photo Action Buttons */}
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              <button
+              <Button
                 type="button"
+                size="sm"
                 onClick={handleAvatarClick}
                 disabled={uploading || deleting}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 dark:bg-[#0066FF] text-white hover:bg-blue-700 dark:hover:bg-[#0052cc] transition cursor-pointer disabled:opacity-50 shadow-xs dark:shadow-[0_0_15px_rgba(0,102,255,0.4)]"
               >
-                <svg
-                  className="w-3.5 h-3.5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                  <polyline points="17 8 12 3 7 8" />
-                  <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
-                {uploading ? 'Uploading…' : 'Upload from Local'}
-              </button>
-
+                {uploading ? 'Uploading…' : 'Upload Photo'}
+              </Button>
               {hasCustomPhoto && (
                 <button
                   type="button"
@@ -257,32 +260,16 @@ function Profile() {
                   disabled={uploading || deleting}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 dark:text-rose-400 border border-red-200 dark:border-rose-800/60 hover:bg-red-50 dark:hover:bg-rose-950/40 transition cursor-pointer disabled:opacity-50"
                 >
-                  <svg
-                    className="w-3.5 h-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                  </svg>
-                  {deleting ? 'Deleting…' : 'Remove Photo'}
+                  {deleting ? 'Removing…' : 'Remove Photo'}
                 </button>
               )}
             </div>
-            <p className="text-[11px] text-slate-400 dark:text-gray-500 mt-2">
-              Hover over or click your avatar to upload a photo from your computer. Removing reverts to your name initial.
-            </p>
           </div>
         </div>
 
-        {/* ACCOUNT DETAILS GRID (HOLLOW GLASS INPUTS) */}
-        <div>
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-gray-300 mb-4">
-            Account Information
+        <form onSubmit={handleSaveProfile} className="space-y-6">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-gray-300">
+            Personal & Academic Information
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
@@ -291,9 +278,10 @@ function Profile() {
               </label>
               <input
                 type="text"
-                readOnly
-                value={user?.name || ''}
-                className="w-full rounded-lg border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition"
+                required
+                value={formData.name}
+                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                className="w-full rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition"
               />
             </div>
             <div>
@@ -302,9 +290,10 @@ function Profile() {
               </label>
               <input
                 type="email"
-                readOnly
-                value={user?.email || ''}
-                className="w-full rounded-lg border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition"
+                required
+                value={formData.email}
+                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                className="w-full rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition"
               />
             </div>
             <div>
@@ -313,27 +302,63 @@ function Profile() {
               </label>
               <input
                 type="text"
-                readOnly
-                value={user?.username || ''}
-                className="w-full rounded-lg border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition"
+                value={formData.username}
+                onChange={e => setFormData({ ...formData, username: e.target.value })}
+                className="w-full rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition"
               />
             </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 mb-2">
-                Account Role
+                Mobile Number
+              </label>
+              <input
+                type="tel"
+                value={formData.mobileNumber}
+                onChange={e => setFormData({ ...formData, mobileNumber: e.target.value })}
+                className="w-full rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 mb-2">
+                Department / Major
               </label>
               <input
                 type="text"
-                readOnly
-                value={user?.role || 'STUDENT'}
-                className="w-full rounded-lg border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition"
+                value={formData.department}
+                onChange={e => setFormData({ ...formData, department: e.target.value })}
+                className="w-full rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 mb-2">
+                Current Semester
+              </label>
+              <input
+                type="text"
+                value={formData.semester}
+                onChange={e => setFormData({ ...formData, semester: e.target.value })}
+                className="w-full rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-transparent px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition"
               />
             </div>
           </div>
-        </div>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 mb-2">
+              Academic Bio & Research Interests
+            </label>
+            <textarea
+              rows={3}
+              value={formData.bio}
+              onChange={e => setFormData({ ...formData, bio: e.target.value })}
+              className="w-full rounded-xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-transparent p-3.5 text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition"
+            />
+          </div>
+          <div className="pt-2 flex justify-end">
+            <Button type="submit" size="lg" disabled={savingProfile}>
+              {savingProfile ? 'Saving Changes…' : 'Save Profile Changes'}
+            </Button>
+          </div>
+        </form>
       </div>
     </main>
   );
 }
-
-export default Profile;

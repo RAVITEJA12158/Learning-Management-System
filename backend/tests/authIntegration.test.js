@@ -11,6 +11,11 @@ jest.mock('../src/lib/prisma', () => ({
     create: jest.fn(),
   },
 }));
+jest.mock('../src/utils/smsVerification', () => ({
+  isSmsVerificationConfigured: jest.fn(() => true),
+  sendSmsVerification: jest.fn().mockResolvedValue(true),
+  checkSmsVerification: jest.fn().mockResolvedValue(true),
+}));
 
 describe('Authentication Integration Flow', () => {
   let token;
@@ -20,7 +25,7 @@ describe('Authentication Integration Flow', () => {
     email: 'integration@example.com',
     password: 'Password1!',
     confirmPassword: 'Password1!',
-    mobile_number: '1234567890',
+    mobile_number: '+11234567890',
   };
 
   beforeAll(() => {

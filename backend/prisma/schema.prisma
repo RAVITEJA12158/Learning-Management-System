@@ -13,8 +13,10 @@ model User {
   id                         String                 @id @default(uuid())
   name                       String
   email                      String                 @unique
-  passwordHash               String                 @map("password_hash")
+  passwordHash               String?                @map("password_hash")
+  googleId                   String?                @unique @map("google_id")
   role                       Role
+  status                     String                 @default("ACTIVE")
   profileImage               String?                @map("profile_image")
   createdAt                  DateTime               @default(now()) @map("created_at")
   updatedAt                  DateTime               @updatedAt @map("updated_at")
@@ -22,7 +24,12 @@ model User {
   username                   String                 @unique
   verificationToken          String?                @unique @map("verification_token")
   verificationTokenExpires   DateTime?              @map("verification_token_expires")
-  mobileNumber               String?                @map("mobile_number")
+  resetPasswordToken         String?                @unique @map("reset_password_token")
+  resetPasswordExpires       DateTime?              @map("reset_password_expires")
+  mobileNumber               String?                @unique @map("mobile_number")
+  department                 String?
+  semester                   String?
+  bio                        String?
   announcements              Announcement[]
   gradedSubmissions          AssignmentSubmission[] @relation("SubmissionGradedBy")
   submissions                AssignmentSubmission[] @relation("SubmissionStudent")
@@ -41,6 +48,7 @@ model User {
   quizzesCreated             Quiz[]                 @relation("QuizCreatedBy")
 
   @@index([verificationToken])
+  @@index([resetPasswordToken])
   @@map("users")
 }
 
@@ -51,6 +59,8 @@ model Course {
   description        String?
   createdById        String              @map("created_by")
   semester           String?
+  category           String?
+  bannerUrl          String?             @map("banner_url")
   createdAt          DateTime            @default(now()) @map("created_at")
   updatedAt          DateTime            @updatedAt @map("updated_at")
   announcements      Announcement[]
@@ -257,6 +267,7 @@ model Announcement {
   createdById String   @map("created_by")
   title       String
   message     String
+  pinned      Boolean  @default(false)
   createdAt   DateTime @default(now()) @map("created_at")
   course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   createdBy   User     @relation(fields: [createdById], references: [id])
@@ -284,6 +295,7 @@ model AttendanceSession {
   id          String             @id @default(uuid())
   courseId    String             @map("course_id")
   date        DateTime           @db.Date
+  topic       String?
   createdById String             @map("created_by")
   records     AttendanceRecord[]
   course      Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
@@ -313,6 +325,9 @@ model Discussion {
   userId    String            @map("user_id")
   title     String
   content   String
+  pinned    Boolean           @default(false)
+  resolved  Boolean           @default(false)
+  likes     Int               @default(0)
   createdAt DateTime          @default(now()) @map("created_at")
   replies   DiscussionReply[]
   course    Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)

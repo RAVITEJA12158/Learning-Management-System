@@ -1,16 +1,27 @@
 const prisma = require('../lib/prisma');
 const { uploadBufferToCloudinary } = require('../Middleware/upload');
 
+function isCourseStaff(course, user) {
+  if (!course || !user) return false;
+  return (
+    user.role === 'ADMIN' ||
+    course.createdById === user.userId ||
+    course.instructors?.some((i) => i.facultyId === user.userId)
+  );
+}
+
 // === Modules ===
 
 exports.createModule = async (req, res) => {
   try {
     const { courseId, title, description, position, isPublished, releaseAt } = req.body;
-    
-    // Verify course ownership
-    const course = await prisma.course.findUnique({ where: { id: courseId } });
+
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      include: { instructors: true },
+    });
     if (!course) return res.status(404).json({ error: 'Course not found.' });
-    if (course.createdById !== req.user.userId && req.user.role !== 'ADMIN') {
+    if (!isCourseStaff(course, req.user)) {
       return res.status(403).json({ error: 'Not authorized.' });
     }
 
@@ -22,7 +33,7 @@ exports.createModule = async (req, res) => {
         position: position || 1,
         isPublished: isPublished || false,
         releaseAt: releaseAt ? new Date(releaseAt) : null,
-      }
+      },
     });
 
     res.status(201).json(newModule);
@@ -36,9 +47,12 @@ exports.updateModule = async (req, res) => {
     const { id } = req.params;
     const { title, description, position, isPublished, releaseAt } = req.body;
 
-    const moduleRecord = await prisma.module.findUnique({ where: { id }, include: { course: true } });
+    const moduleRecord = await prisma.module.findUnique({
+      where: { id },
+      include: { course: { include: { instructors: true } } },
+    });
     if (!moduleRecord) return res.status(404).json({ error: 'Module not found.' });
-    if (moduleRecord.course.createdById !== req.user.userId && req.user.role !== 'ADMIN') {
+    if (!isCourseStaff(moduleRecord.course, req.user)) {
       return res.status(403).json({ error: 'Not authorized.' });
     }
 
@@ -50,7 +64,7 @@ exports.updateModule = async (req, res) => {
         ...(position !== undefined && { position }),
         ...(isPublished !== undefined && { isPublished }),
         ...(releaseAt !== undefined && { releaseAt: releaseAt ? new Date(releaseAt) : null }),
-      }
+      },
     });
 
     res.json(updated);
@@ -62,10 +76,13 @@ exports.updateModule = async (req, res) => {
 exports.deleteModule = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    const moduleRecord = await prisma.module.findUnique({ where: { id }, include: { course: true } });
+
+    const moduleRecord = await prisma.module.findUnique({
+      where: { id },
+      include: { course: { include: { instructors: true } } },
+    });
     if (!moduleRecord) return res.status(404).json({ error: 'Module not found.' });
-    if (moduleRecord.course.createdById !== req.user.userId && req.user.role !== 'ADMIN') {
+    if (!isCourseStaff(moduleRecord.course, req.user)) {
       return res.status(403).json({ error: 'Not authorized.' });
     }
 
@@ -82,9 +99,12 @@ exports.createContent = async (req, res) => {
   try {
     const { moduleId, title, type, contentUrl, description, position, isPublished } = req.body;
 
-    const moduleRecord = await prisma.module.findUnique({ where: { id: moduleId }, include: { course: true } });
+    const moduleRecord = await prisma.module.findUnique({
+      where: { id: moduleId },
+      include: { course: { include: { instructors: true } } },
+    });
     if (!moduleRecord) return res.status(404).json({ error: 'Module not found.' });
-    if (moduleRecord.course.createdById !== req.user.userId && req.user.role !== 'ADMIN') {
+    if (!isCourseStaff(moduleRecord.course, req.user)) {
       return res.status(403).json({ error: 'Not authorized.' });
     }
 
@@ -98,7 +118,7 @@ exports.createContent = async (req, res) => {
         position: position || 1,
         isPublished: isPublished || false,
         createdById: req.user.userId,
-      }
+      },
     });
 
     res.status(201).json(newContent);
@@ -112,15 +132,18 @@ exports.updateContent = async (req, res) => {
     const { id } = req.params;
     const { title, type, contentUrl, description, position, isPublished } = req.body;
 
-    const contentRecord = await prisma.content.findUnique({ where: { id }, include: { module: { include: { course: true } } } });
+    const contentRecord = await prisma.content.findUnique({
+      where: { id },
+      include: { module: { include: { course: { include: { instructors: true } } } } },
+    });
     if (!contentRecord) return res.status(404).json({ error: 'Content not found.' });
-    if (contentRecord.module.course.createdById !== req.user.userId && req.user.role !== 'ADMIN') {
+    if (!isCourseStaff(contentRecord.module.course, req.user)) {
       return res.status(403).json({ error: 'Not authorized.' });
     }
 
     const updated = await prisma.content.update({
       where: { id },
-      data: { title, type, contentUrl, description, position, isPublished }
+      data: { title, type, contentUrl, description, position, isPublished },
     });
 
     res.json(updated);
@@ -129,11 +152,6 @@ exports.updateContent = async (req, res) => {
   }
 };
 
-// Uploads a learning-material file (PDF, slides, image, video, etc.) to
-// Cloudinary and returns its URL, so the frontend can then call
-// createContent/updateContent with that URL as `contentUrl`. Kept as a
-// separate step (rather than bundled into createContent) so the same
-// endpoint can also be used to swap out a file on an existing content item.
 exports.uploadContentFile = async (req, res) => {
   try {
     if (!req.file) {
@@ -160,9 +178,12 @@ exports.deleteContent = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const contentRecord = await prisma.content.findUnique({ where: { id }, include: { module: { include: { course: true } } } });
+    const contentRecord = await prisma.content.findUnique({
+      where: { id },
+      include: { module: { include: { course: { include: { instructors: true } } } } },
+    });
     if (!contentRecord) return res.status(404).json({ error: 'Content not found.' });
-    if (contentRecord.module.course.createdById !== req.user.userId && req.user.role !== 'ADMIN') {
+    if (!isCourseStaff(contentRecord.module.course, req.user)) {
       return res.status(403).json({ error: 'Not authorized.' });
     }
 

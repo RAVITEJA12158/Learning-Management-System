@@ -2,11 +2,14 @@ import React from 'react';
 
 export const SIDEBAR_TABS = [
   { id: 'overview', label: 'Overview', icon: OverviewIcon },
-  { id: 'modules', label: 'Modules', icon: ModulesIcon },
+  { id: 'modules', label: 'Modules & Content', icon: ModulesIcon },
   { id: 'assignments', label: 'Assignments', icon: AssignmentsIcon },
-  { id: 'quizzes', label: 'Quizzes', icon: QuizzesIcon },
-  { id: 'announcements', label: 'Announcements', icon: AnnouncementsIcon },
+  { id: 'quizzes', label: 'Timed Quizzes', icon: QuizzesIcon },
+  { id: 'attendance', label: 'Attendance', icon: AttendanceIcon },
+  { id: 'grades', label: 'Grades & Rubric', icon: GradesIcon },
   { id: 'discussions', label: 'Discussions', icon: DiscussionsIcon },
+  { id: 'announcements', label: 'Announcements', icon: AnnouncementsIcon },
+  { id: 'roster', label: 'People & Roster', icon: RosterIcon },
 ];
 
 export function CourseSidebar({
@@ -21,10 +24,8 @@ export function CourseSidebar({
 }) {
   return (
     <aside className="hidden lg:flex w-[250px] shrink-0 flex-col bg-white dark:bg-gray-950 border-r border-slate-200/80 dark:border-white/5 transition-colors duration-200">
-      {/* Course Header */}
       <div className="p-5 border-b border-slate-200/80 dark:border-white/5">
         <div className="flex items-center gap-3.5">
-          {/* Progress Ring */}
           <div className="relative flex h-11 w-11 shrink-0 items-center justify-center">
             <svg className="h-full w-full -rotate-90" viewBox="0 0 44 44">
               <circle
@@ -64,8 +65,7 @@ export function CourseSidebar({
         </div>
       </div>
 
-      {/* Navigation Pills */}
-      <nav className="flex-1 py-3 px-2 space-y-0.5">
+      <nav className="flex-1 py-3 px-2 space-y-0.5" aria-label="Course Workspace Navigation">
         {SIDEBAR_TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           const TabIcon = tab.icon;
@@ -81,9 +81,7 @@ export function CourseSidebar({
             >
               <TabIcon
                 className={`h-4 w-4 shrink-0 transition-colors ${
-                  isActive
-                    ? 'text-blue-600 dark:text-cyan-400'
-                    : 'text-slate-400 dark:text-gray-500'
+                  isActive ? 'text-blue-600 dark:text-cyan-400' : 'text-slate-400 dark:text-gray-500'
                 }`}
               />
               {tab.label}
@@ -92,7 +90,6 @@ export function CourseSidebar({
         })}
       </nav>
 
-      {/* Sidebar Footer */}
       {isEnrolled && (
         <div className="mt-auto border-t border-slate-200/80 dark:border-white/5 p-4">
           <button
@@ -108,9 +105,6 @@ export function CourseSidebar({
   );
 }
 
-/* ============================================================
-   SIDEBAR ICONS (INLINE SVG)
-============================================================ */
 function OverviewIcon({ className }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -151,6 +145,27 @@ function QuizzesIcon({ className }) {
   );
 }
 
+function AttendanceIcon({ className }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+}
+
+function GradesIcon({ className }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10" />
+      <line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="14" />
+    </svg>
+  );
+}
+
 function AnnouncementsIcon({ className }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -164,6 +179,17 @@ function DiscussionsIcon({ className }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+    </svg>
+  );
+}
+
+function RosterIcon({ className }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   );
 }

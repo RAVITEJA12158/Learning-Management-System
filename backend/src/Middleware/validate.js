@@ -1,28 +1,60 @@
 function validateRegister(req, res, next) {
-  const { name, username, email, password, confirmPassword, mobile_number, role } = req.body || {}
+  const { name, username, email, password, confirmPassword, mobile_number, role, secretCode } = req.body || {};
 
-  if ([name, username, email, password, confirmPassword, mobile_number].some(
-    (value) => typeof value !== 'string' || !value.trim()
-  )) {
-    return res.status(400).json({ error: 'All registration fields are required' })
+  if (
+    [name, username, email, password, confirmPassword, mobile_number].some(
+      (value) => typeof value !== 'string' || !value.trim()
+    )
+  ) {
+    return res.status(400).json({ error: 'All registration fields are required' });
   }
 
-  if (role !== undefined && typeof role !== 'string') {
-    return res.status(400).json({ error: 'Role must be student or faculty' })
-  }
-  if (!['student', 'faculty'].includes((role || 'student').toLowerCase())) {
-    return res.status(400).json({ error: 'Role must be student or faculty' })
+  const requestedRole = (role || 'student').toLowerCase();
+  if (!['student', 'faculty', 'admin'].includes(requestedRole)) {
+    return res.status(400).json({ error: 'Role must be student, faculty, or admin' });
   }
 
-  next()
+  if (requestedRole === 'admin' && (!secretCode || !secretCode.trim())) {
+    return res.status(400).json({ error: 'Administrator secret code is required to register as admin' });
+  }
+
+  next();
 }
 
 function validateLogin(req, res, next) {
-  const { email, password } = req.body || {}
+  const { email, password } = req.body || {};
   if (typeof email !== 'string' || !email.trim() || typeof password !== 'string' || !password) {
-    return res.status(400).json({ error: 'Email and password are required' })
+    return res.status(400).json({ error: 'Email and password are required' });
   }
-  next()
+  next();
 }
 
-module.exports = { validateRegister, validateLogin }
+function validateForgotPassword(req, res, next) {
+  const { email } = req.body || {};
+  if (typeof email !== 'string' || !email.trim()) {
+    return res.status(400).json({ error: 'Academic email is required' });
+  }
+  next();
+}
+
+function validateResetPassword(req, res, next) {
+  const { email, token, newPassword } = req.body || {};
+  if (
+    typeof email !== 'string' ||
+    !email.trim() ||
+    typeof token !== 'string' ||
+    !token.trim() ||
+    typeof newPassword !== 'string' ||
+    !newPassword
+  ) {
+    return res.status(400).json({ error: 'Email, reset code, and new password are required' });
+  }
+  next();
+}
+
+module.exports = {
+  validateRegister,
+  validateLogin,
+  validateForgotPassword,
+  validateResetPassword,
+};
